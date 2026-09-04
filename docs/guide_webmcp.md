@@ -41,7 +41,7 @@ JSON:
 
 ## transform_data
 
-Verbs: `filter | select | rename | dropNulls | sort | groupBy | derive | header | dropDuplicates | fill | flashfill`.
+Verbs: `filter | select | rename | dropNulls | sort | groupBy | derive | header | dropDuplicates | fill | flashfill | replace | limit`.
 
 Inline:
 
@@ -60,6 +60,7 @@ transform_data --op fill --column visitors --mode value --value 0
 transform_data --op fill --column visitors --mode down
 transform_data --op flashfill --column month --into short --example "J"
 transform_data --op replace --column month --find "Jan" --with "January"
+transform_data --op limit --n 100
 ```
 
 Note: every inline call also needs `--data '{...}'` with the input dataset

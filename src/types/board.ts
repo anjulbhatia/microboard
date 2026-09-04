@@ -9,7 +9,9 @@ export type StepType =
   | "dropDuplicates"
   | "fill"
   | "flashfill"
-  | "replace";
+  | "replace"
+  | "limit"
+  | "derive";
 
 export interface Step {
   id: string;

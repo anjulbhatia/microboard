@@ -16,6 +16,7 @@ const STEP_TYPES: { value: StepType; label: string; hint: string }[] = [
   { value: "fill", label: "Fill", hint: "fill nulls" },
   { value: "flashfill", label: "Flash", hint: "fill by example" },
   { value: "replace", label: "Replace", hint: "find + replace" },
+  { value: "limit", label: "Limit", hint: "first N rows" },
 ];
 
 export const FILTER_COND = ["==", "!=", "contains", ">", "<", ">=", "<="];
@@ -42,6 +43,7 @@ export function StepForm({ columns }: StepFormProps) {
   const [dupCols, setDupCols] = useState("");
   const [repFind, setRepFind] = useState("");
   const [repWith, setRepWith] = useState("");
+  const [limitN, setLimitN] = useState("100");
 
   const col = column || (type === "dropNulls" ? "__all__" : columns[0] || "");
   const describe = (): string => {
@@ -68,6 +70,10 @@ export function StepForm({ columns }: StepFormProps) {
         return `Flash fill ${col} like "${ffExample}"`;
       case "replace":
         return `Replace "${repFind}" with "${repWith}" in ${col}`;
+      case "limit":
+        return `Keep first ${limitN} rows`;
+      default:
+        return type;
     }
   };
 
@@ -103,6 +109,9 @@ export function StepForm({ columns }: StepFormProps) {
       if (!repFind) return;
       params.find = repFind;
       params.with = repWith;
+    } else if (type === "limit") {
+      if (!Number(limitN)) return;
+      params.n = limitN;
     }
     addStep(type, params, describe());
     setValue("");
@@ -186,6 +195,17 @@ export function StepForm({ columns }: StepFormProps) {
           <input value={repFind} onChange={(e) => setRepFind(e.target.value)} placeholder="find" className={inputCls} />
           <input value={repWith} onChange={(e) => setRepWith(e.target.value)} placeholder="replace with" className={inputCls} />
         </div>
+      )}
+
+      {type === "limit" && (
+        <input
+          type="number"
+          min={1}
+          value={limitN}
+          onChange={(e) => setLimitN(e.target.value)}
+          placeholder="rows"
+          className={inputCls}
+        />
       )}
 
       {type === "filter" && (

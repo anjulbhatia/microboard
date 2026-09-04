@@ -207,6 +207,12 @@ function runTransform(args: Record<string, unknown>): Dataset {
       }));
       return { columns: t.columnNames(), rows };
     }
+    case "limit": {
+      const n = Math.max(0, Math.floor(Number(args.n ?? 0)));
+      if (!n) return toDataset(t);
+      const rows = (t.objects() as Record<string, unknown>[]).slice(0, n);
+      return { columns: t.columnNames(), rows };
+    }
     case "flashfill": {
       const col = String(args.column ?? "");
       const into = String(args.into ?? (col ? `${col}_fill` : ""));
@@ -225,7 +231,7 @@ function runTransform(args: Record<string, unknown>): Dataset {
     }
     default:
       throw new Error(
-        `transform_data: unknown op "${op}". Use filter|select|rename|dropNulls|sort|groupBy|derive|header|dropDuplicates|fill|flashfill|replace.`
+        `transform_data: unknown op "${op}". Use filter|select|rename|dropNulls|sort|groupBy|derive|header|dropDuplicates|fill|flashfill|replace|limit.`
       );
   }
 }
@@ -233,14 +239,14 @@ function runTransform(args: Record<string, unknown>): Dataset {
 export const transformDataOp: OpDef = {
   name: "transform_data",
   description:
-    "Deterministic Arquero transforms: filter, select, rename, dropNulls, sort, groupBy, derive, header, dropDuplicates, fill, flashfill, replace.",
+    "Deterministic Arquero transforms: filter, select, rename, dropNulls, sort, groupBy, derive, header, dropDuplicates, fill, flashfill, replace, limit.",
   params: [
     { name: "data", type: "dataset", required: true, description: "{columns, rows} input." },
     {
       name: "op",
       type: "string",
       required: true,
-      enum: ["filter", "select", "rename", "dropNulls", "sort", "groupBy", "derive", "header", "dropDuplicates", "fill", "flashfill", "replace"],
+      enum: ["filter", "select", "rename", "dropNulls", "sort", "groupBy", "derive", "header", "dropDuplicates", "fill", "flashfill", "replace", "limit"],
     },
     { name: "column", type: "string", description: "Target column." },
     { name: "cond", type: "string", enum: ["==", "!=", "contains", ">", "<", ">=", "<="], description: "Filter condition." },
@@ -257,6 +263,7 @@ export const transformDataOp: OpDef = {
     { name: "example", type: "string", description: "Flashfill example output." },
     { name: "find", type: "string", description: "Replace find string." },
     { name: "with", type: "string", description: "Replace replacement." },
+    { name: "n", type: "number", description: "Limit row count." },
   ],
   run: runTransform,
 };

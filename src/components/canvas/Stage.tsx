@@ -56,7 +56,8 @@ export function Stage({
 
   const [rw, rh] = ratio === "3:4" ? [3, 4] : [16, 10];
   const cols = ratio === "3:4" ? 10 : 16;
-  const scale = size.w > 0 && size.h > 0 ? Math.min(size.w / rw, size.h / rh) : 0;
+  // Reserve the board's own my-2 breathing room from the fit area.
+  const scale = size.w > 0 && size.h > 0 ? Math.min(size.w / rw, (size.h - 16) / rh) : 0;
   const unit = scale > 0 ? Math.max(24, Math.floor((rw * scale) / cols)) : 56;
 
   return (
@@ -65,7 +66,8 @@ export function Stage({
       <div ref={wrapRef} className="flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-xl border bg-muted/40 p-3">
         {scale > 0 && (
           <div
-            className="slim-scroll overflow-y-auto rounded-lg border bg-background shadow-xl"
+            id="board-stage"
+            className="slim-scroll my-2 overflow-y-auto rounded-lg border bg-background shadow-xl transition-[width,height] duration-300 ease-out"
             style={{ width: Math.floor(rw * scale), height: Math.floor(rh * scale), ...BACKDROPS[backdrop] }}
           >
             <StageContext.Provider value={{ unit, cols }}>

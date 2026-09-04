@@ -240,6 +240,11 @@ function applyStep(rows: Record<string, string>[], step: Step): Record<string, s
       if (!col || !find) return rows;
       return rows.map((r) => ({ ...r, [col]: String(r[col] ?? "").split(find).join(with_) }));
     }
+    case "limit": {
+      const n = Math.max(0, Math.floor(Number(p.n ?? 0)));
+      if (!n) return rows;
+      return rows.slice(0, n);
+    }
     default:
       return rows;
   }

@@ -62,7 +62,7 @@ runInline('get_data --type csv --text "..."')     // inline form
   `text`, `sep`, `url`, `headers`, `grid`, `file`. `file` (a `File` object)
   is in-function only — it cannot travel as inline/JSON.
 - `transform_data` params: `data`, `op`
-  (filter|select|rename|dropNulls|sort|groupBy|derive|header|dropDuplicates|fill|flashfill),
+  (filter|select|rename|dropNulls|sort|groupBy|derive|header|dropDuplicates|fill|flashfill|replace|limit),
   plus per-op keys: `column`, `cond` (==|!=|contains|>|<|>=|<=), `value`,
   `columns` (comma list for select, optional subset for dropDuplicates),
   `to`, `dir`, `agg` (sum|count|average|min|max), `target`, `into`,

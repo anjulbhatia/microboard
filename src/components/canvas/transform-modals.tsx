@@ -3,7 +3,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useBoard } from "@/lib/board-store";
-import { inferFlashFill } from "@/lib/data-utils";
+import { applySteps, inferColumns, inferFlashFill } from "@/lib/data-utils";
 import { Btn, CSelect, inputCls } from "@/components/canvas/controls";
 
 function Shell({
@@ -172,6 +172,65 @@ export function FillModal({ columns, onClose }: { columns: string[]; onClose: ()
         </Btn>
       </Foot>
     </Shell>
+  );
+}
+
+export function DisplayTableModal({ onClose }: { onClose: () => void }) {
+  const board = useBoard((s) => s.board);
+  const cleaned = applySteps(board.data.raw, board.steps);
+  const cols = inferColumns(cleaned).map((c) => c.name);
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Data table"
+    >
+      <div
+        className="flex max-h-[85svh] w-full max-w-4xl flex-col rounded-xl border bg-background shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b px-4 py-3">
+          <div>
+            <h2 className="font-semibold">Data table</h2>
+            <p className="font-mono text-xs text-muted-foreground">
+              {cleaned.length} rows · {cols.length} cols · v{board.version}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <HugeiconsIcon icon={Cancel01Icon} size={18} strokeWidth={1.5} />
+          </button>
+        </div>
+        <div className="slim-scroll min-h-0 flex-1 overflow-auto">
+          <table className="w-full font-mono text-xs">
+            <thead className="sticky top-0 bg-muted">
+              <tr className="text-left text-muted-foreground">
+                <th className="px-2 py-1 font-medium">#</th>
+                {cols.map((c) => (
+                  <th key={c} className="px-2 py-1 font-medium">{c}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {cleaned.slice(0, 200).map((r, i) => (
+                <tr key={i} className="border-t">
+                  <td className="px-2 py-1 text-muted-foreground">{i + 1}</td>
+                  {cols.map((c) => (
+                    <td key={c} className="px-2 py-1">{r[c]}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
 }
 

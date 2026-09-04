@@ -10,6 +10,7 @@ import { Stage } from "@/components/canvas/Stage";
 import { WidgetCard } from "@/components/canvas/WidgetCard";
 import { AgentPanel, TransformPanel, VisualsPanel } from "@/components/canvas/Panels";
 import { PageStrip } from "@/components/canvas/PageStrip";
+import { QuickAddBar } from "@/components/canvas/QuickAddBar";
 import { useBoard } from "@/lib/board-store";
 import { useBoardDerived } from "@/app/create/logic/useBoardDerived";
 import { useUploads } from "@/app/create/logic/useUploads";
@@ -26,7 +27,6 @@ export function CreatePage() {
 
   const [tab, setTab] = useState<DockTab>("visualize");
   const [panelOpen, setPanelOpen] = useState(false);
-  const [builderMode, setBuilderMode] = useState<"widget" | "chart">("widget");
   const [agentGoal, setAgentGoal] = useState("");
   const [ratio, setRatio] = useState<StageRatio>("16:10");
   const [backdrop, setBackdrop] = useState<StageBackdrop>("dotted");
@@ -39,12 +39,8 @@ export function CreatePage() {
   const { uploads, addUploads } = useUploads();
 
   const toggleTab = (t: DockTab) => {
-    if (t === tab && panelOpen) {
-      setPanelOpen(false);
-    } else {
-      setTab(t);
-      setPanelOpen(true);
-    }
+    setTab(t);
+    setPanelOpen(true);
   };
 
   const handleLoad = (source: "inline" | "file" | "sample", records: Record<string, string>[]) => {
@@ -70,14 +66,8 @@ export function CreatePage() {
       <VisualsPanel
         columns={cleanedCols}
         hasData={hasData}
-        builderMode={builderMode}
-        onBuilderMode={setBuilderMode}
         uploads={uploads}
         onAddUploads={addUploads}
-        backdrop={backdrop}
-        onBackdrop={setBackdrop}
-        ratio={ratio}
-        onRatio={changeRatio}
         gridCols={dims.cols}
       />
     ) : (
@@ -120,8 +110,10 @@ export function CreatePage() {
       tab={tab}
       onTab={toggleTab}
       panelOpen={panelOpen}
+      onPanelToggle={() => setPanelOpen((v) => !v)}
       panel={panel}
       agentPanel={<AgentPanel goal={agentGoal} onGoal={setAgentGoal} />}
+      toolbar={<QuickAddBar />}
     >
       <div className="relative flex min-h-0 flex-1 flex-col px-1 pt-1">
           {selectedId === null && order.length > 0 && (
@@ -192,7 +184,6 @@ export function CreatePage() {
             cleanedCount={cleaned.length}
             usedCells={usedCells}
             capacity={capacity}
-            onBackToData={() => setPhase("transform")}
           />
         </div>
     </CreateLayout>

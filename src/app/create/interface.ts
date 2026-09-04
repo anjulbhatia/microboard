@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { Widget } from "@/types/board";
-import type { StageBackdrop, StageRatio } from "@/components/canvas/Stage";
+import type { StageRatio } from "@/components/canvas/Stage";
 
 export type DockTab = "visualize" | "transform";
 
@@ -16,6 +16,8 @@ export interface CreateLayoutProps {
   tab: DockTab;
   onTab: (tab: DockTab) => void;
   panelOpen: boolean;
+  onPanelToggle: () => void;
+  toolbar?: ReactNode;
   panel: ReactNode;
   agentPanel: ReactNode;
   children: ReactNode;
@@ -45,14 +47,8 @@ export interface WidgetBuilderProps {
 export interface VisualsPanelProps {
   columns: string[];
   hasData: boolean;
-  builderMode: "widget" | "chart";
-  onBuilderMode: (mode: "widget" | "chart") => void;
   uploads: Upload[];
   onAddUploads: (files: FileList | null) => void;
-  backdrop: StageBackdrop;
-  onBackdrop: (b: StageBackdrop) => void;
-  ratio: StageRatio;
-  onRatio: (r: StageRatio) => void;
   gridCols: number;
 }
 
@@ -72,7 +68,6 @@ export interface PageStripProps {
   cleanedCount: number;
   usedCells: number;
   capacity: number;
-  onBackToData: () => void;
 }
 
 export interface UploadPhaseProps {

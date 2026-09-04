@@ -1,30 +1,34 @@
-import { useRef, useState } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  BotIcon,
-  ChartColumnIcon,
-  CleanIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  Share01Icon,
 } from "@hugeicons/core-free-icons";
+import { useSession } from "@/lib/session";
+
+const ShareMenu = lazy(() =>
+  import("@/components/canvas/ShareMenu").then((m) => ({ default: m.ShareMenu }))
+);
 
 import type { CreateLayoutProps, DockTab } from "@/app/create/interface";
 
-const DOCK_ITEMS: { id: DockTab; label: string; icon: typeof ChartColumnIcon }[] = [
-  { id: "visualize", label: "Visualize", icon: ChartColumnIcon },
-  { id: "transform", label: "Transform", icon: CleanIcon },
+const TABS: { id: DockTab; label: string }[] = [
+  { id: "visualize", label: "Visualize" },
+  { id: "transform", label: "Transform" },
 ];
 
-export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, panel, agentPanel, children }: CreateLayoutProps) {
+export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, onPanelToggle, panel, agentPanel, toolbar, children }: CreateLayoutProps) {
   const nameRef = useRef<HTMLInputElement>(null);
   const [agentOpen, setAgentOpen] = useState(false);
-
-  const iconBtn =
-    "flex size-8 items-center justify-center rounded-lg border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground";
+  const [shareOpen, setShareOpen] = useState(false);
+  const { user, signOut } = useSession();
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
-      <header className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-border bg-card px-2 py-1.5">
+      <header className="flex shrink-0 flex-wrap items-baseline gap-x-2 gap-y-1 bg-card px-2 py-1.5">
         <Link
           to="/"
           aria-label="Microboard home"
@@ -41,7 +45,7 @@ export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, panel, age
             onFocus={(e) => e.target.select()}
             aria-label="Visualisation name"
             placeholder="Untitled Board"
-            className="w-full truncate rounded-md bg-transparent py-1 pr-12 pl-1.5 text-left text-sm font-normal focus-visible:bg-muted focus-visible:outline-none"
+            className="w-full truncate rounded-md bg-transparent py-1 pr-12 pl-1.5 text-left text-sm font-medium text-primary focus-visible:bg-muted focus-visible:outline-none"
           />
           <button
             type="button"
@@ -60,67 +64,98 @@ export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, panel, age
             onClick={() => setAgentOpen((v) => !v)}
             aria-label="Toggle agent panel"
             title="Agent inputs"
-            className={`${iconBtn} ${agentOpen ? "border-primary text-foreground" : ""}`}
+            className={`rounded-lg border px-2.5 py-1.5 font-mono text-xs font-semibold tracking-wider transition-colors hover:bg-muted hover:text-foreground ${
+              agentOpen ? "border-primary text-foreground" : "text-muted-foreground"
+            }`}
           >
-            <HugeiconsIcon icon={BotIcon} size={16} strokeWidth={1.5} />
+            WEBMCP
           </button>
-          <button type="button" className="rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-muted">
-            Export
-          </button>
-          <button type="button" className="rounded-lg bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90">
-            Share
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShareOpen((v) => !v)}
+              aria-label="Share"
+              aria-expanded={shareOpen}
+              className="flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              <HugeiconsIcon icon={Share01Icon} size={16} strokeWidth={1.5} />
+              Share
+            </button>
+            {shareOpen && (
+              <div className="absolute top-full right-0 z-30 mt-2">
+                <Suspense
+                  fallback={
+                    <div className="rounded-xl border bg-popover px-4 py-3 font-mono text-xs text-muted-foreground shadow-xl">
+                      Loading…
+                    </div>
+                  }
+                >
+                  <ShareMenu onClose={() => setShareOpen(false)} />
+                </Suspense>
+              </div>
+            )}
+          </div>
+          {user ? (
+            <button
+              type="button"
+              onClick={signOut}
+              title={`${user.name} — sign out`}
+              aria-label="Profile — sign out"
+              className="flex size-8 items-center justify-center rounded-full text-xs font-bold text-white"
+              style={{ backgroundColor: `hsl(${user.hue} 55% 42%)` }}
+            >
+              {user.name.charAt(0).toUpperCase()}
+            </button>
+          ) : null}
         </div>
       </header>
 
-      <div className="flex min-h-0 flex-1 gap-2 p-2">
-        <div className="relative flex min-w-0 flex-1 flex-col">
-          <nav
-            aria-label="Tools"
-            className="absolute top-2 left-2 z-20 flex flex-col items-center gap-1 rounded-2xl border bg-card p-1.5 shadow-md"
-          >
-            {DOCK_ITEMS.map((item) => {
-              const active = tab === item.id && panelOpen;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => onTab(item.id)}
-                  aria-label={item.label}
-                  aria-expanded={active}
-                  className={`group relative flex size-10 items-center justify-center rounded-xl transition-colors ${
-                    active ? "text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  {active && (
-                    <motion.span
-                      layoutId="dock-active"
-                      className="absolute inset-0 rounded-xl bg-primary shadow"
-                      transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                    />
-                  )}
-                  <HugeiconsIcon icon={item.icon} size={19} strokeWidth={1.5} className="relative" />
-                  <span className="pointer-events-none absolute left-full ml-3 hidden rounded-md border bg-popover px-2 py-1 text-xs whitespace-nowrap text-popover-foreground shadow group-hover:block">
-                    {item.label}
-                  </span>
-                </button>
-              );
-            })}
-          </nav>
+      {toolbar}
 
+      <div className="flex min-h-0 flex-1 gap-2 p-2">
+        <div className="relative shrink-0">
           <motion.aside
             initial={false}
             animate={panelOpen ? { width: 288, opacity: 1 } : { width: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 320, damping: 34 }}
-            className="absolute top-2 bottom-2 left-16 z-20 overflow-hidden"
+            className="h-full overflow-hidden"
+            aria-label="Tool sidebar"
           >
-            <div className="slim-scroll flex h-full w-72 flex-col gap-4 overflow-y-auto rounded-xl border bg-card p-3 shadow-md">
+            <div className="slim-scroll flex h-full w-72 flex-col gap-3 overflow-y-auto rounded-xl border bg-card p-3 shadow-md">
+              <div className="grid shrink-0 grid-cols-2 gap-1 rounded-lg bg-muted p-1" role="tablist" aria-label="Tool pane">
+                {TABS.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={tab === t.id}
+                    onClick={() => onTab(t.id)}
+                    className={`rounded-md px-2 py-1.5 text-xs font-medium transition-all ${
+                      tab === t.id
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
               {panel}
             </div>
           </motion.aside>
-
-          {children}
+          <button
+            type="button"
+            onClick={onPanelToggle}
+            aria-label={panelOpen ? "Collapse sidebar" : "Expand sidebar"}
+            aria-expanded={panelOpen}
+            title={panelOpen ? "Collapse sidebar" : "Expand sidebar"}
+            className="absolute top-16 -right-3 z-10 flex size-6 items-center justify-center rounded-full border bg-card text-muted-foreground shadow-md transition-colors hover:text-foreground"
+          >
+            <HugeiconsIcon icon={panelOpen ? ChevronLeftIcon : ChevronRightIcon} size={14} strokeWidth={2} />
+          </button>
         </div>
+
+        <div className="flex min-w-0 flex-1 flex-col">{children}</div>
 
         {agentOpen && (
           <aside className="slim-scroll flex w-64 shrink-0 flex-col gap-3 overflow-y-auto rounded-xl border bg-card p-3 shadow-sm">

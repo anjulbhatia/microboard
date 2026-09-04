@@ -109,7 +109,11 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
         label: "Shape",
         type: "select",
         options: [
-          { value: "rectangle", label: "Rectangle" },
+          { value: "square", label: "Square" },
+          { value: "circle", label: "Circle" },
+          { value: "rounded rect", label: "Rounded rect" },
+          { value: "rect", label: "Rect" },
+          { value: "arrow", label: "Arrow" },
           { value: "ellipse", label: "Ellipse" },
           { value: "line", label: "Line" },
         ],
