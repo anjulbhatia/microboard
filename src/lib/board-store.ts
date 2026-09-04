@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Board, DataSource, StepType, Widget, WidgetSize, WidgetType } from "@/types/board";
+import type { Board, DataSource, StepType, Widget, WidgetType } from "@/types/board";
 import { inferColumns } from "@/lib/data-utils";
 
 function newBoard(): Board {
@@ -31,16 +31,17 @@ interface BoardStore {
   clearSteps: () => void;
   addWidget: (widget: Omit<Widget, "id">) => void;
   updateWidget: (id: string, patch: Partial<Omit<Widget, "id">>) => void;
+  duplicateWidget: (id: string) => void;
   moveWidget: (dragId: string, targetId: string) => void;
   removeWidget: (id: string) => void;
   reset: () => void;
 }
 
-export const WIDGET_SIZES: { value: WidgetSize; label: string }[] = [
-  { value: "1x1", label: "1×1" },
-  { value: "1x2", label: "1×2" },
-  { value: "2x2", label: "2×2" },
-  { value: "full", label: "Full" },
+export const WIDGET_PRESETS: { label: string; w: number; h: number }[] = [
+  { label: "S · 4×3", w: 4, h: 3 },
+  { label: "M · 8×5", w: 8, h: 5 },
+  { label: "L · 12×7", w: 12, h: 7 },
+  { label: "Full · 16×8", w: 16, h: 8 },
 ];
 
 export const WIDGET_TYPES: { value: WidgetType; label: string }[] = [
@@ -111,6 +112,20 @@ export const useBoard = create<BoardStore>()((set) => ({
             ...s.board.widgets,
             [id]: { ...current, ...patch, props: { ...current.props, ...patch.props } },
           },
+        }),
+      };
+    }),
+
+  duplicateWidget: (id) =>
+    set((s) => {
+      const current = s.board.widgets[id];
+      if (!current) return s;
+      const copyId = crypto.randomUUID();
+      return {
+        board: touch({
+          ...s.board,
+          widgets: { ...s.board.widgets, [copyId]: { ...current, id: copyId, title: `${current.title} copy` } },
+          order: [...s.board.order, copyId],
         }),
       };
     }),

@@ -30,7 +30,11 @@ export type WidgetType =
 /** Chart engine tag — micro/mono engines plug in here later. */
 export type ChartEngine = "micro" | "mono" | "dither" | "none";
 
-export type WidgetSize = "1x1" | "1x2" | "2x2" | "full";
+/** Grid unit = 1 cell of the board. 1x1 fits an icon, 16x16 is a full page. */
+export interface GridSpan {
+  w: number;
+  h: number;
+}
 
 export interface Widget {
   id: string;
@@ -38,9 +42,19 @@ export interface Widget {
   title: string;
   x?: string;
   y?: string;
-  size: WidgetSize;
+  /** Size in grid units. */
+  w: number;
+  h: number;
   props?: Record<string, string | number>;
 }
+
+/** Board grid dimensions per aspect ratio. */
+export const BOARD_GRID = {
+  "16:10": { cols: 16, rows: 10 },
+  "3:4": { cols: 16, rows: 21 },
+} as const;
+
+export type BoardRatio = keyof typeof BOARD_GRID;
 
 export interface ColumnMeta {
   name: string;

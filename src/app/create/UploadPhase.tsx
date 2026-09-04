@@ -54,7 +54,7 @@ export function UploadPhase({ onLoad }: { onLoad: (source: BoardSource, records:
     "rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50";
 
   return (
-    <div className="flex h-full min-h-0 items-center justify-center overflow-y-auto p-4 md:p-8">
+    <div className="slim-scroll flex h-full min-h-0 items-center justify-center overflow-y-auto p-4 md:p-8">
       <div className="w-full max-w-3xl space-y-4">
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight">Add your data</h1>

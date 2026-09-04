@@ -4,7 +4,9 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Cancel01Icon,
   ChartColumnIcon,
+  Copy01Icon,
   Delete02Icon,
+  Drag01Icon,
   PlusSignIcon,
   Settings01Icon,
   SparklesIcon,
@@ -13,12 +15,12 @@ import {
 import { CreateLayout, type DockTab } from "@/app/create/CreateLayout";
 import { UploadPhase } from "@/app/create/UploadPhase";
 import { DataLandedModal } from "@/app/create/DataLandedModal";
-import { Stage } from "@/app/create/Stage";
-import { useBoard, WIDGET_SIZES, WIDGET_TYPES } from "@/lib/board-store";
+import { Stage, useStageUnit } from "@/app/create/Stage";
+import { useBoard, WIDGET_PRESETS, WIDGET_TYPES } from "@/lib/board-store";
 import { applySteps, downloadJSON, inferColumns } from "@/lib/data-utils";
 import { PropsEditor } from "@/widgets/PropsEditor";
-import { WIDGET_REGISTRY } from "@/widgets/registry";
-import type { ColumnMeta, StepType, Widget, WidgetSize, WidgetType } from "@/types/board";
+import { clampSpan, WIDGET_REGISTRY } from "@/widgets/registry";
+import { BOARD_GRID, type ColumnMeta, type StepType, type Widget, type WidgetType } from "@/types/board";
 
 function Btn({
   children,
@@ -60,33 +62,82 @@ const STEP_TYPES: { value: StepType; label: string; hint: string }[] = [
 
 const FILTER_OPS = ["==", "!=", "contains", ">", "<", ">=", "<="];
 
-const SIZE_SPAN: Record<WidgetSize, string> = {
-  "1x1": "col-span-12 sm:col-span-6 xl:col-span-4",
-  "1x2": "col-span-12 xl:col-span-8",
-  "2x2": "col-span-12 xl:col-span-6",
-  full: "col-span-12",
-};
-
 const selectCls =
   "w-full rounded-md border bg-background px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
 const inputCls =
   "w-full rounded-md border bg-background px-2 py-1.5 font-mono text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
 
+type ResizeDir = "e" | "s" | "se";
+
 function WidgetCard({
   widget,
+  selected,
+  onSelect,
   onRemove,
+  onDuplicate,
   onDragStart,
   onDrop,
 }: {
   widget: Widget;
+  selected: boolean;
+  onSelect: () => void;
   onRemove: () => void;
+  onDuplicate: () => void;
   onDragStart: (id: string) => void;
   onDrop: (id: string) => void;
 }) {
   const updateWidget = useBoard((s) => s.updateWidget);
+  const unit = useStageUnit();
   const [editing, setEditing] = useState(false);
+  const [preview, setPreview] = useState<{ w: number; h: number } | null>(null);
+  const dragRef = useRef<{ dir: ResizeDir; startX: number; startY: number; w: number; h: number } | null>(null);
   const meta = WIDGET_REGISTRY[widget.type];
   const Body = meta.render;
+
+  const w = preview?.w ?? widget.w;
+  const h = preview?.h ?? widget.h;
+  const height = meta.resize.fixedH ? "auto" : meta.resize.square ? w * unit : h * unit;
+
+  const beginResize = (dir: ResizeDir) => (e: React.PointerEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    dragRef.current = { dir, startX: e.clientX, startY: e.clientY, w: widget.w, h: widget.h };
+    const move = (ev: PointerEvent) => {
+      const s = dragRef.current;
+      if (!s) return;
+      const du = (ev.clientX - s.startX) / unit;
+      const dv = (ev.clientY - s.startY) / unit;
+      let next = { w: s.w, h: s.h };
+      if (meta.resize.square) {
+        const d = Math.max(du, dv);
+        next = { w: s.w + d, h: s.w + d };
+      } else if (meta.resize.fixedH) {
+        next = { w: s.w + du, h: s.h };
+      } else if (s.dir === "e") {
+        next = { w: s.w + du, h: s.h };
+      } else if (s.dir === "s") {
+        next = { w: s.w, h: s.h + dv };
+      } else {
+        next = { w: s.w + du, h: s.h + dv };
+      }
+      setPreview(clampSpan(widget.type, next));
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      setPreview((p) => {
+        if (p && (p.w !== widget.w || p.h !== widget.h)) updateWidget(widget.id, { w: p.w, h: p.h });
+        return null;
+      });
+      dragRef.current = null;
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+
+  const handleCls = "absolute z-10 rounded-full border-2 border-background bg-primary shadow touch-none";
+
   return (
     <motion.div
       layout
@@ -94,53 +145,98 @@ function WidgetCard({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ type: "spring", stiffness: 320, damping: 28 }}
-      className={SIZE_SPAN[widget.size]}
+      style={{ gridColumn: `span ${w} / span ${w}` }}
+      className="relative"
     >
-    <div
-      draggable
-      onDragStart={(e) => {
-        e.dataTransfer.setData("text/plain", widget.id);
-        onDragStart(widget.id);
-      }}
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => {
-        e.preventDefault();
-        onDrop(widget.id);
-      }}
-      className="cursor-grab rounded-xl border bg-card p-3 active:cursor-grabbing"
-    >
-      <div className="mb-2 flex items-center justify-between">
-        <h3 className="truncate font-medium">{widget.title}</h3>
-        <div className="flex shrink-0 items-center gap-1">
+      {selected && (
+        <div className="absolute -top-11 left-1/2 z-20 flex -translate-x-1/2 items-center gap-0.5 rounded-lg border bg-popover p-1 shadow-xl ring-1 ring-border">
+          <span
+            draggable
+            onDragStart={(e) => {
+              e.dataTransfer.setData("text/plain", widget.id);
+              onDragStart(widget.id);
+            }}
+            title="Drag to move"
+            className="cursor-grab rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground active:cursor-grabbing"
+          >
+            <HugeiconsIcon icon={Drag01Icon} size={15} strokeWidth={1.5} />
+          </span>
           {meta.fields.length > 0 && (
             <button
               type="button"
               onClick={() => setEditing((v) => !v)}
+              title="Settings"
               aria-label="Widget settings"
-              className={`rounded-md p-1 transition-colors hover:bg-muted hover:text-foreground ${
+              className={`rounded-md p-1.5 transition-colors hover:bg-muted hover:text-foreground ${
                 editing ? "text-foreground" : "text-muted-foreground"
               }`}
             >
-              <HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={1.5} />
+              <HugeiconsIcon icon={Settings01Icon} size={15} strokeWidth={1.5} />
             </button>
           )}
           <button
             type="button"
-            onClick={onRemove}
-            aria-label="Remove widget"
-            className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            onClick={onDuplicate}
+            title="Duplicate"
+            aria-label="Duplicate widget"
+            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            <HugeiconsIcon icon={Cancel01Icon} size={16} strokeWidth={1.5} />
+            <HugeiconsIcon icon={Copy01Icon} size={15} strokeWidth={1.5} />
+          </button>
+          <button
+            type="button"
+            onClick={onRemove}
+            title="Remove"
+            aria-label="Remove widget"
+            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <HugeiconsIcon icon={Cancel01Icon} size={15} strokeWidth={1.5} />
           </button>
         </div>
-      </div>
-      <Body widget={widget} />
-      {editing && (
-        <div className="mt-2">
-          <PropsEditor widget={widget} onChange={(props) => updateWidget(widget.id, { props })} />
-        </div>
       )}
-    </div>
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect();
+        }}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          onDrop(widget.id);
+        }}
+        style={{ height }}
+        className={`overflow-hidden rounded-md transition-shadow ${
+          selected ? "shadow-lg ring-1 ring-primary" : "hover:shadow-sm"
+        }`}
+      >
+        <Body widget={widget} />
+        {editing && (
+          <div className="mt-2 rounded-md border bg-card p-2">
+            <PropsEditor widget={widget} onChange={(props) => updateWidget(widget.id, { props })} />
+          </div>
+        )}
+      </div>
+      {selected && !meta.resize.fixedH && (
+        <span
+          onPointerDown={beginResize("s")}
+          title="Resize height"
+          className={`${handleCls} bottom-0 left-1/2 h-2.5 w-8 -translate-x-1/2 translate-y-1/2 cursor-ns-resize`}
+        />
+      )}
+      {selected && (
+        <span
+          onPointerDown={beginResize("e")}
+          title={meta.resize.square ? "Resize (square)" : "Resize width"}
+          className={`${handleCls} top-1/2 right-0 h-8 w-2.5 translate-x-1/2 -translate-y-1/2 cursor-ew-resize`}
+        />
+      )}
+      {selected && !meta.resize.fixedH && (
+        <span
+          onPointerDown={beginResize("se")}
+          title="Resize both"
+          className={`${handleCls} right-0 bottom-0 size-3.5 translate-x-1/3 translate-y-1/3 cursor-nwse-resize`}
+        />
+      )}
     </motion.div>
   );
 }
@@ -297,24 +393,25 @@ function WidgetBuilder({ columns, hasData, chartOnly }: { columns: string[]; has
   const [wType, setWType] = useState<WidgetType>(kinds[0]?.value ?? "textbox");
   const [wX, setWX] = useState("");
   const [wY, setWY] = useState("");
-  const [wSize, setWSize] = useState<WidgetSize>("1x1");
+  const [preset, setPreset] = useState(1);
   const meta = WIDGET_REGISTRY[wType] ?? WIDGET_REGISTRY.textbox;
 
   const pickType = (t: WidgetType) => {
     setWType(t);
-    setWSize(WIDGET_REGISTRY[t].defaultSize);
   };
 
   const submit = () => {
     if (meta.needsData && !hasData) return;
     const x = wX || columns[0] || "";
     const y = wY || columns[0] || "";
+    const span = clampSpan(wType, preset < 0 ? meta.defaultSpan : WIDGET_PRESETS[preset]);
     addWidget({
       type: wType,
       title: meta.needsData ? `${meta.label} · ${y || x}` : meta.defaults.title,
       x: meta.needsData ? x : undefined,
       y: meta.needsData ? y : undefined,
-      size: wSize,
+      w: span.w,
+      h: span.h,
       props: { ...meta.defaults.props },
     });
   };
@@ -342,9 +439,10 @@ function WidgetBuilder({ columns, hasData, chartOnly }: { columns: string[]; has
           </select>
         </div>
       )}
-      <select value={wSize} onChange={(e) => setWSize(e.target.value as WidgetSize)} className={selectCls} aria-label="Widget size">
-        {WIDGET_SIZES.map((s) => (
-          <option key={s.value} value={s.value}>{s.label}</option>
+      <select value={preset} onChange={(e) => setPreset(Number(e.target.value))} className={selectCls} aria-label="Widget size">
+        <option value={-1}>Default ({meta.defaultSpan.w}×{meta.defaultSpan.h})</option>
+        {WIDGET_PRESETS.map((s, i) => (
+          <option key={s.label} value={i}>{s.label}</option>
         ))}
       </select>
       <Btn primary onClick={submit} className="w-full">
@@ -365,7 +463,7 @@ interface Upload {
 
 export function CreatePage() {
   const board = useBoard((s) => s.board);
-  const { loadData, addStep, removeStep, clearSteps, addWidget, removeWidget, moveWidget, setTitle, reset } = useBoard();
+  const { loadData, addStep, removeStep, clearSteps, addWidget, removeWidget, duplicateWidget, moveWidget, setTitle, reset } = useBoard();
   const [tab, setTab] = useState<DockTab>("visualize");
   const [panelOpen, setPanelOpen] = useState(false);
 
@@ -384,6 +482,7 @@ export function CreatePage() {
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [landed, setLanded] = useState<{ columns: ColumnMeta[]; rows: number } | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const imgRef = useRef<HTMLInputElement>(null);
 
   const cleaned = useMemo(() => applySteps(board.data.raw, board.steps), [board.data.raw, board.steps]);
@@ -414,7 +513,7 @@ export function CreatePage() {
     }
   };
 
-  const sectionTitle = "font-mono text-[11px] uppercase tracking-wider text-muted-foreground";
+  const sectionTitle = "border-l-2 border-primary pl-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground";
 
   const panelContent = tab === "visualize" ? (
     <div className="space-y-4">
@@ -498,7 +597,7 @@ export function CreatePage() {
                 type="button"
                 title={`Place ${u.name}`}
                 onClick={() =>
-                  addWidget({ type: "image", title: u.name, size: "1x2", props: { src: u.url, fit: "cover" } })
+                  addWidget({ type: "image", title: u.name, w: 8, h: 5, props: { src: u.url, fit: "cover" } })
                 }
                 className="group relative overflow-hidden rounded-md border"
               >
@@ -642,6 +741,12 @@ export function CreatePage() {
   );
 
   const showCanvas = hasData || board.order.length > 0;
+  const dims = BOARD_GRID[ratio];
+  const usedCells = board.order.reduce((acc, id) => {
+    const w = board.widgets[id];
+    return acc + (w ? w.w * w.h : 0);
+  }, 0);
+  const capacity = dims.cols * dims.rows;
 
   return (
     <CreateLayout
@@ -657,58 +762,94 @@ export function CreatePage() {
       {!showCanvas ? (
         <UploadPhase onLoad={handleLoad} />
       ) : (
-        <Stage
-          ratio={ratio}
-          backdrop={backdrop}
+        <div className="relative flex min-h-0 flex-1 flex-col">
+          <Stage
+            ratio={ratio}
+            backdrop={backdrop}
           toolbar={
-            <div className="flex items-center gap-2 px-1">
-              <div className="flex gap-1">
-                {(["16:10", "3:4"] as const).map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => setRatio(r)}
-                    className={`rounded-md border px-2 py-1 font-mono text-[11px] transition-colors ${
-                      ratio === r ? "border-primary bg-primary/10 text-foreground" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {r}
-                  </button>
-                ))}
+            <div className="flex items-center gap-2 rounded-lg border bg-card px-2 py-1 shadow-sm">
+                <div className="flex gap-1">
+                  {(["16:10", "3:4"] as const).map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setRatio(r)}
+                      className={`rounded-md border px-2 py-1 font-mono text-[11px] transition-colors ${
+                        ratio === r ? "border-primary bg-primary/10 text-foreground" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+                <span className="font-mono text-[11px] text-muted-foreground">
+                  {cleaned.length} rows · {board.order.length} widgets · {usedCells}/{capacity} cells
+                </span>
               </div>
-              <span className="font-mono text-[11px] text-muted-foreground">
-                {cleaned.length} rows · {board.order.length} widgets · drag cards to reorder
+            }
+          >
+            {board.order.length === 0 ? (
+              <div
+                onClick={() => setSelectedId(null)}
+                className="flex h-full flex-col items-center justify-center gap-2 text-center"
+              >
+                <p className="text-lg font-semibold">Canvas is empty</p>
+                <p className="max-w-sm text-sm text-muted-foreground">
+                  Add widgets or charts from the Visualize pane.
+                </p>
+              </div>
+            ) : (
+              <motion.div
+                layout
+                onClick={() => setSelectedId(null)}
+                style={{ gridTemplateColumns: "repeat(16, minmax(0, 1fr))" }}
+                className="grid gap-3"
+              >
+                <AnimatePresence initial={false}>
+                  {board.order.map((id) => {
+                    const w = board.widgets[id];
+                    if (!w) return null;
+                    return (
+                      <WidgetCard
+                        key={id}
+                        widget={w}
+                        selected={selectedId === id}
+                        onSelect={() => setSelectedId(id)}
+                        onRemove={() => {
+                          removeWidget(id);
+                          setSelectedId(null);
+                        }}
+                        onDuplicate={() => duplicateWidget(id)}
+                        onDragStart={setDragId}
+                        onDrop={dropWidget}
+                      />
+                    );
+                  })}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </Stage>
+          {selectedId === null && board.order.length > 0 && (
+            <div className="absolute top-12 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-lg border bg-popover px-2 py-1.5 shadow-xl ring-1 ring-border">
+              <span className="px-1 font-mono text-[11px] text-muted-foreground">Board · {ratio}</span>
+              {(["dotted", "grid", "plain"] as const).map((b) => (
+                <button
+                  key={b}
+                  type="button"
+                  onClick={() => setBackdrop(b)}
+                  className={`rounded-md px-2 py-1 text-[11px] capitalize transition-colors ${
+                    backdrop === b ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  {b}
+                </button>
+              ))}
+              <span className="px-1 font-mono text-[11px] text-muted-foreground">
+                {usedCells}/{capacity}
               </span>
             </div>
-          }
-        >
-          {board.order.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
-              <p className="text-lg font-semibold">Canvas is empty</p>
-              <p className="max-w-sm text-sm text-muted-foreground">
-                Add widgets or charts from the Visualize pane.
-              </p>
-            </div>
-          ) : (
-            <motion.div layout className="grid grid-cols-12 gap-3">
-              <AnimatePresence initial={false}>
-                {board.order.map((id) => {
-                  const w = board.widgets[id];
-                  if (!w) return null;
-                  return (
-                    <WidgetCard
-                      key={id}
-                      widget={w}
-                      onRemove={() => removeWidget(id)}
-                      onDragStart={setDragId}
-                      onDrop={dropWidget}
-                    />
-                  );
-                })}
-              </AnimatePresence>
-            </motion.div>
           )}
-        </Stage>
+        </div>
       )}
 
       {landed && (

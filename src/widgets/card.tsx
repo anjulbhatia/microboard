@@ -1,3 +1,4 @@
+import { Markdown } from "@/widgets/Markdown";
 import type { Widget } from "@/types/board";
 
 export function CardWidget({ widget }: { widget: Widget }) {
@@ -8,7 +9,7 @@ export function CardWidget({ widget }: { widget: Widget }) {
     <div className="space-y-2">
       {stat && <p className="text-3xl font-bold tracking-tight">{stat}</p>}
       <h4 className="font-semibold">{title}</h4>
-      <p className="text-sm text-muted-foreground">{body}</p>
+      <Markdown text={body} className="text-muted-foreground" />
     </div>
   );
 }

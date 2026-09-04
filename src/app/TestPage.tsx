@@ -7,7 +7,8 @@ const fake = (type: WidgetType, props: Record<string, string | number> = {}, tit
   id: `test-${n++}`,
   type,
   title: title || WIDGET_REGISTRY[type].label,
-  size: "1x1",
+  w: WIDGET_REGISTRY[type].defaultSpan.w,
+  h: WIDGET_REGISTRY[type].defaultSpan.h,
   props: { ...WIDGET_REGISTRY[type].defaults.props, ...props },
 });
 

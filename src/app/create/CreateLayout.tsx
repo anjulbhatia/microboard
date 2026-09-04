@@ -50,7 +50,7 @@ function SaveStatus({ version }: { version: number }) {
         </div>
       ) : (
         <p className="inline-flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
-          <HugeiconsIcon icon={Tick02Icon} size={13} strokeWidth={2} className="text-green-500" />
+          <HugeiconsIcon icon={Tick02Icon} size={13} strokeWidth={2} className="text-primary" />
           Saved
         </p>
       )}
@@ -95,7 +95,7 @@ export function CreateLayout({ title, onTitle, version, tab, onTab, panelOpen, p
 
   return (
     <div ref={shellRef} className="flex h-full min-h-0 flex-col bg-background">
-      <header className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b px-2 py-1.5">
+      <header className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-border bg-card px-2 py-1.5">
         <Link
           to="/"
           aria-label="Microboard home"
@@ -161,7 +161,7 @@ export function CreateLayout({ title, onTitle, version, tab, onTab, panelOpen, p
       <div className="flex min-h-0 flex-1 gap-2 p-2">
         <nav
           aria-label="Tools"
-          className="flex shrink-0 flex-col items-center gap-1 self-start rounded-2xl border bg-background/70 p-1.5 shadow-sm backdrop-blur-xl"
+          className="flex shrink-0 flex-col items-center gap-1 self-start rounded-2xl border bg-card p-1.5 shadow-md"
         >
           {DOCK_ITEMS.map((item) => {
             const active = tab === item.id && panelOpen;
@@ -198,7 +198,7 @@ export function CreateLayout({ title, onTitle, version, tab, onTab, panelOpen, p
           transition={{ type: "spring", stiffness: 320, damping: 34 }}
           className="hidden shrink-0 overflow-hidden md:block"
         >
-          <div className="flex h-full w-72 flex-col gap-4 overflow-y-auto rounded-xl border bg-card/50 p-3">
+          <div className="slim-scroll flex h-full w-72 flex-col gap-4 overflow-y-auto rounded-xl border bg-card p-3 shadow-sm">
             {panel}
           </div>
         </motion.aside>
@@ -206,7 +206,7 @@ export function CreateLayout({ title, onTitle, version, tab, onTab, panelOpen, p
         <div className="flex min-w-0 flex-1 flex-col">{children}</div>
 
         {agentOpen && (
-          <aside className="flex w-64 shrink-0 flex-col gap-3 overflow-y-auto rounded-xl border bg-card/50 p-3">
+          <aside className="slim-scroll flex w-64 shrink-0 flex-col gap-3 overflow-y-auto rounded-xl border bg-card p-3 shadow-sm">
             {agentPanel}
           </aside>
         )}
