@@ -7,8 +7,6 @@ import {
   ChartColumnIcon,
   CleanIcon,
   FullScreenIcon,
-  PenTool02Icon,
-  Tick02Icon,
   UserIcon,
 } from "@hugeicons/core-free-icons";
 
@@ -19,49 +17,9 @@ const DOCK_ITEMS: { id: DockTab; label: string; icon: typeof ChartColumnIcon }[]
   { id: "transform", label: "Transform", icon: CleanIcon },
 ];
 
-function SaveStatus({ version }: { version: number }) {
-  const [saving, setSaving] = useState(false);
-  const first = useRef(true);
-
-  useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
-    }
-    setSaving(true);
-    const t = setTimeout(() => setSaving(false), 1000);
-    return () => clearTimeout(t);
-  }, [version]);
-
-  return (
-    <div className="hidden w-28 shrink-0 sm:block" aria-live="polite">
-      {saving ? (
-        <div className="space-y-1">
-          <p className="font-mono text-[11px] text-muted-foreground">Saving…</p>
-          <div className="h-1 overflow-hidden rounded-full bg-muted">
-            <motion.div
-              key={version}
-              className="h-full rounded-full bg-primary"
-              initial={{ width: "4%" }}
-              animate={{ width: "100%" }}
-              transition={{ duration: 0.9, ease: "easeOut" }}
-            />
-          </div>
-        </div>
-      ) : (
-        <p className="inline-flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
-          <HugeiconsIcon icon={Tick02Icon} size={13} strokeWidth={2} className="text-primary" />
-          Saved
-        </p>
-      )}
-    </div>
-  );
-}
-
 interface CreateLayoutProps {
   title: string;
   onTitle: (title: string) => void;
-  version: number;
   tab: DockTab;
   onTab: (tab: DockTab) => void;
   panelOpen: boolean;
@@ -70,7 +28,7 @@ interface CreateLayoutProps {
   children: ReactNode;
 }
 
-export function CreateLayout({ title, onTitle, version, tab, onTab, panelOpen, panel, agentPanel, children }: CreateLayoutProps) {
+export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, panel, agentPanel, children }: CreateLayoutProps) {
   const shellRef = useRef<HTMLDivElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const [agentOpen, setAgentOpen] = useState(false);
@@ -104,27 +62,25 @@ export function CreateLayout({ title, onTitle, version, tab, onTab, panelOpen, p
           MICROBOARD
         </Link>
 
-        <div className="flex min-w-0 flex-1 items-center justify-center gap-1">
+        <div className="group relative ml-2 w-44 shrink-0">
           <input
             ref={nameRef}
             value={title}
             onChange={(e) => onTitle(e.target.value)}
             aria-label="Visualisation name"
             placeholder="Untitled visualisation"
-            className="w-full max-w-md truncate rounded-md bg-transparent px-2 py-1 text-center text-sm font-semibold focus-visible:bg-muted focus-visible:outline-none"
+            className="w-full truncate rounded-md bg-transparent py-1 pr-12 pl-1.5 text-left text-sm font-semibold focus-visible:bg-muted focus-visible:outline-none"
           />
           <button
             type="button"
             onClick={() => nameRef.current?.focus()}
-            aria-label="Rename visualisation"
-            title="Rename"
-            className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="absolute top-1/2 right-1.5 -translate-y-1/2 text-xs font-light tracking-wide text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 group-focus-within:opacity-100"
           >
-            <HugeiconsIcon icon={PenTool02Icon} size={14} strokeWidth={1.5} />
+            rename
           </button>
         </div>
 
-        <SaveStatus version={version} />
+        <div className="min-w-0 flex-1" />
 
         <div className="flex shrink-0 items-center gap-1.5">
           <button type="button" className="rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-muted">
@@ -159,51 +115,53 @@ export function CreateLayout({ title, onTitle, version, tab, onTab, panelOpen, p
       </header>
 
       <div className="flex min-h-0 flex-1 gap-2 p-2">
-        <nav
-          aria-label="Tools"
-          className="flex shrink-0 flex-col items-center gap-1 self-start rounded-2xl border bg-card p-1.5 shadow-md"
-        >
-          {DOCK_ITEMS.map((item) => {
-            const active = tab === item.id && panelOpen;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onTab(item.id)}
-                aria-label={item.label}
-                aria-expanded={active}
-                className={`group relative flex size-10 items-center justify-center rounded-xl transition-colors ${
-                  active ? "text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                {active && (
-                  <motion.span
-                    layoutId="dock-active"
-                    className="absolute inset-0 rounded-xl bg-primary shadow"
-                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                  />
-                )}
-                <HugeiconsIcon icon={item.icon} size={19} strokeWidth={1.5} className="relative" />
-                <span className="pointer-events-none absolute left-full ml-3 hidden rounded-md border bg-popover px-2 py-1 text-xs whitespace-nowrap text-popover-foreground shadow group-hover:block">
-                  {item.label}
-                </span>
-              </button>
-            );
-          })}
-        </nav>
+        <div className="relative flex min-w-0 flex-1 flex-col">
+          <nav
+            aria-label="Tools"
+            className="absolute top-2 left-2 z-20 flex flex-col items-center gap-1 rounded-2xl border bg-card p-1.5 shadow-md"
+          >
+            {DOCK_ITEMS.map((item) => {
+              const active = tab === item.id && panelOpen;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onTab(item.id)}
+                  aria-label={item.label}
+                  aria-expanded={active}
+                  className={`group relative flex size-10 items-center justify-center rounded-xl transition-colors ${
+                    active ? "text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="dock-active"
+                      className="absolute inset-0 rounded-xl bg-primary shadow"
+                      transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                    />
+                  )}
+                  <HugeiconsIcon icon={item.icon} size={19} strokeWidth={1.5} className="relative" />
+                  <span className="pointer-events-none absolute left-full ml-3 hidden rounded-md border bg-popover px-2 py-1 text-xs whitespace-nowrap text-popover-foreground shadow group-hover:block">
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
 
-        <motion.aside
-          initial={false}
-          animate={panelOpen ? { width: 288, opacity: 1 } : { width: 0, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 320, damping: 34 }}
-          className="hidden shrink-0 overflow-hidden md:block"
-        >
-          <div className="slim-scroll flex h-full w-72 flex-col gap-4 overflow-y-auto rounded-xl border bg-card p-3 shadow-sm">
-            {panel}
-          </div>
-        </motion.aside>
+          <motion.aside
+            initial={false}
+            animate={panelOpen ? { width: 288, opacity: 1 } : { width: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 320, damping: 34 }}
+            className="absolute top-2 bottom-2 left-16 z-20 overflow-hidden"
+          >
+            <div className="slim-scroll flex h-full w-72 flex-col gap-4 overflow-y-auto rounded-xl border bg-card p-3 shadow-md">
+              {panel}
+            </div>
+          </motion.aside>
 
-        <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+          {children}
+        </div>
 
         {agentOpen && (
           <aside className="slim-scroll flex w-64 shrink-0 flex-col gap-3 overflow-y-auto rounded-xl border bg-card p-3 shadow-sm">

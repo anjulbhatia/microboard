@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -531,6 +531,36 @@ export function CreatePage() {
 
   const sectionTitle = "border-l-2 border-primary pl-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground";
 
+const BRAILLE = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+
+function SaveStatus({ version }: { version: number }) {
+  const [saving, setSaving] = useState(false);
+  const [frame, setFrame] = useState(0);
+  const first = useRef(true);
+
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    setSaving(true);
+    const t = setTimeout(() => setSaving(false), 1000);
+    return () => clearTimeout(t);
+  }, [version]);
+
+  useEffect(() => {
+    if (!saving) return;
+    const i = setInterval(() => setFrame((f) => (f + 1) % BRAILLE.length), 80);
+    return () => clearInterval(i);
+  }, [saving]);
+
+  return (
+    <span className="font-mono text-[11px] text-muted-foreground" aria-live="polite">
+      {saving ? `${BRAILLE[frame]} Saving` : "● Saved"}
+    </span>
+  );
+}
+
   const panelContent = tab === "visualize" ? (
     <div className="space-y-4">
       <section className="space-y-2">
@@ -762,7 +792,6 @@ export function CreatePage() {
     <CreateLayout
       title={board.title}
       onTitle={setTitle}
-      version={board.version}
       tab={tab}
       onTab={toggleTab}
       panelOpen={panelOpen}
@@ -772,7 +801,27 @@ export function CreatePage() {
       {!showCanvas ? (
         <UploadPhase onLoad={handleLoad} />
       ) : (
-        <div className="relative flex min-h-0 flex-1 flex-col">
+        <div className="relative flex min-h-0 flex-1 flex-col px-1 pt-1">
+          {selectedId === null && order.length > 0 && (
+            <div className="flex shrink-0 items-center justify-center gap-1 pb-1.5">
+              <span className="px-1 font-mono text-[11px] text-muted-foreground">Board · {ratio}</span>
+              {(["dotted", "grid", "plain"] as const).map((b) => (
+                <button
+                  key={b}
+                  type="button"
+                  onClick={() => setBackdrop(b)}
+                  className={`rounded-md px-2 py-0.5 text-[11px] capitalize transition-colors ${
+                    backdrop === b ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  {b}
+                </button>
+              ))}
+              <span className="px-1 font-mono text-[11px] text-muted-foreground">
+                {usedCells}/{capacity}
+              </span>
+            </div>
+          )}
           <Stage ratio={ratio} backdrop={backdrop}>
             {order.length === 0 ? (
               <div
@@ -815,94 +864,79 @@ export function CreatePage() {
               </motion.div>
             )}
           </Stage>
-          <div className="flex shrink-0 items-center justify-center gap-1.5 pt-1">
-            {board.pages.map((p, i) => {
-              const active = p.id === board.activePageId;
-              const count = p.order.length;
-              return (
-                <div key={p.id} className="group relative">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActivePage(p.id);
-                      setSelectedId(null);
-                    }}
-                    aria-label={`Page ${i + 1}`}
-                    className={`flex size-8 items-center justify-center rounded-lg border font-mono text-xs transition-colors ${
-                      active
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                  <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 rounded-md border bg-popover px-2 py-1 font-mono text-[11px] whitespace-nowrap text-popover-foreground shadow group-hover:block">
-                    {p.name} · {count} widgets
-                  </span>
-                  {active && board.pages.length > 1 && (
+          <div className="flex shrink-0 items-center gap-1 pt-1">
+            <div className="w-28 shrink-0">
+              <SaveStatus version={board.version} />
+            </div>
+            <div className="flex flex-1 items-center justify-center gap-1">
+              {board.pages.map((p, i) => {
+                const active = p.id === board.activePageId;
+                const count = p.order.length;
+                return (
+                  <div key={p.id} className="group relative">
                     <button
                       type="button"
-                      onClick={() => removePage(p.id)}
-                      aria-label={`Delete page ${i + 1}`}
-                      className="absolute -top-1.5 -right-1.5 hidden size-4 items-center justify-center rounded-full border bg-background font-mono text-[10px] leading-none text-muted-foreground hover:text-foreground group-hover:flex"
+                      onClick={() => {
+                        setActivePage(p.id);
+                        setSelectedId(null);
+                      }}
+                      aria-label={`Page ${i + 1}`}
+                      className={`flex size-7 items-center justify-center rounded-md border font-mono text-[11px] transition-colors ${
+                        active
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
                     >
-                      ×
+                      {i + 1}
                     </button>
-                  )}
-                </div>
-              );
-            })}
-            <div className="group relative">
-              <button
-                type="button"
-                onClick={addPage}
-                aria-label="Add page"
-                className="flex size-8 items-center justify-center rounded-lg border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <HugeiconsIcon icon={PlusSignIcon} size={15} strokeWidth={1.5} />
-              </button>
-              <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 rounded-md border bg-popover px-2 py-1 font-mono text-[11px] whitespace-nowrap text-popover-foreground shadow group-hover:block">
-                Add canvas
-              </span>
+                    <span className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 hidden -translate-x-1/2 rounded-md border bg-popover px-2 py-1 font-mono text-[11px] whitespace-nowrap text-popover-foreground shadow group-hover:block">
+                      {p.name} · {count} widgets
+                    </span>
+                    {active && board.pages.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removePage(p.id)}
+                        aria-label={`Delete page ${i + 1}`}
+                        className="absolute -top-1.5 -right-1.5 hidden size-4 items-center justify-center rounded-full border bg-background font-mono text-[10px] leading-none text-muted-foreground hover:text-foreground group-hover:flex"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+              <div className="group relative">
+                <button
+                  type="button"
+                  onClick={addPage}
+                  aria-label="Add page"
+                  className="flex size-7 items-center justify-center rounded-md border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <HugeiconsIcon icon={PlusSignIcon} size={13} strokeWidth={1.5} />
+                </button>
+                <span className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 hidden -translate-x-1/2 rounded-md border bg-popover px-2 py-1 font-mono text-[11px] whitespace-nowrap text-popover-foreground shadow group-hover:block">
+                  Add canvas
+                </span>
+              </div>
+              <div className="group relative">
+                <button
+                  type="button"
+                  onClick={() => changeRatio(ratio === "16:10" ? "3:4" : "16:10")}
+                  aria-label="Toggle resolution"
+                  className="flex h-7 items-center gap-1 rounded-md border px-1.5 font-mono text-[11px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <HugeiconsIcon icon={AspectRatioIcon} size={13} strokeWidth={1.5} />
+                  {ratio}
+                </button>
+                <span className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 hidden -translate-x-1/2 rounded-md border bg-popover px-2 py-1 font-mono text-[11px] whitespace-nowrap text-popover-foreground shadow group-hover:block">
+                  Resolution · {ratio} · {capacity} cells
+                </span>
+              </div>
             </div>
-            <div className="group relative">
-              <button
-                type="button"
-                onClick={() => changeRatio(ratio === "16:10" ? "3:4" : "16:10")}
-                aria-label="Toggle resolution"
-                className="flex h-8 items-center gap-1.5 rounded-lg border px-2 font-mono text-[11px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <HugeiconsIcon icon={AspectRatioIcon} size={15} strokeWidth={1.5} />
-                {ratio}
-              </button>
-              <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 rounded-md border bg-popover px-2 py-1 font-mono text-[11px] whitespace-nowrap text-popover-foreground shadow group-hover:block">
-                Resolution · {ratio} · {capacity} cells
-              </span>
-            </div>
-            <span className="px-1 font-mono text-[11px] text-muted-foreground">
-              {cleaned.length} rows · {usedCells}/{capacity}
+            <span className="w-28 shrink-0 text-right font-mono text-[10px] text-muted-foreground">
+              {cleaned.length}r · {usedCells}/{capacity}
             </span>
           </div>
-          {selectedId === null && order.length > 0 && (
-            <div className="absolute top-12 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-lg border bg-popover px-2 py-1.5 shadow-xl ring-1 ring-border">
-              <span className="px-1 font-mono text-[11px] text-muted-foreground">Board · {ratio}</span>
-              {(["dotted", "grid", "plain"] as const).map((b) => (
-                <button
-                  key={b}
-                  type="button"
-                  onClick={() => setBackdrop(b)}
-                  className={`rounded-md px-2 py-1 text-[11px] capitalize transition-colors ${
-                    backdrop === b ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  {b}
-                </button>
-              ))}
-              <span className="px-1 font-mono text-[11px] text-muted-foreground">
-                {usedCells}/{capacity}
-              </span>
-            </div>
-          )}
         </div>
       )}
 
