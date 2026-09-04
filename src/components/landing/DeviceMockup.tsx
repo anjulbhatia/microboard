@@ -1,6 +1,4 @@
 import { motion } from "motion/react";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { ChartColumnIcon } from "@hugeicons/core-free-icons";
 
 /** Isometric device sleeve — placeholder for the real interface shot. */
 export function DeviceMockup({ large, flat }: { large?: boolean; flat?: boolean }) {
