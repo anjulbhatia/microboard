@@ -1,12 +1,6 @@
 import { useMemo, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useBoard } from "@/lib/board-store";
 import { inferFlashFill } from "@/lib/data-utils";
@@ -17,34 +11,46 @@ function Shell({
   sub,
   onClose,
   children,
-  open = true,
 }: {
   title: string;
   sub: string;
   onClose: () => void;
   children: React.ReactNode;
-  open?: boolean;
 }) {
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(v) => {
-        if (!v) onClose();
-      }}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
     >
-      <DialogContent
+      <div
+        className="max-h-[calc(100svh-2rem)] w-full max-w-md overflow-y-auto rounded-xl border bg-background shadow-xl"
         onClick={(e) => e.stopPropagation()}
-        className="sm:max-w-md"
-        aria-describedby={undefined}
       >
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{sub}</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-3">{children}</div>
-      </DialogContent>
-    </Dialog>
+        <div className="flex items-center justify-between border-b px-4 py-3">
+          <div>
+            <h2 className="font-semibold">{title}</h2>
+            <p className="text-xs text-muted-foreground">{sub}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <HugeiconsIcon icon={Cancel01Icon} size={18} strokeWidth={1.5} />
+          </button>
+        </div>
+        <div className="space-y-3 px-4 py-3">{children}</div>
+      </div>
+    </div>
   );
+}
+
+function Foot({ children }: { children: React.ReactNode }) {
+  return <div className="flex justify-end gap-2 border-t px-4 py-3">{children}</div>;
 }
 
 export function RenameModal({ columns, onClose }: { columns: string[]; onClose: () => void }) {
@@ -74,11 +80,11 @@ export function RenameModal({ columns, onClose }: { columns: string[]; onClose: 
           </div>
         ))}
       </div>
-      <DialogFooter>
+      <Foot>
         <Btn primary onClick={submit} className="w-full">
           Apply renames
         </Btn>
-      </DialogFooter>
+      </Foot>
     </Shell>
   );
 }
@@ -99,7 +105,7 @@ export function DropColsModal({ columns, onClose }: { columns: string[]; onClose
   };
   return (
     <Shell title="Drop columns" sub="Check columns to remove." onClose={onClose}>
-      <div className="flex flex-col gap-1.5">
+      <div className="slim-scroll flex max-h-64 flex-col gap-1.5 overflow-y-auto pr-1">
         {columns.map((c) => (
           <label
             key={c}
@@ -112,11 +118,11 @@ export function DropColsModal({ columns, onClose }: { columns: string[]; onClose
           </label>
         ))}
       </div>
-      <DialogFooter>
+      <Foot>
         <Btn primary onClick={submit} className="w-full">
           Drop {drop.length} column{drop.length === 1 ? "" : "s"}
         </Btn>
-      </DialogFooter>
+      </Foot>
     </Shell>
   );
 }
@@ -160,11 +166,11 @@ export function FillModal({ columns, onClose }: { columns: string[]; onClose: ()
           <input value={value} onChange={(e) => setValue(e.target.value)} placeholder="fill value" className={inputCls} />
         )}
       </div>
-      <DialogFooter>
+      <Foot>
         <Btn primary onClick={submit} className="w-full">
           Apply fill
         </Btn>
-      </DialogFooter>
+      </Foot>
     </Shell>
   );
 }
@@ -191,11 +197,11 @@ export function ReplaceModal({ columns, onClose }: { columns: string[]; onClose:
         <input value={find} onChange={(e) => setFind(e.target.value)} placeholder="find" className={inputCls} />
         <input value={with_} onChange={(e) => setWith(e.target.value)} placeholder="replace with" className={inputCls} />
       </div>
-      <DialogFooter>
+      <Foot>
         <Btn primary onClick={submit} disabled={!find} className="w-full">
           Apply replace
         </Btn>
-      </DialogFooter>
+      </Foot>
     </Shell>
   );
 }
@@ -238,11 +244,11 @@ export function GroupByModal({ columns, onClose }: { columns: string[]; onClose:
           />
         )}
       </div>
-      <DialogFooter>
+      <Foot>
         <Btn primary onClick={submit} className="w-full">
           Apply group by
         </Btn>
-      </DialogFooter>
+      </Foot>
     </Shell>
   );
 }
@@ -310,11 +316,11 @@ export function FlashFillModal({
           )}
         </div>
       )}
-      <DialogFooter>
+      <Foot>
         <Btn primary onClick={submit} disabled={!preview} className="w-full">
           Apply flash fill
         </Btn>
-      </DialogFooter>
+      </Foot>
     </Shell>
   );
 }
