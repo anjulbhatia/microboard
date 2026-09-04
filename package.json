@@ -15,6 +15,7 @@
     "@fontsource/dotgothic16": "^5.3.0",
     "@hugeicons/core-free-icons": "^4.3.0",
     "@hugeicons/react": "^1.1.10",
+    "@mcp-b/global": "^5.1.0",
     "@microcharts/react": "^0.18.1",
     "@tailwindcss/vite": "^4.3.3",
     "@untitledui/file-icons": "^0.0.9",

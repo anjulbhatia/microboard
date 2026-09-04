@@ -34,6 +34,7 @@ function NotFound() {
 }
 
 function App() {
+  
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
