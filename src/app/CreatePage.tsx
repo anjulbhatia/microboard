@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Cancel01Icon,
@@ -87,6 +88,14 @@ function WidgetCard({
   const meta = WIDGET_REGISTRY[widget.type];
   const Body = meta.render;
   return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 16, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ type: "spring", stiffness: 320, damping: 28 }}
+      className={SIZE_SPAN[widget.size]}
+    >
     <div
       draggable
       onDragStart={(e) => {
@@ -98,7 +107,7 @@ function WidgetCard({
         e.preventDefault();
         onDrop(widget.id);
       }}
-      className={`${SIZE_SPAN[widget.size]} cursor-grab rounded-xl border bg-card p-3 active:cursor-grabbing`}
+      className="cursor-grab rounded-xl border bg-card p-3 active:cursor-grabbing"
     >
       <div className="mb-2 flex items-center justify-between">
         <h3 className="truncate font-medium">{widget.title}</h3>
@@ -132,6 +141,7 @@ function WidgetCard({
         </div>
       )}
     </div>
+    </motion.div>
   );
 }
 
@@ -357,6 +367,16 @@ export function CreatePage() {
   const board = useBoard((s) => s.board);
   const { loadData, addStep, removeStep, clearSteps, addWidget, removeWidget, moveWidget, setTitle, reset } = useBoard();
   const [tab, setTab] = useState<DockTab>("visualize");
+  const [panelOpen, setPanelOpen] = useState(false);
+
+  const toggleTab = (t: DockTab) => {
+    if (t === tab && panelOpen) {
+      setPanelOpen(false);
+    } else {
+      setTab(t);
+      setPanelOpen(true);
+    }
+  };
   const [builderMode, setBuilderMode] = useState<"widget" | "chart">("widget");
   const [agentGoal, setAgentGoal] = useState("");
   const [ratio, setRatio] = useState<"16:10" | "3:4">("16:10");
@@ -396,7 +416,7 @@ export function CreatePage() {
 
   const sectionTitle = "font-mono text-[11px] uppercase tracking-wider text-muted-foreground";
 
-  const panel = tab === "visualize" ? (
+  const panelContent = tab === "visualize" ? (
     <div className="space-y-4">
       <section className="space-y-2">
         <h2 className={sectionTitle}>New</h2>
@@ -586,6 +606,17 @@ export function CreatePage() {
     </div>
   );
 
+  const panel = (
+    <motion.div
+      key={tab}
+      initial={{ opacity: 0, x: 12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.22, ease: "easeOut" }}
+    >
+      {panelContent}
+    </motion.div>
+  );
+
   const agentPanel = (
     <div className="space-y-3">
       <h2 className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Agent inputs</h2>
@@ -618,7 +649,8 @@ export function CreatePage() {
       onTitle={setTitle}
       version={board.version}
       tab={tab}
-      onTab={setTab}
+      onTab={toggleTab}
+      panelOpen={panelOpen}
       panel={panel}
       agentPanel={agentPanel}
     >
@@ -658,21 +690,23 @@ export function CreatePage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-12 gap-3">
-              {board.order.map((id) => {
-                const w = board.widgets[id];
-                if (!w) return null;
-                return (
-                  <WidgetCard
-                    key={id}
-                    widget={w}
-                    onRemove={() => removeWidget(id)}
-                    onDragStart={setDragId}
-                    onDrop={dropWidget}
-                  />
-                );
-              })}
-            </div>
+            <motion.div layout className="grid grid-cols-12 gap-3">
+              <AnimatePresence initial={false}>
+                {board.order.map((id) => {
+                  const w = board.widgets[id];
+                  if (!w) return null;
+                  return (
+                    <WidgetCard
+                      key={id}
+                      widget={w}
+                      onRemove={() => removeWidget(id)}
+                      onDragStart={setDragId}
+                      onDrop={dropWidget}
+                    />
+                  );
+                })}
+              </AnimatePresence>
+            </motion.div>
           )}
         </Stage>
       )}

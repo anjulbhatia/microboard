@@ -64,12 +64,13 @@ interface CreateLayoutProps {
   version: number;
   tab: DockTab;
   onTab: (tab: DockTab) => void;
+  panelOpen: boolean;
   panel: ReactNode;
   agentPanel: ReactNode;
   children: ReactNode;
 }
 
-export function CreateLayout({ title, onTitle, version, tab, onTab, panel, agentPanel, children }: CreateLayoutProps) {
+export function CreateLayout({ title, onTitle, version, tab, onTab, panelOpen, panel, agentPanel, children }: CreateLayoutProps) {
   const shellRef = useRef<HTMLDivElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const [agentOpen, setAgentOpen] = useState(false);
@@ -162,29 +163,45 @@ export function CreateLayout({ title, onTitle, version, tab, onTab, panel, agent
           aria-label="Tools"
           className="flex shrink-0 flex-col items-center gap-1 self-start rounded-2xl border bg-background/70 p-1.5 shadow-sm backdrop-blur-xl"
         >
-          {DOCK_ITEMS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onTab(item.id)}
-              aria-label={item.label}
-              className={`group relative flex size-10 items-center justify-center rounded-xl transition-all ${
-                tab === item.id
-                  ? "bg-primary text-primary-foreground shadow"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
-            >
-              <HugeiconsIcon icon={item.icon} size={19} strokeWidth={1.5} />
-              <span className="pointer-events-none absolute left-full ml-3 hidden rounded-md border bg-popover px-2 py-1 text-xs whitespace-nowrap text-popover-foreground shadow group-hover:block">
-                {item.label}
-              </span>
-            </button>
-          ))}
+          {DOCK_ITEMS.map((item) => {
+            const active = tab === item.id && panelOpen;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onTab(item.id)}
+                aria-label={item.label}
+                aria-expanded={active}
+                className={`group relative flex size-10 items-center justify-center rounded-xl transition-colors ${
+                  active ? "text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="dock-active"
+                    className="absolute inset-0 rounded-xl bg-primary shadow"
+                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  />
+                )}
+                <HugeiconsIcon icon={item.icon} size={19} strokeWidth={1.5} className="relative" />
+                <span className="pointer-events-none absolute left-full ml-3 hidden rounded-md border bg-popover px-2 py-1 text-xs whitespace-nowrap text-popover-foreground shadow group-hover:block">
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
         </nav>
 
-        <aside className="hidden w-72 shrink-0 flex-col gap-4 overflow-y-auto rounded-xl border bg-card/50 p-3 md:flex">
-          {panel}
-        </aside>
+        <motion.aside
+          initial={false}
+          animate={panelOpen ? { width: 288, opacity: 1 } : { width: 0, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 320, damping: 34 }}
+          className="hidden shrink-0 overflow-hidden md:block"
+        >
+          <div className="flex h-full w-72 flex-col gap-4 overflow-y-auto rounded-xl border bg-card/50 p-3">
+            {panel}
+          </div>
+        </motion.aside>
 
         <div className="flex min-w-0 flex-1 flex-col">{children}</div>
 
