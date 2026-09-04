@@ -75,7 +75,7 @@ export function PageStrip({ ratio, onRatio, cleanedCount, usedCells, capacity }:
           </span>
         </div>
       </div>
-      <span className="w-28 shrink-0 text-right font-mono text-[10px] text-muted-foreground">
+      <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
         {cleanedCount}r · {usedCells}/{capacity}
       </span>
     </div>

@@ -110,7 +110,7 @@ export function CreatePage() {
       ) : (
         <div className="relative flex min-h-0 flex-1 flex-col px-1 pt-1">
           {selectedId === null && order.length > 0 && (
-            <div className="flex shrink-0 items-center justify-center gap-1 pb-1.5">
+            <div className="absolute top-2.5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-lg border bg-popover px-2 py-1 shadow-xl ring-1 ring-border">
               <span className="px-1 font-mono text-[11px] text-muted-foreground">Board · {ratio}</span>
               {(["dotted", "grid", "plain"] as const).map((b) => (
                 <button

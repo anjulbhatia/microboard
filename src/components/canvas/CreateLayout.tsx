@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -6,8 +6,6 @@ import {
   BotIcon,
   ChartColumnIcon,
   CleanIcon,
-  FullScreenIcon,
-  UserIcon,
 } from "@hugeicons/core-free-icons";
 
 import type { CreateLayoutProps, DockTab } from "@/app/create/interface";
@@ -18,30 +16,14 @@ const DOCK_ITEMS: { id: DockTab; label: string; icon: typeof ChartColumnIcon }[]
 ];
 
 export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, panel, agentPanel, children }: CreateLayoutProps) {
-  const shellRef = useRef<HTMLDivElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const [agentOpen, setAgentOpen] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  useEffect(() => {
-    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
-    document.addEventListener("fullscreenchange", onChange);
-    return () => document.removeEventListener("fullscreenchange", onChange);
-  }, []);
-
-  const toggleFullscreen = () => {
-    if (document.fullscreenElement) {
-      void document.exitFullscreen();
-    } else {
-      void shellRef.current?.requestFullscreen();
-    }
-  };
 
   const iconBtn =
     "flex size-8 items-center justify-center rounded-lg border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground";
 
   return (
-    <div ref={shellRef} className="flex h-full min-h-0 flex-col bg-background">
+    <div className="flex h-full min-h-0 flex-col bg-background">
       <header className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-border bg-card px-2 py-1.5">
         <Link
           to="/"
@@ -58,8 +40,8 @@ export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, panel, age
             onChange={(e) => onTitle(e.target.value)}
             onFocus={(e) => e.target.select()}
             aria-label="Visualisation name"
-            placeholder="Untitled visualisation"
-            className="w-full truncate rounded-md bg-transparent py-1 pr-12 pl-1.5 text-left text-sm font-semibold focus-visible:bg-muted focus-visible:outline-none"
+            placeholder="Untitled Board"
+            className="w-full truncate rounded-md bg-transparent py-1 pr-12 pl-1.5 text-left text-sm font-normal focus-visible:bg-muted focus-visible:outline-none"
           />
           <button
             type="button"
@@ -73,12 +55,6 @@ export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, panel, age
         <div className="min-w-0 flex-1" />
 
         <div className="flex shrink-0 items-center gap-1.5">
-          <button type="button" className="rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-muted">
-            Export
-          </button>
-          <button type="button" className="rounded-lg bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90">
-            Share
-          </button>
           <button
             type="button"
             onClick={() => setAgentOpen((v) => !v)}
@@ -88,18 +64,11 @@ export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, panel, age
           >
             <HugeiconsIcon icon={BotIcon} size={16} strokeWidth={1.5} />
           </button>
-          <button
-            type="button"
-            onClick={toggleFullscreen}
-            aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-            title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-            className={iconBtn}
-          >
-            <HugeiconsIcon icon={FullScreenIcon} size={16} strokeWidth={1.5} />
+          <button type="button" className="rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-muted">
+            Export
           </button>
-          <button type="button" title="Sign in (soon)" className={`${iconBtn} gap-1 px-2`}>
-            <HugeiconsIcon icon={UserIcon} size={16} strokeWidth={1.5} />
-            <span className="hidden text-xs font-medium lg:inline">Sign in</span>
+          <button type="button" className="rounded-lg bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90">
+            Share
           </button>
         </div>
       </header>

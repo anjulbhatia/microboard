@@ -75,7 +75,9 @@ export function WidgetCard({ widget, selected, onSelect, onRemove, onDuplicate, 
       className="relative"
     >
       {selected && (
-        <div className="absolute -top-11 left-1/2 z-20 flex -translate-x-1/2 items-center gap-0.5 rounded-lg border bg-popover p-1 shadow-xl ring-1 ring-border">
+        <div className="absolute top-2 left-1/2 z-20 flex -translate-x-1/2 items-center gap-0.5 rounded-full border bg-popover/95 py-1 pr-1.5 pl-2.5 shadow-xl ring-1 ring-border backdrop-blur">
+          <span className="pr-1 font-mono text-[10px] tracking-wide text-muted-foreground">{meta.label}</span>
+          <span aria-hidden className="h-4 w-px bg-border" />
           <span
             draggable
             onDragStart={(e) => {
@@ -83,9 +85,9 @@ export function WidgetCard({ widget, selected, onSelect, onRemove, onDuplicate, 
               onDragStart(widget.id);
             }}
             title="Drag to move"
-            className="cursor-grab rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground active:cursor-grabbing"
+            className="cursor-grab rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground active:cursor-grabbing"
           >
-            <HugeiconsIcon icon={Drag01Icon} size={15} strokeWidth={1.5} />
+            <HugeiconsIcon icon={Drag01Icon} size={14} strokeWidth={1.5} />
           </span>
           {meta.fields.length > 0 && (
             <button
@@ -93,11 +95,11 @@ export function WidgetCard({ widget, selected, onSelect, onRemove, onDuplicate, 
               onClick={() => setEditing((v) => !v)}
               title="Settings"
               aria-label="Widget settings"
-              className={`rounded-md p-1.5 transition-colors hover:bg-muted hover:text-foreground ${
-                editing ? "text-foreground" : "text-muted-foreground"
+              className={`rounded-full p-1.5 transition-colors hover:bg-muted hover:text-foreground ${
+                editing ? "bg-muted text-foreground" : "text-muted-foreground"
               }`}
             >
-              <HugeiconsIcon icon={Settings01Icon} size={15} strokeWidth={1.5} />
+              <HugeiconsIcon icon={Settings01Icon} size={14} strokeWidth={1.5} />
             </button>
           )}
           <button
@@ -105,18 +107,18 @@ export function WidgetCard({ widget, selected, onSelect, onRemove, onDuplicate, 
             onClick={onDuplicate}
             title="Duplicate"
             aria-label="Duplicate widget"
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            <HugeiconsIcon icon={Copy01Icon} size={15} strokeWidth={1.5} />
+            <HugeiconsIcon icon={Copy01Icon} size={14} strokeWidth={1.5} />
           </button>
           <button
             type="button"
             onClick={onRemove}
             title="Remove"
             aria-label="Remove widget"
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            <HugeiconsIcon icon={Cancel01Icon} size={15} strokeWidth={1.5} />
+            <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={1.5} />
           </button>
         </div>
       )}
@@ -136,12 +138,12 @@ export function WidgetCard({ widget, selected, onSelect, onRemove, onDuplicate, 
         }`}
       >
         <Body widget={widget} />
-        {editing && (
-          <div className="mt-2 rounded-md border bg-card p-2">
-            <PropsEditor widget={widget} onChange={(props) => updateWidget(widget.id, { props })} />
-          </div>
-        )}
       </div>
+      {selected && editing && meta.fields.length > 0 && (
+        <div className="slim-scroll absolute top-12 left-1/2 z-20 max-h-64 w-60 -translate-x-1/2 overflow-y-auto rounded-lg border bg-popover p-2 shadow-xl ring-1 ring-border">
+          <PropsEditor widget={widget} onChange={(props) => updateWidget(widget.id, { props })} />
+        </div>
+      )}
       {selected && !meta.resize.fixedH && (
         <span
           onPointerDown={beginResize("s")}

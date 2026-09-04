@@ -18,7 +18,7 @@ export function PropsEditor({
     onChange({ ...widget.props, [key]: value });
 
   return (
-    <div className="space-y-2 border-t pt-3">
+    <div className="space-y-2">
       {meta.fields.map((field) => {
         const value = widget.props?.[field.key] ?? meta.defaults.props[field.key] ?? "";
         if (field.type === "textarea") {
