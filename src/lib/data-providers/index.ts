@@ -3,6 +3,7 @@ export * from "@/lib/data-providers/csv";
 export * from "@/lib/data-providers/excel";
 export * from "@/lib/data-providers/sheet";
 export * from "@/lib/data-providers/manual";
+export * from "@/lib/data-providers/clipboard";
 
 export type ProviderKind = "csv" | "excel";
 
