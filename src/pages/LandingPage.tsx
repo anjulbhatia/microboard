@@ -23,8 +23,8 @@ const FEATURES = [
 
 const STEPS = [
   { n: "01", title: "Load data", body: "Drop a file or paste a sheet link. Columns detected instantly." },
-  { n: "02", title: "Clean it", body: "Stack deterministic steps. Replay the same result every time." },
-  { n: "03", title: "Chart it", body: "KPI, tables, dithered area and bar widgets on a live canvas." },
+  { n: "02", title: "Transform it", body: "Stack deterministic steps. Replay the same result every time." },
+  { n: "03", title: "Visualize it", body: "KPI, tables, dithered area and bar widgets on a live canvas." },
   { n: "04", title: "Share it", body: "Export JSON or publish a live link for anyone to open." },
 ];
 
@@ -34,9 +34,9 @@ export function LandingPage() {
 
   const mockX = useTransform(scrollYProgress, [0, 1], ["14vw", "-16vw"]);
   const mockY = useTransform(scrollYProgress, [0, 1], ["20vh", "0vh"]);
-  const mockScale = useTransform(scrollYProgress, [0, 1], [0.9, 1.3]);
+  const mockScale = useTransform(scrollYProgress, [0, 1], [1.4, 1.1]);
   const textOpacity = useTransform(scrollYProgress, [0, 0.45], [1, 0]);
-  const textX = useTransform(scrollYProgress, [0, 0.45], ["0vw", "-8vw"]);
+  const textX = useTransform(scrollYProgress, [0, 0.45], ["0vw", "-100vw"]);
 
   return (
     <div className="min-h-svh bg-background">
@@ -50,8 +50,8 @@ export function LandingPage() {
                 <HugeiconsIcon icon={SparklesIcon} size={14} strokeWidth={1.5} />
                 data-to-dashboard
               </span>
-              <h1 className="mt-4 text-4xl leading-[1.05] font-bold tracking-tight text-balance md:text-5xl">
-                Clean data. Craft microcharts. <span className="text-primary">Ship dashboards.</span>
+              <h1 className="mt-4 text-4xl leading-[1.05] font-bold font-display tracking-wide text-balance md:text-5xl">
+                Craft microcharts. <span className="text-primary">Ship dashboards.</span>
               </h1>
               <p className="mt-3 max-w-sm text-sm text-muted-foreground">
                 You and your agent build on the same live canvas. Propose, approve, apply.
