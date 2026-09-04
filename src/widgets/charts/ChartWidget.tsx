@@ -9,15 +9,17 @@ import { Bar } from "@/components/dither-kit/bar";
 import { Sparkline } from "@/components/dither-kit/sparkline";
 import { useBoard } from "@/lib/board-store";
 import { applySteps, inferColumns, toNumber } from "@/lib/data-utils";
+import { MICRO_REGISTRY } from "@/widgets/charts/micro/registry";
 import type { ChartEngine, Widget } from "@/types/board";
 
 /**
- * Chart widgets by engine. `dither` engine is live (Dither Kit).
- * `micro` and `mono` engines plug in here when their sources land.
+ * Chart widgets by engine. `dither` engine is live (Dither Kit),
+ * `micro` engine is live (own abstracts). `mono` plugs in when it lands.
  */
 export const CHART_ENGINES: Record<string, ChartEngine> = {
   kpi: "micro",
   spark: "micro",
+  micro: "micro",
   table: "none",
   "dither-area": "dither",
   "dither-bar": "dither",
@@ -26,6 +28,15 @@ export const CHART_ENGINES: Record<string, ChartEngine> = {
 export function ChartWidget({ widget }: { widget: Widget }) {
   const board = useBoard((s) => s.board);
   const cleaned = useMemo(() => applySteps(board.data.raw, board.steps), [board.data.raw, board.steps]);
+
+  if (widget.type === "micro") {
+    const def = MICRO_REGISTRY[String(widget.props?.chart ?? "sparkline")] ?? MICRO_REGISTRY.sparkline;
+    const nums = cleaned
+      .map((r) => toNumber(r[widget.y ?? ""] ?? ""))
+      .filter((n): n is number => n != null);
+    const Body = def.Component;
+    return <Body {...def.derive(nums.length > 0 ? nums : [4, 7, 5, 9])} />;
+  }
 
   if (widget.type === "table") {
     const cols = inferColumns(cleaned).map((c) => c.name);

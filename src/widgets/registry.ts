@@ -8,6 +8,7 @@ import { ImageWidget } from "@/widgets/image";
 import { BoardWidget } from "@/widgets/board";
 import { CardWidget } from "@/widgets/card";
 import { ChartWidget } from "@/widgets/charts/ChartWidget";
+import { MICRO_IDS, MICRO_REGISTRY } from "@/widgets/charts/micro/registry";
 
 export type FieldType = "text" | "textarea" | "number" | "select" | "color" | "icon";
 
@@ -214,6 +215,23 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
     resize: { minW: 2, maxW: 16, minH: 1, maxH: 4 },
     defaults: { title: "Sparkline", props: {} },
     fields: [],
+    render: ChartWidget,
+  },
+  micro: {
+    label: "Micro chart",
+    group: "charts",
+    needsData: true,
+    defaultSpan: { w: 8, h: 4 },
+    resize: { minW: 2, maxW: 16, minH: 2, maxH: 8 },
+    defaults: { title: "Micro chart", props: { chart: "sparkline" } },
+    fields: [
+      {
+        key: "chart",
+        label: "Chart",
+        type: "select",
+        options: MICRO_IDS.map((id) => ({ value: id, label: MICRO_REGISTRY[id].title })),
+      },
+    ],
     render: ChartWidget,
   },
   table: {

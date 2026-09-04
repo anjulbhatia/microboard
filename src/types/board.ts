@@ -30,6 +30,7 @@ export type WidgetType =
   | "card"
   | "kpi"
   | "spark"
+  | "micro"
   | "table"
   | "dither-area"
   | "dither-bar";

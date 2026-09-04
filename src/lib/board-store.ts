@@ -71,6 +71,7 @@ export const WIDGET_TYPES: { value: WidgetType; label: string }[] = [
   { value: "card", label: "Card" },
   { value: "kpi", label: "KPI" },
   { value: "spark", label: "Sparkline" },
+  { value: "micro", label: "Micro chart" },
   { value: "table", label: "Table" },
   { value: "dither-area", label: "Dither area" },
   { value: "dither-bar", label: "Dither bar" },
