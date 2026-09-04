@@ -48,10 +48,10 @@ export interface Widget {
   props?: Record<string, string | number>;
 }
 
-/** Board grid dimensions per aspect ratio. */
+/** Board grid dimensions per aspect ratio — equal 160-cell capacity. */
 export const BOARD_GRID = {
   "16:10": { cols: 16, rows: 10 },
-  "3:4": { cols: 16, rows: 21 },
+  "3:4": { cols: 10, rows: 16 },
 } as const;
 
 export type BoardRatio = keyof typeof BOARD_GRID;
@@ -63,6 +63,13 @@ export interface ColumnMeta {
 }
 
 export type DataSource = "inline" | "file" | "sample";
+
+export interface Page {
+  id: string;
+  name: string;
+  order: string[];
+  widgets: Record<string, Widget>;
+}
 
 export interface Board {
   id: string;
@@ -76,7 +83,15 @@ export interface Board {
     columns: ColumnMeta[];
   };
   steps: Step[];
-  order: string[];
-  widgets: Record<string, Widget>;
+  pages: Page[];
+  activePageId: string;
   locks: string[];
+}
+
+export function freshPage(name: string): Page {
+  return { id: crypto.randomUUID(), name, order: [], widgets: {} };
+}
+
+export function activePage(board: Board): Page {
+  return board.pages.find((p) => p.id === board.activePageId) ?? board.pages[0];
 }

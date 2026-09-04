@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
+  AspectRatioIcon,
   Cancel01Icon,
   ChartColumnIcon,
   Copy01Icon,
@@ -15,12 +16,12 @@ import {
 import { CreateLayout, type DockTab } from "@/app/create/CreateLayout";
 import { UploadPhase } from "@/app/create/UploadPhase";
 import { DataLandedModal } from "@/app/create/DataLandedModal";
-import { Stage, useStageUnit } from "@/app/create/Stage";
+import { Stage, useStageCols, useStageUnit } from "@/app/create/Stage";
 import { useBoard, WIDGET_PRESETS, WIDGET_TYPES } from "@/lib/board-store";
 import { applySteps, downloadJSON, inferColumns } from "@/lib/data-utils";
 import { PropsEditor } from "@/widgets/PropsEditor";
 import { clampSpan, WIDGET_REGISTRY } from "@/widgets/registry";
-import { BOARD_GRID, type ColumnMeta, type StepType, type Widget, type WidgetType } from "@/types/board";
+import { activePage, BOARD_GRID, type ColumnMeta, type StepType, type Widget, type WidgetType } from "@/types/board";
 
 function Btn({
   children,
@@ -88,6 +89,7 @@ function WidgetCard({
 }) {
   const updateWidget = useBoard((s) => s.updateWidget);
   const unit = useStageUnit();
+  const cols = useStageCols();
   const [editing, setEditing] = useState(false);
   const [preview, setPreview] = useState<{ w: number; h: number } | null>(null);
   const dragRef = useRef<{ dir: ResizeDir; startX: number; startY: number; w: number; h: number } | null>(null);
@@ -121,7 +123,7 @@ function WidgetCard({
       } else {
         next = { w: s.w + du, h: s.h + dv };
       }
-      setPreview(clampSpan(widget.type, next));
+      setPreview(clampSpan(widget.type, next, cols));
     };
     const up = () => {
       window.removeEventListener("pointermove", move);
@@ -387,7 +389,7 @@ function StepForm({ columns }: { columns: string[] }) {
   );
 }
 
-function WidgetBuilder({ columns, hasData, chartOnly }: { columns: string[]; hasData: boolean; chartOnly: boolean }) {
+function WidgetBuilder({ columns, hasData, chartOnly, gridCols }: { columns: string[]; hasData: boolean; chartOnly: boolean; gridCols: number }) {
   const addWidget = useBoard((s) => s.addWidget);
   const kinds = WIDGET_TYPES.filter((t) => WIDGET_REGISTRY[t.value].needsData === chartOnly);
   const [wType, setWType] = useState<WidgetType>(kinds[0]?.value ?? "textbox");
@@ -404,7 +406,7 @@ function WidgetBuilder({ columns, hasData, chartOnly }: { columns: string[]; has
     if (meta.needsData && !hasData) return;
     const x = wX || columns[0] || "";
     const y = wY || columns[0] || "";
-    const span = clampSpan(wType, preset < 0 ? meta.defaultSpan : WIDGET_PRESETS[preset]);
+    const span = clampSpan(wType, preset < 0 ? meta.defaultSpan : WIDGET_PRESETS[preset], gridCols);
     addWidget({
       type: wType,
       title: meta.needsData ? `${meta.label} · ${y || x}` : meta.defaults.title,
@@ -463,7 +465,7 @@ interface Upload {
 
 export function CreatePage() {
   const board = useBoard((s) => s.board);
-  const { loadData, addStep, removeStep, clearSteps, addWidget, removeWidget, duplicateWidget, moveWidget, setTitle, reset } = useBoard();
+  const { loadData, addStep, removeStep, clearSteps, addWidget, removeWidget, duplicateWidget, moveWidget, addPage, removePage, setActivePage, clampAllWidgets, setTitle, reset } = useBoard();
   const [tab, setTab] = useState<DockTab>("visualize");
   const [panelOpen, setPanelOpen] = useState(false);
 
@@ -489,10 +491,19 @@ export function CreatePage() {
   const cleanedCols = useMemo(() => inferColumns(cleaned).map((c) => c.name), [cleaned]);
   const rawCols = useMemo(() => board.data.columns.map((c) => c.name), [board.data]);
   const hasData = board.data.raw.length > 0;
-  const chartWidgets = board.order.filter((id) => {
-    const w = board.widgets[id];
+  const page = activePage(board);
+  const order = page.order;
+  const widgets = page.widgets;
+  const chartWidgets = order.filter((id) => {
+    const w = widgets[id];
     return w && WIDGET_REGISTRY[w.type].needsData;
   });
+  const dims = BOARD_GRID[ratio];
+  const usedCells = order.reduce((acc, id) => {
+    const w = widgets[id];
+    return acc + (w ? w.w * w.h : 0);
+  }, 0);
+  const capacity = dims.cols * dims.rows;
 
   const handleLoad = (source: "inline" | "file" | "sample", records: Record<string, string>[]) => {
     loadData(source, records);
@@ -511,6 +522,11 @@ export function CreatePage() {
       moveWidget(dragId, targetId);
       setDragId(null);
     }
+  };
+
+  const changeRatio = (r: "16:10" | "3:4") => {
+    setRatio(r);
+    clampAllWidgets(BOARD_GRID[r].cols);
   };
 
   const sectionTitle = "border-l-2 border-primary pl-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground";
@@ -539,7 +555,7 @@ export function CreatePage() {
             New Chart
           </button>
         </div>
-        <WidgetBuilder columns={cleanedCols} hasData={hasData} chartOnly={builderMode === "chart"} />
+        <WidgetBuilder columns={cleanedCols} hasData={hasData} chartOnly={builderMode === "chart"} gridCols={dims.cols} />
       </section>
 
       <section className="space-y-1.5">
@@ -548,7 +564,7 @@ export function CreatePage() {
           <p className="text-xs text-muted-foreground">No charts yet.</p>
         ) : (
           chartWidgets.map((id) => {
-            const w = board.widgets[id];
+            const w = widgets[id];
             if (!w) return null;
             return (
               <div key={id} className="flex items-center gap-2 rounded-lg border bg-card px-2 py-1.5 text-xs">
@@ -632,7 +648,7 @@ export function CreatePage() {
             <button
               key={r}
               type="button"
-              onClick={() => setRatio(r)}
+              onClick={() => changeRatio(r)}
               className={`flex-1 rounded-lg border px-2 py-1.5 font-mono text-xs transition-colors ${
                 ratio === r ? "border-primary bg-primary/10 text-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
@@ -740,13 +756,7 @@ export function CreatePage() {
     </div>
   );
 
-  const showCanvas = hasData || board.order.length > 0;
-  const dims = BOARD_GRID[ratio];
-  const usedCells = board.order.reduce((acc, id) => {
-    const w = board.widgets[id];
-    return acc + (w ? w.w * w.h : 0);
-  }, 0);
-  const capacity = dims.cols * dims.rows;
+  const showCanvas = hasData || order.length > 0;
 
   return (
     <CreateLayout
@@ -763,32 +773,8 @@ export function CreatePage() {
         <UploadPhase onLoad={handleLoad} />
       ) : (
         <div className="relative flex min-h-0 flex-1 flex-col">
-          <Stage
-            ratio={ratio}
-            backdrop={backdrop}
-          toolbar={
-            <div className="flex items-center gap-2 rounded-lg border bg-card px-2 py-1 shadow-sm">
-                <div className="flex gap-1">
-                  {(["16:10", "3:4"] as const).map((r) => (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => setRatio(r)}
-                      className={`rounded-md border px-2 py-1 font-mono text-[11px] transition-colors ${
-                        ratio === r ? "border-primary bg-primary/10 text-foreground" : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {r}
-                    </button>
-                  ))}
-                </div>
-                <span className="font-mono text-[11px] text-muted-foreground">
-                  {cleaned.length} rows · {board.order.length} widgets · {usedCells}/{capacity} cells
-                </span>
-              </div>
-            }
-          >
-            {board.order.length === 0 ? (
+          <Stage ratio={ratio} backdrop={backdrop}>
+            {order.length === 0 ? (
               <div
                 onClick={() => setSelectedId(null)}
                 className="flex h-full flex-col items-center justify-center gap-2 text-center"
@@ -802,12 +788,12 @@ export function CreatePage() {
               <motion.div
                 layout
                 onClick={() => setSelectedId(null)}
-                style={{ gridTemplateColumns: "repeat(16, minmax(0, 1fr))" }}
+                style={{ gridTemplateColumns: `repeat(${dims.cols}, minmax(0, 1fr))` }}
                 className="grid gap-3"
               >
                 <AnimatePresence initial={false}>
-                  {board.order.map((id) => {
-                    const w = board.widgets[id];
+                  {order.map((id) => {
+                    const w = widgets[id];
                     if (!w) return null;
                     return (
                       <WidgetCard
@@ -829,7 +815,75 @@ export function CreatePage() {
               </motion.div>
             )}
           </Stage>
-          {selectedId === null && board.order.length > 0 && (
+          <div className="flex shrink-0 items-center justify-center gap-1.5 pt-1">
+            {board.pages.map((p, i) => {
+              const active = p.id === board.activePageId;
+              const count = p.order.length;
+              return (
+                <div key={p.id} className="group relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActivePage(p.id);
+                      setSelectedId(null);
+                    }}
+                    aria-label={`Page ${i + 1}`}
+                    className={`flex size-8 items-center justify-center rounded-lg border font-mono text-xs transition-colors ${
+                      active
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                  <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 rounded-md border bg-popover px-2 py-1 font-mono text-[11px] whitespace-nowrap text-popover-foreground shadow group-hover:block">
+                    {p.name} · {count} widgets
+                  </span>
+                  {active && board.pages.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removePage(p.id)}
+                      aria-label={`Delete page ${i + 1}`}
+                      className="absolute -top-1.5 -right-1.5 hidden size-4 items-center justify-center rounded-full border bg-background font-mono text-[10px] leading-none text-muted-foreground hover:text-foreground group-hover:flex"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+            <div className="group relative">
+              <button
+                type="button"
+                onClick={addPage}
+                aria-label="Add page"
+                className="flex size-8 items-center justify-center rounded-lg border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <HugeiconsIcon icon={PlusSignIcon} size={15} strokeWidth={1.5} />
+              </button>
+              <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 rounded-md border bg-popover px-2 py-1 font-mono text-[11px] whitespace-nowrap text-popover-foreground shadow group-hover:block">
+                Add canvas
+              </span>
+            </div>
+            <div className="group relative">
+              <button
+                type="button"
+                onClick={() => changeRatio(ratio === "16:10" ? "3:4" : "16:10")}
+                aria-label="Toggle resolution"
+                className="flex h-8 items-center gap-1.5 rounded-lg border px-2 font-mono text-[11px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <HugeiconsIcon icon={AspectRatioIcon} size={15} strokeWidth={1.5} />
+                {ratio}
+              </button>
+              <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 rounded-md border bg-popover px-2 py-1 font-mono text-[11px] whitespace-nowrap text-popover-foreground shadow group-hover:block">
+                Resolution · {ratio} · {capacity} cells
+              </span>
+            </div>
+            <span className="px-1 font-mono text-[11px] text-muted-foreground">
+              {cleaned.length} rows · {usedCells}/{capacity}
+            </span>
+          </div>
+          {selectedId === null && order.length > 0 && (
             <div className="absolute top-12 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-lg border bg-popover px-2 py-1.5 shadow-xl ring-1 ring-border">
               <span className="px-1 font-mono text-[11px] text-muted-foreground">Board · {ratio}</span>
               {(["dotted", "grid", "plain"] as const).map((b) => (

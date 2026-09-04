@@ -1,9 +1,11 @@
 import { create } from "zustand";
-import type { Board, DataSource, StepType, Widget, WidgetType } from "@/types/board";
+import type { Board, DataSource, Page, StepType, Widget, WidgetType } from "@/types/board";
+import { activePage, freshPage } from "@/types/board";
 import { inferColumns } from "@/lib/data-utils";
 
 function newBoard(): Board {
   const now = new Date().toISOString();
+  const page = freshPage("Page 1");
   return {
     id: crypto.randomUUID(),
     title: "Untitled board",
@@ -12,14 +14,25 @@ function newBoard(): Board {
     updatedAt: now,
     data: { source: null, raw: [], columns: [] },
     steps: [],
-    order: [],
-    widgets: {},
+    pages: [page],
+    activePageId: page.id,
     locks: [],
   };
 }
 
 function touch(board: Board): Board {
   return { ...board, version: board.version + 1, updatedAt: new Date().toISOString() };
+}
+
+/** Apply a transform to the active page's widget map. */
+function withPage(
+  board: Board,
+  fn: (page: Page) => Page
+): Board {
+  return {
+    ...board,
+    pages: board.pages.map((p) => (p.id === board.activePageId ? fn(p) : p)),
+  };
 }
 
 interface BoardStore {
@@ -34,6 +47,10 @@ interface BoardStore {
   duplicateWidget: (id: string) => void;
   moveWidget: (dragId: string, targetId: string) => void;
   removeWidget: (id: string) => void;
+  addPage: () => void;
+  removePage: (id: string) => void;
+  setActivePage: (id: string) => void;
+  clampAllWidgets: (cols: number) => void;
   reset: () => void;
 }
 
@@ -66,15 +83,18 @@ export const useBoard = create<BoardStore>()((set) => ({
     set((s) => ({ board: touch({ ...s.board, title }) })),
 
   loadData: (source, raw) =>
-    set((s) => ({
-      board: touch({
-        ...s.board,
-        data: { source, raw, columns: inferColumns(raw) },
-        steps: [],
-        order: [],
-        widgets: {},
-      }),
-    })),
+    set((s) => {
+      const page = freshPage("Page 1");
+      return {
+        board: touch({
+          ...s.board,
+          data: { source, raw, columns: inferColumns(raw) },
+          steps: [],
+          pages: [page],
+          activePageId: page.id,
+        }),
+      };
+    }),
 
   addStep: (type, params, description) =>
     set((s) => ({
@@ -93,58 +113,115 @@ export const useBoard = create<BoardStore>()((set) => ({
     set((s) => {
       const id = crypto.randomUUID();
       return {
-        board: touch({
-          ...s.board,
-          widgets: { ...s.board.widgets, [id]: { ...widget, id } },
-          order: [...s.board.order, id],
-        }),
+        board: touch(
+          withPage(s.board, (p) => ({
+            ...p,
+            widgets: { ...p.widgets, [id]: { ...widget, id } },
+            order: [...p.order, id],
+          }))
+        ),
       };
     }),
 
   updateWidget: (id, patch) =>
     set((s) => {
-      const current = s.board.widgets[id];
+      const current = activePage(s.board).widgets[id];
       if (!current) return s;
       return {
-        board: touch({
-          ...s.board,
-          widgets: {
-            ...s.board.widgets,
-            [id]: { ...current, ...patch, props: { ...current.props, ...patch.props } },
-          },
-        }),
+        board: touch(
+          withPage(s.board, (p) => ({
+            ...p,
+            widgets: {
+              ...p.widgets,
+              [id]: { ...current, ...patch, props: { ...current.props, ...patch.props } },
+            },
+          }))
+        ),
       };
     }),
 
   duplicateWidget: (id) =>
     set((s) => {
-      const current = s.board.widgets[id];
+      const current = activePage(s.board).widgets[id];
       if (!current) return s;
       const copyId = crypto.randomUUID();
       return {
-        board: touch({
-          ...s.board,
-          widgets: { ...s.board.widgets, [copyId]: { ...current, id: copyId, title: `${current.title} copy` } },
-          order: [...s.board.order, copyId],
-        }),
+        board: touch(
+          withPage(s.board, (p) => ({
+            ...p,
+            widgets: { ...p.widgets, [copyId]: { ...current, id: copyId, title: `${current.title} copy` } },
+            order: [...p.order, copyId],
+          }))
+        ),
       };
     }),
 
   moveWidget: (dragId, targetId) =>
     set((s) => {
-      if (dragId === targetId || !s.board.widgets[dragId] || !s.board.widgets[targetId]) return s;
-      const order = s.board.order.filter((w) => w !== dragId);
+      const page = activePage(s.board);
+      if (dragId === targetId || !page.widgets[dragId] || !page.widgets[targetId]) return s;
+      const order = page.order.filter((w) => w !== dragId);
       order.splice(order.indexOf(targetId), 0, dragId);
-      return { board: touch({ ...s.board, order }) };
+      return { board: touch(withPage(s.board, (p) => ({ ...p, order }))) };
     }),
 
   removeWidget: (id) =>
     set((s) => {
-      const widgets = { ...s.board.widgets };
+      const page = activePage(s.board);
+      if (!page.widgets[id]) return s;
+      const widgets = { ...page.widgets };
       delete widgets[id];
       return {
-        board: touch({ ...s.board, widgets, order: s.board.order.filter((w) => w !== id) }),
+        board: touch(
+          withPage(s.board, (p) => ({ ...p, widgets, order: p.order.filter((w) => w !== id) }))
+        ),
       };
+    }),
+
+  addPage: () =>
+    set((s) => {
+      const page = freshPage(`Page ${s.board.pages.length + 1}`);
+      return {
+        board: touch({ ...s.board, pages: [...s.board.pages, page], activePageId: page.id }),
+      };
+    }),
+
+  removePage: (id) =>
+    set((s) => {
+      if (s.board.pages.length <= 1) return s;
+      const pages = s.board.pages.filter((p) => p.id !== id);
+      const activePageId =
+        s.board.activePageId === id ? pages[Math.max(0, pages.findIndex((p) => p.id === id) - 1)]?.id ?? pages[0].id : s.board.activePageId;
+      return { board: touch({ ...s.board, pages, activePageId }) };
+    }),
+
+  setActivePage: (id) =>
+    set((s) => {
+      if (!s.board.pages.some((p) => p.id === id) || s.board.activePageId === id) return s;
+      return { board: touch({ ...s.board, activePageId: id }) };
+    }),
+
+  clampAllWidgets: (cols) =>
+    set((s) => {
+      let changed = false;
+      const pages = s.board.pages.map((p) => {
+        let order = p.order;
+        let widgets = p.widgets;
+        const next: typeof widgets = {};
+        for (const [wid, w] of Object.entries(widgets)) {
+          const cw = Math.max(1, Math.min(w.w, cols));
+          if (cw !== w.w) {
+            changed = true;
+            next[wid] = { ...w, w: cw };
+          } else {
+            next[wid] = w;
+          }
+        }
+        widgets = next;
+        return { ...p, order, widgets };
+      });
+      if (!changed) return s;
+      return { board: touch({ ...s.board, pages }) };
     }),
 
   reset: () => set({ board: newBoard() }),

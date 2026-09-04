@@ -3,11 +3,15 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 export type StageRatio = "16:10" | "3:4";
 export type StageBackdrop = "dotted" | "grid" | "plain";
 
-/** Pixels per grid unit — provided by the fitted stage. */
-const UnitContext = createContext(56);
+/** Fitted stage metrics — provided to widgets for unit math. */
+const StageContext = createContext({ unit: 56, cols: 16 });
 
 export function useStageUnit(): number {
-  return useContext(UnitContext);
+  return useContext(StageContext).unit;
+}
+
+export function useStageCols(): number {
+  return useContext(StageContext).cols;
 }
 
 const BACKDROPS: Record<StageBackdrop, React.CSSProperties> = {
@@ -51,8 +55,9 @@ export function Stage({
   }, []);
 
   const [rw, rh] = ratio === "3:4" ? [3, 4] : [16, 10];
+  const cols = ratio === "3:4" ? 10 : 16;
   const scale = size.w > 0 && size.h > 0 ? Math.min(size.w / rw, size.h / rh) : 0;
-  const unit = scale > 0 ? Math.max(24, Math.floor((rw * scale) / 16)) : 56;
+  const unit = scale > 0 ? Math.max(24, Math.floor((rw * scale) / cols)) : 56;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2">
@@ -63,9 +68,9 @@ export function Stage({
             className="slim-scroll overflow-y-auto rounded-lg border bg-background shadow-xl"
             style={{ width: Math.floor(rw * scale), height: Math.floor(rh * scale), ...BACKDROPS[backdrop] }}
           >
-            <UnitContext.Provider value={unit}>
+            <StageContext.Provider value={{ unit, cols }}>
               <div className="min-h-full p-3">{children}</div>
-            </UnitContext.Provider>
+            </StageContext.Provider>
           </div>
         )}
       </div>

@@ -40,16 +40,16 @@ export interface WidgetMeta {
   render: ComponentType<{ widget: Widget }>;
 }
 
-/** Clamp a span to a kind's resize spec (and the 16-unit board cap). */
-export function clampSpan(type: WidgetType, span: GridSpan): GridSpan {
+/** Clamp a span to a kind's resize spec (and the board's column cap). */
+export function clampSpan(type: WidgetType, span: GridSpan, cols = 16): GridSpan {
   const spec = WIDGET_REGISTRY[type].resize;
   const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, Math.round(v)));
   if (spec.square) {
-    const s = clamp(span.w, spec.minW, Math.min(spec.maxW, 16));
+    const s = clamp(span.w, spec.minW, Math.min(spec.maxW, cols));
     return { w: s, h: s };
   }
   return {
-    w: clamp(span.w, spec.minW, Math.min(spec.maxW, 16)),
+    w: clamp(span.w, spec.minW, Math.min(spec.maxW, cols)),
     h: clamp(span.h, spec.minH, Math.min(spec.maxH, 16)),
   };
 }
