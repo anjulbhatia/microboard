@@ -1,8 +1,8 @@
 import { Routes, Route, useParams } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
-import { LandingPage } from '@/app/LandingPage';
-import { CreatePage } from '@/app/CreatePage';
-import { TestPage } from '@/app/TestPage';
+import { LandingPage } from '@/pages/LandingPage';
+import { CreatePage } from '@/pages/CreatePage';
+import { TestPage } from '@/pages/TestPage';
 
 function Share() {
   return (

@@ -10,9 +10,9 @@ import {
   Upload01Icon,
 } from "@hugeicons/core-free-icons";
 import { DitherButton } from "@/components/dither-kit/button";
-import { HeaderIsland } from "@/app/landing/HeaderIsland";
-import { DeviceMockup } from "@/app/landing/DeviceMockup";
-import { LandingFooter } from "@/app/landing/LandingFooter";
+import { HeaderIsland } from "@/components/landing/HeaderIsland";
+import { DeviceMockup } from "@/components/landing/DeviceMockup";
+import { LandingFooter } from "@/components/landing/LandingFooter";
 
 const FEATURES = [
   { icon: Upload01Icon, title: "Any source", body: "CSV, Excel, Google Sheets, or type it in — landed in seconds." },

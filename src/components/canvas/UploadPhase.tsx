@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { CloudUploadIcon, File02Icon, Link01Icon, Table01Icon } from "@hugeicons/core-free-icons";
-import { ManualSheetModal } from "@/app/create/ManualSheetModal";
+import { ManualSheetModal } from "@/components/canvas/ManualSheetModal";
 import { csvRecords, excelRecords, providerForFile, sheetRecords } from "@/lib/data-providers";
 import { SAMPLE_CSV } from "@/lib/data-utils";
 import type { DataSource as BoardSource } from "@/types/board";

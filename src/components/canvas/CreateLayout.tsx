@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -10,23 +10,12 @@ import {
   UserIcon,
 } from "@hugeicons/core-free-icons";
 
-export type DockTab = "visualize" | "transform";
+import type { CreateLayoutProps, DockTab } from "@/app/create/interface";
 
 const DOCK_ITEMS: { id: DockTab; label: string; icon: typeof ChartColumnIcon }[] = [
   { id: "visualize", label: "Visualize", icon: ChartColumnIcon },
   { id: "transform", label: "Transform", icon: CleanIcon },
 ];
-
-interface CreateLayoutProps {
-  title: string;
-  onTitle: (title: string) => void;
-  tab: DockTab;
-  onTab: (tab: DockTab) => void;
-  panelOpen: boolean;
-  panel: ReactNode;
-  agentPanel: ReactNode;
-  children: ReactNode;
-}
 
 export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, panel, agentPanel, children }: CreateLayoutProps) {
   const shellRef = useRef<HTMLDivElement>(null);
@@ -67,6 +56,7 @@ export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, panel, age
             ref={nameRef}
             value={title}
             onChange={(e) => onTitle(e.target.value)}
+            onFocus={(e) => e.target.select()}
             aria-label="Visualisation name"
             placeholder="Untitled visualisation"
             className="w-full truncate rounded-md bg-transparent py-1 pr-12 pl-1.5 text-left text-sm font-semibold focus-visible:bg-muted focus-visible:outline-none"
