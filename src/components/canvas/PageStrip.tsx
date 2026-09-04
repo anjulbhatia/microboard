@@ -1,16 +1,29 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { AspectRatioIcon, PlusSignIcon } from "@hugeicons/core-free-icons";
+import { ArrowLeft01Icon, AspectRatioIcon, PlusSignIcon } from "@hugeicons/core-free-icons";
 import { useBoard } from "@/lib/board-store";
 import { SaveStatus } from "@/components/canvas/controls";
 import type { PageStripProps } from "@/app/create/interface";
 
-export function PageStrip({ ratio, onRatio, cleanedCount, usedCells, capacity }: PageStripProps) {
+export function PageStrip({ ratio, onRatio, cleanedCount, usedCells, capacity, onBackToData }: PageStripProps) {
   const board = useBoard((s) => s.board);
   const { addPage, removePage, setActivePage } = useBoard();
 
   return (
     <div className="flex shrink-0 items-center gap-1 pt-1">
-      <div className="w-28 shrink-0">
+      <div className="flex w-28 shrink-0 items-center gap-1">
+        <div className="group relative">
+          <button
+            type="button"
+            onClick={onBackToData}
+            aria-label="Back to data"
+            className="flex size-7 items-center justify-center rounded-md border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <HugeiconsIcon icon={ArrowLeft01Icon} size={13} strokeWidth={1.5} />
+          </button>
+          <span className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 hidden -translate-x-1/2 rounded-md border bg-popover px-2 py-1 font-mono text-[11px] whitespace-nowrap text-popover-foreground shadow group-hover:block">
+            Back to data
+          </span>
+        </div>
         <SaveStatus version={board.version} />
       </div>
       <div className="flex flex-1 items-center justify-center gap-1">

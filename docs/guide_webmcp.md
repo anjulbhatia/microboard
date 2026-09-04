@@ -22,7 +22,6 @@ get_data --type csv --text "month,visitors\nJan,1860"
 get_data --type clipboard --text "month\tvisitors\nJan\t1860"
 get_data --type clipboard --sep semicolon --text "month;visitors\nJan;1860"
 get_data --type gsheet --url "https://docs.google.com/spreadsheets/d/ABC123/edit"
-get_data --type manual --headers '["a","b"]' --grid '[["1","x"],["2","y"]]'
 ```
 
 In-function:
@@ -42,7 +41,7 @@ JSON:
 
 ## transform_data
 
-Verbs: `filter | select | rename | dropNulls | sort | groupBy | derive`.
+Verbs: `filter | select | rename | dropNulls | sort | groupBy | derive | header | dropDuplicates | fill | flashfill`.
 
 Inline:
 
@@ -54,6 +53,13 @@ transform_data --op dropNulls --column __all__
 transform_data --op sort --column visitors --dir desc
 transform_data --op groupBy --column channel --agg sum --target visitors
 transform_data --op derive --into double --column signups --fn "*" --right 2
+transform_data --op header
+transform_data --op dropDuplicates
+transform_data --op dropDuplicates --columns "month,channel"
+transform_data --op fill --column visitors --mode value --value 0
+transform_data --op fill --column visitors --mode down
+transform_data --op flashfill --column month --into short --example "J"
+transform_data --op replace --column month --find "Jan" --with "January"
 ```
 
 Note: every inline call also needs `--data '{...}'` with the input dataset

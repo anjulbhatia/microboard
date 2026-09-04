@@ -172,9 +172,134 @@ function applyStep(rows: Record<string, string>[], step: Step): Record<string, s
         return { [group]: key, [agg === "count" ? "count" : `${agg}_${target}`]: String(rounded) };
       });
     }
+    case "header": {
+      if (rows.length === 0) return rows;
+      const first = rows[0];
+      const keys = Object.keys(first);
+      const headers = keys.map((k, i) => {
+        const v = (first[k] ?? "").trim();
+        return v || `col_${i + 1}`;
+      });
+      return rows.slice(1).map((r) => {
+        const obj: Record<string, string> = {};
+        keys.forEach((k, i) => {
+          obj[headers[i]] = r[k] ?? "";
+        });
+        return obj;
+      });
+    }
+    case "dropDuplicates": {
+      const cols = (p.columns ?? "").split(",").map((c) => c.trim()).filter(Boolean);
+      const seen = new Set<string>();
+      return rows.filter((r) => {
+        const keys = cols.length > 0 ? cols : Object.keys(r);
+        const sig = keys.map((k) => r[k] ?? "").join("␟");
+        if (seen.has(sig)) return false;
+        seen.add(sig);
+        return true;
+      });
+    }
+    case "fill": {
+      const col = p.column;
+      const mode = p.mode ?? "value";
+      const value = p.value ?? "";
+      if (mode === "down") {
+        let last = "";
+        return rows.map((r) => {
+          const v = r[col] ?? "";
+          if (v !== "") last = v;
+          return { ...r, [col]: v !== "" ? v : last };
+        });
+      }
+      if (!col || col === "__all__") {
+        return rows.map((r) => {
+          const obj: Record<string, string> = {};
+          Object.keys(r).forEach((k) => {
+            obj[k] = r[k] !== "" && r[k] != null ? r[k] : value;
+          });
+          return obj;
+        });
+      }
+      return rows.map((r) => (r[col] !== "" && r[col] != null ? r : { ...r, [col]: value }));
+    }
+    case "flashfill": {
+      const col = p.column;
+      const into = p.into || `${col}_fill`;
+      const example = p.example ?? "";
+      const fn = inferFlashFill(
+        rows.map((r) => r[col] ?? ""),
+        example
+      );
+      if (!fn) return rows;
+      return rows.map((r) => ({ ...r, [into]: fn(r[col] ?? "") }));
+    }
+    case "replace": {
+      const col = p.column;
+      const find = p.find ?? "";
+      const with_ = p.with ?? "";
+      if (!col || !find) return rows;
+      return rows.map((r) => ({ ...r, [col]: String(r[col] ?? "").split(find).join(with_) }));
+    }
     default:
       return rows;
   }
+}
+
+/** Flash-fill-lite: infer a string rule from one example. Returns null if no rule fits. */
+export function inferFlashFill(
+  values: string[],
+  example: string
+): ((v: string) => string) | null {
+  const sources = values.filter((v) => v !== "");
+  if (sources.length === 0 || example === "") return null;
+  const src = sources.find((v) => v === example) ?? sources[0];
+
+  const lower = (s: string) => s.toLowerCase();
+  if (example === src.toUpperCase() && src !== example) {
+    return (v) => v.toUpperCase();
+  }
+  if (example === lower(src) && src !== example) {
+    return (v) => lower(v);
+  }
+  const titled = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
+  if (example === titled(lower(src))) {
+    return (v) => titled(lower(v));
+  }
+
+  const DELIMS = [" ", "-", "_", "/", "@", ".", ","];
+  for (const d of DELIMS) {
+    if (!src.includes(d)) continue;
+    const parts = src.split(d);
+    const idx = parts.indexOf(example);
+    if (parts.length > 1 && idx >= 0) {
+      if (idx === 0) return (v) => v.split(d)[0] ?? v;
+      if (idx === parts.length - 1) return (v) => {
+        const ps = v.split(d);
+        return ps[ps.length - 1] ?? v;
+      };
+      return (v) => v.split(d)[idx] ?? v;
+    }
+  }
+
+  const initials = (s: string) =>
+    s
+      .split(/[\s\-_/.]+/)
+      .filter(Boolean)
+      .map((t) => t[0])
+      .join("");
+  if (example === initials(src)) {
+    return (v) => initials(v);
+  }
+
+  if (src.startsWith(example) && example.length < src.length) {
+    const n = example.length;
+    return (v) => v.slice(0, n);
+  }
+  if (src.endsWith(example) && example.length < src.length) {
+    const n = example.length;
+    return (v) => v.slice(-n);
+  }
+  return null;
 }
 
 export function applySteps(

@@ -1,6 +1,7 @@
 import * as aq from "arquero";
 import type { Dataset, OpDef } from "@/lib/transform/types";
 import { cleanRows } from "@/lib/transform/types";
+import { inferFlashFill } from "@/lib/data-utils";
 
 type Table = ReturnType<typeof aq.from>;
 
@@ -145,17 +146,102 @@ function runTransform(args: Record<string, unknown>): Dataset {
       return toDataset(applyGroupBy(t, args));
     case "derive":
       return toDataset(applyDerive(t, args));
+    case "header": {
+      const rows = t.objects() as Record<string, unknown>[];
+      if (rows.length === 0) return toDataset(t);
+      const keys = Object.keys(rows[0]);
+      const headers = keys.map((k, i) => {
+        const v = String(rows[0][k] ?? "").trim();
+        return v || `col_${i + 1}`;
+      });
+      return {
+        columns: headers,
+        rows: rows.slice(1).map((r) => {
+          const obj: Record<string, unknown> = {};
+          keys.forEach((k, i) => {
+            obj[headers[i]] = r[k] ?? null;
+          });
+          return obj;
+        }),
+      };
+    }
+    case "dropDuplicates": {
+      const cols = String(args.columns ?? "")
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean);
+      return toDataset(cols.length > 0 ? t.dedupe(...cols) : t.dedupe());
+    }
+    case "fill": {
+      const col = String(args.column ?? "__all__");
+      const mode = String(args.mode ?? "value");
+      const value = args.value ?? null;
+      if (mode === "down") {
+        if (!col || col === "__all__") throw new Error("transform_data fill down needs column.");
+        let last: unknown = null;
+        const rows = (t.objects() as Record<string, unknown>[]).map((r) => {
+          const v = r[col];
+          if (v != null && v !== "") last = v;
+          return { ...r, [col]: v != null && v !== "" ? v : last };
+        });
+        return { columns: t.columnNames(), rows };
+      }
+      const cols = col === "__all__" ? t.columnNames() : [col];
+      const rows = (t.objects() as Record<string, unknown>[]).map((r) => {
+        const obj = { ...r };
+        cols.forEach((c) => {
+          if (obj[c] == null || obj[c] === "") obj[c] = value;
+        });
+        return obj;
+      });
+      return { columns: t.columnNames(), rows };
+    }
+    case "replace": {
+      const col = String(args.column ?? "");
+      const find = String(args.find ?? "");
+      const with_ = args.with == null ? "" : String(args.with);
+      if (!col || !find) throw new Error("transform_data replace needs column and find.");
+      const rows = (t.objects() as Record<string, unknown>[]).map((r) => ({
+        ...r,
+        [col]: String(r[col] ?? "").split(find).join(with_),
+      }));
+      return { columns: t.columnNames(), rows };
+    }
+    case "flashfill": {
+      const col = String(args.column ?? "");
+      const into = String(args.into ?? (col ? `${col}_fill` : ""));
+      const example = String(args.example ?? "");
+      if (!col || !into) throw new Error("transform_data flashfill needs column and into.");
+      const fn = inferFlashFill(
+        (t.objects() as Record<string, unknown>[]).map((r) => String(r[col] ?? "")),
+        example
+      );
+      if (!fn) throw new Error("transform_data flashfill: no pattern fits that example.");
+      const rows = (t.objects() as Record<string, unknown>[]).map((r) => ({
+        ...r,
+        [into]: fn(String(r[col] ?? "")),
+      }));
+      return { columns: [...t.columnNames(), into], rows };
+    }
     default:
-      throw new Error(`transform_data: unknown op "${op}". Use filter|select|rename|dropNulls|sort|groupBy|derive.`);
+      throw new Error(
+        `transform_data: unknown op "${op}". Use filter|select|rename|dropNulls|sort|groupBy|derive|header|dropDuplicates|fill|flashfill|replace.`
+      );
   }
 }
 
 export const transformDataOp: OpDef = {
   name: "transform_data",
-  description: "Deterministic Arquero transforms: filter, select, rename, dropNulls, sort, groupBy, derive.",
+  description:
+    "Deterministic Arquero transforms: filter, select, rename, dropNulls, sort, groupBy, derive, header, dropDuplicates, fill, flashfill, replace.",
   params: [
     { name: "data", type: "dataset", required: true, description: "{columns, rows} input." },
-    { name: "op", type: "string", required: true, enum: ["filter", "select", "rename", "dropNulls", "sort", "groupBy", "derive"] },
+    {
+      name: "op",
+      type: "string",
+      required: true,
+      enum: ["filter", "select", "rename", "dropNulls", "sort", "groupBy", "derive", "header", "dropDuplicates", "fill", "flashfill", "replace"],
+    },
     { name: "column", type: "string", description: "Target column." },
     { name: "cond", type: "string", enum: ["==", "!=", "contains", ">", "<", ">=", "<="], description: "Filter condition." },
     { name: "value", type: "string", description: "Filter value." },
@@ -164,9 +250,13 @@ export const transformDataOp: OpDef = {
     { name: "dir", type: "string", enum: ["asc", "desc"], description: "Sort direction." },
     { name: "agg", type: "string", enum: ["sum", "count", "average", "min", "max"], description: "Group aggregation." },
     { name: "target", type: "string", description: "Aggregated column." },
-    { name: "into", type: "string", description: "Derive output column." },
+    { name: "into", type: "string", description: "Derive/flashfill output column." },
     { name: "fn", type: "string", enum: ["+", "-", "*", "/"], description: "Derive arithmetic." },
     { name: "right", type: "string", description: "Derive right side (column or number)." },
+    { name: "mode", type: "string", enum: ["value", "down"], description: "Fill mode." },
+    { name: "example", type: "string", description: "Flashfill example output." },
+    { name: "find", type: "string", description: "Replace find string." },
+    { name: "with", type: "string", description: "Replace replacement." },
   ],
   run: runTransform,
 };

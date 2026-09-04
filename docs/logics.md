@@ -12,7 +12,6 @@ src/lib/data-providers/   ingest: wherever the data is, we retrieve it
   clipboard.ts            pasted text → TabularData (tab/comma/semicolon/colon/space, auto-detected)
   excel.ts                .xlsx File → TabularData (read-excel-file, first sheet)
   sheet.ts                public Google Sheets link → CSV export → TabularData
-  manual.ts               in-app grid ({headers, grid}) → TabularData
   index.ts                providerForFile(name), re-exports
 
 src/lib/transform/         JSON-reproducible operations (human + agent share these)
@@ -63,10 +62,12 @@ runInline('get_data --type csv --text "..."')     // inline form
   `text`, `sep`, `url`, `headers`, `grid`, `file`. `file` (a `File` object)
   is in-function only — it cannot travel as inline/JSON.
 - `transform_data` params: `data`, `op`
-  (filter|select|rename|dropNulls|sort|groupBy|derive), plus per-op keys:
-  `column`, `cond` (==|!=|contains|>|<|>=|<=), `value`, `columns`, `to`,
-  `dir`, `agg` (sum|count|average|min|max), `target`, `into`, `fn` (+|-|*|/),
-  `right` (column or number).
+  (filter|select|rename|dropNulls|sort|groupBy|derive|header|dropDuplicates|fill|flashfill),
+  plus per-op keys: `column`, `cond` (==|!=|contains|>|<|>=|<=), `value`,
+  `columns` (comma list for select, optional subset for dropDuplicates),
+  `to`, `dir`, `agg` (sum|count|average|min|max), `target`, `into`,
+  `fn` (+|-|*|/), `right` (column or number), `mode` (value|down for fill),
+  `example` (flashfill pattern example).
 - `inspect_data` params: `data`, `sample` (default 5). Returns a summary
   table (column, type, nulls, rows) followed by sample rows.
 

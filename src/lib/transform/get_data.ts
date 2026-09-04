@@ -3,7 +3,6 @@ import { csvFromText } from "@/lib/data-providers/csv";
 import { clipboardFromText, type ClipSep } from "@/lib/data-providers/clipboard";
 import { excelFromFile } from "@/lib/data-providers/excel";
 import { sheetFromUrl } from "@/lib/data-providers/sheet";
-import { manualFromGrid } from "@/lib/data-providers/manual";
 import type { CellValue } from "@/lib/data-providers/types";
 import { SAMPLE_CSV } from "@/lib/data-utils";
 
@@ -54,28 +53,19 @@ async function runGetData(args: Record<string, unknown>): Promise<Dataset> {
       const t = await sheetFromUrl(url);
       return tabularToDataset(t.columns, t.rows);
     }
-    case "manual": {
-      const headers = args.headers as string[] | undefined;
-      const grid = args.grid as CellValue[][] | undefined;
-      if (!headers || !grid) throw new Error("get_data manual needs headers[] and grid[][].");
-      const t = manualFromGrid(headers, grid);
-      return tabularToDataset(t.columns, t.rows);
-    }
     default:
-      throw new Error(`get_data: unknown type "${type}". Use csv|clipboard|excel|gsheet|manual|sample.`);
+      throw new Error(`get_data: unknown type "${type}". Use csv|clipboard|excel|gsheet|sample.`);
   }
 }
 
 export const getDataOp: OpDef = {
   name: "get_data",
-  description: "Load a dataset from csv, clipboard, excel, gsheet, manual grid, or the sample.",
+  description: "Load a dataset from csv, clipboard, excel, gsheet, or the sample.",
   params: [
-    { name: "type", type: "string", required: true, enum: ["csv", "clipboard", "excel", "gsheet", "manual", "sample"], description: "Source type." },
+    { name: "type", type: "string", required: true, enum: ["csv", "clipboard", "excel", "gsheet", "sample"], description: "Source type." },
     { name: "text", type: "string", description: "Raw text for csv/clipboard." },
     { name: "sep", type: "string", enum: ["tab", "comma", "semicolon", "colon", "space"], description: "Clipboard separator override (auto-detected otherwise)." },
     { name: "url", type: "string", description: "Public Google Sheets link for gsheet." },
-    { name: "headers", type: "json", description: "Manual grid headers array." },
-    { name: "grid", type: "json", description: "Manual grid rows array." },
     { name: "file", type: "json", description: "Excel File object (in-function calls only)." },
   ],
   run: runGetData,

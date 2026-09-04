@@ -2,8 +2,7 @@ import { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { PlusSignIcon } from "@hugeicons/core-free-icons";
 import { useBoard, WIDGET_PRESETS, WIDGET_TYPES } from "@/lib/board-store";
-import { Btn } from "@/components/canvas/controls";
-import { selectCls } from "@/components/canvas/StepForm";
+import { Btn, CSelect } from "@/components/canvas/controls";
 import { clampSpan, WIDGET_REGISTRY } from "@/widgets/registry";
 import type { WidgetBuilderProps } from "@/app/create/interface";
 import type { WidgetType } from "@/types/board";
@@ -39,33 +38,39 @@ export function WidgetBuilder({ columns, hasData, chartOnly, gridCols }: WidgetB
 
   return (
     <div className="space-y-2">
-      <select value={wType} onChange={(e) => pickType(e.target.value as WidgetType)} className={selectCls} aria-label="Widget type">
-        {kinds.map((t) => (
-          <option key={t.value} value={t.value}>{t.label}</option>
-        ))}
-      </select>
+      <CSelect
+        label="Widget type"
+        value={wType}
+        onChange={(v) => pickType(v as WidgetType)}
+        options={kinds.map((t) => ({ value: t.value, label: t.label }))}
+      />
       {meta.needsData && wType !== "table" && (
         <div className="flex gap-2">
-          <select value={wX} onChange={(e) => setWX(e.target.value)} className={selectCls} aria-label="X column">
-            <option value="">x: auto</option>
-            {columns.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-          <select value={wY} onChange={(e) => setWY(e.target.value)} className={selectCls} aria-label="Y column">
-            <option value="">y: auto</option>
-            {columns.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
+          <CSelect
+            label="X column"
+            value={wX}
+            onChange={setWX}
+            emptyLabel="x: auto"
+            options={columns.map((c) => ({ value: c, label: c }))}
+          />
+          <CSelect
+            label="Y column"
+            value={wY}
+            onChange={setWY}
+            emptyLabel="y: auto"
+            options={columns.map((c) => ({ value: c, label: c }))}
+          />
         </div>
       )}
-      <select value={preset} onChange={(e) => setPreset(Number(e.target.value))} className={selectCls} aria-label="Widget size">
-        <option value={-1}>Default ({meta.defaultSpan.w}×{meta.defaultSpan.h})</option>
-        {WIDGET_PRESETS.map((s, i) => (
-          <option key={s.label} value={i}>{s.label}</option>
-        ))}
-      </select>
+      <CSelect
+        label="Widget size"
+        value={String(preset)}
+        onChange={(v) => setPreset(Number(v))}
+        options={[
+          { value: "-1", label: `Default (${meta.defaultSpan.w}×${meta.defaultSpan.h})` },
+          ...WIDGET_PRESETS.map((s, i) => ({ value: String(i), label: s.label })),
+        ]}
+      />
       <Btn primary onClick={submit} className="w-full">
         <span className="inline-flex items-center justify-center gap-1">
           <HugeiconsIcon icon={PlusSignIcon} size={14} strokeWidth={1.5} />

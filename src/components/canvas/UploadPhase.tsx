@@ -1,20 +1,23 @@
-import { useRef, useState } from "react";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { CloudUploadIcon, File02Icon, Link01Icon, Table01Icon } from "@hugeicons/core-free-icons";
-import { ManualSheetModal } from "@/components/canvas/ManualSheetModal";
+import { lazy, Suspense, useRef, useState } from "react";
+
+import { FileIcon } from "@untitledui/file-icons";
+import { useTheme } from "next-themes";
 import { csvRecords, excelRecords, providerForFile, sheetRecords } from "@/lib/data-providers";
-import { SAMPLE_CSV } from "@/lib/data-utils";
 import type { DataSource as BoardSource } from "@/types/board";
 
-const ACCEPT = ".csv,.xlsx";
+const ClipboardModal = lazy(() =>
+  import("@/components/canvas/ClipboardModal").then((m) => ({ default: m.ClipboardModal }))
+);
 
 export function UploadPhase({ onLoad }: { onLoad: (source: BoardSource, records: Record<string, string>[]) => void }) {
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [sheetUrl, setSheetUrl] = useState("");
-  const [manualOpen, setManualOpen] = useState(false);
+  const [clipOpen, setClipOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const { resolvedTheme } = useTheme();
+  const iconTheme = resolvedTheme === "dark" ? "dark" : "light";
 
   const fail = (e: unknown) => {
     setError(e instanceof Error ? e.message : "Could not load file.");
@@ -48,18 +51,11 @@ export function UploadPhase({ onLoad }: { onLoad: (source: BoardSource, records:
     }
   };
 
-  const btn =
-    "rounded-lg border px-3 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50";
-  const primaryBtn =
-    "rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50";
-
   return (
-    <div className="slim-scroll flex h-full min-h-0 items-center justify-center overflow-y-auto p-4 md:p-8">
-      <div className="w-full max-w-3xl space-y-4">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Add your data</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Drop a CSV or Excel file to start the board.</p>
-        </div>
+    <div className="slim-scroll flex h-full min-h-0 items-center justify-center overflow-y-auto bg-muted/40 p-4">
+      <div className="w-full max-w-xl rounded-2xl border bg-card p-5 shadow-xl">
+        <p className="text-center font-display text-lg tracking-[0.2em]">MICROBOARD</p>
+        <p className="mt-1 text-center text-sm text-muted-foreground">Drop a file to start your board.</p>
 
         <div
           role="button"
@@ -79,22 +75,24 @@ export function UploadPhase({ onLoad }: { onLoad: (source: BoardSource, records:
           onKeyDown={(e) => {
             if (e.key === "Enter") fileRef.current?.click();
           }}
-          className={`flex aspect-[16/10] max-h-[46svh] w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed transition-colors ${
+          className={`mt-4 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-6 transition-colors ${
             dragging ? "border-primary bg-primary/5" : "border-muted-foreground/30 hover:border-primary/60 hover:bg-muted/40"
           }`}
         >
-          <HugeiconsIcon icon={CloudUploadIcon} size={44} strokeWidth={1.5} className="text-muted-foreground" />
-          <p className="font-medium">
-            {busy ? "Reading file…" : dragging ? "Drop to load" : "Drag & drop your file here"}
+          <span className="flex items-end gap-1.5">
+            <FileIcon type="csv" size={30} theme={iconTheme} />
+            <FileIcon type="xlsx" size={30} theme={iconTheme} />
+          </span>
+          <p className="text-sm font-medium">
+            {busy ? "Reading file…" : dragging ? "Drop to load" : "Drag & drop .csv / .xlsx, or browse"}
           </p>
-          <p className="font-mono text-xs text-muted-foreground">.csv · .xlsx</p>
-          {error && <p className="max-w-md px-4 font-mono text-xs text-destructive">{error}</p>}
+          {error && <p className="max-w-md text-center font-mono text-xs text-destructive">{error}</p>}
         </div>
 
         <input
           ref={fileRef}
           type="file"
-          accept={ACCEPT}
+          accept=".csv,.xlsx"
           className="hidden"
           onChange={(e) => {
             void loadFile(e.target.files?.[0]);
@@ -102,53 +100,42 @@ export function UploadPhase({ onLoad }: { onLoad: (source: BoardSource, records:
           }}
         />
 
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <button type="button" onClick={() => fileRef.current?.click()} disabled={busy} className={btn}>
-            <span className="inline-flex items-center gap-1.5">
-              <HugeiconsIcon icon={File02Icon} size={16} strokeWidth={1.5} />
-              Browse file
-            </span>
-          </button>
-          <button type="button" onClick={() => setManualOpen(true)} disabled={busy} className={btn}>
-            <span className="inline-flex items-center gap-1.5">
-              <HugeiconsIcon icon={Table01Icon} size={16} strokeWidth={1.5} />
-              Add manual
-            </span>
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => {
-              try {
-                onLoad("sample", csvRecords(SAMPLE_CSV));
-              } catch (e) {
-                fail(e);
-              }
-            }}
-            className={primaryBtn}
-          >
-            Load sample
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2 rounded-xl border p-3">
-          <HugeiconsIcon icon={Link01Icon} size={18} strokeWidth={1.5} className="shrink-0 text-muted-foreground" />
+        <div className="mt-3 flex items-center gap-2 rounded-xl border px-2.5 py-2">
+          <FileIcon type="spreadsheets" size={24} theme={iconTheme} />
           <input
             value={sheetUrl}
             onChange={(e) => setSheetUrl(e.target.value)}
-            placeholder="Paste a public Google Sheets link…"
+            placeholder="Google Sheets link…"
             aria-label="Google Sheets link"
             className="min-w-0 flex-1 bg-transparent font-mono text-xs focus-visible:outline-none"
           />
-          <button type="button" onClick={() => void loadSheet()} disabled={busy || !sheetUrl.trim()} className={btn}>
+          <button
+            type="button"
+            onClick={() => void loadSheet()}
+            disabled={busy || !sheetUrl.trim()}
+            className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
             Import
+          </button>
+        </div>
+
+        <div className="mt-3 flex items-center justify-center gap-4 text-xs">
+          <button
+            type="button"
+            onClick={() => setClipOpen(true)}
+            disabled={busy}
+            className="font-medium text-primary hover:underline disabled:opacity-50"
+          >
+            Paste from clipboard
           </button>
         </div>
       </div>
 
-      {manualOpen && (
-        <ManualSheetModal onClose={() => setManualOpen(false)} onImport={(records) => onLoad("inline", records)} />
-      )}
+      <Suspense fallback={null}>
+        {clipOpen && (
+          <ClipboardModal onClose={() => setClipOpen(false)} onImport={(records) => onLoad("inline", records)} />
+        )}
+      </Suspense>
     </div>
   );
 }

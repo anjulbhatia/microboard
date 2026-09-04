@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { ColumnMeta, Widget } from "@/types/board";
+import type { Widget } from "@/types/board";
 import type { StageBackdrop, StageRatio } from "@/components/canvas/Stage";
 
 export type DockTab = "visualize" | "transform";
@@ -72,15 +72,10 @@ export interface PageStripProps {
   cleanedCount: number;
   usedCells: number;
   capacity: number;
+  onBackToData: () => void;
 }
 
 export interface UploadPhaseProps {
   onLoad: (source: "inline" | "file" | "sample", records: Record<string, string>[]) => void;
 }
 
-export interface DataLandedModalProps {
-  columns: ColumnMeta[];
-  rows: number;
-  onQuickClean: () => void;
-  onClose: () => void;
-}

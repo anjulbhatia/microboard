@@ -4,7 +4,12 @@ export type StepType =
   | "select"
   | "rename"
   | "dropNulls"
-  | "sort";
+  | "sort"
+  | "header"
+  | "dropDuplicates"
+  | "fill"
+  | "flashfill"
+  | "replace";
 
 export interface Step {
   id: string;

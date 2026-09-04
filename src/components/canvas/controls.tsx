@@ -1,4 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function Btn({
   children,
@@ -26,6 +33,46 @@ export function Btn({
     >
       {children}
     </button>
+  );
+}
+
+export const inputCls =
+  "w-full rounded-md border bg-background px-2 py-1.5 font-mono text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
+
+/** shadcn-styled select with optional empty choice. */
+export function CSelect({
+  value,
+  onChange,
+  label,
+  options,
+  emptyLabel,
+  className = "",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  label: string;
+  options: { value: string; label: string }[];
+  emptyLabel?: string;
+  className?: string;
+}) {
+  const normalized = value === "" ? "__empty" : value;
+  return (
+    <Select
+      value={normalized}
+      onValueChange={(v) => onChange(v == null || v === "__empty" ? "" : v)}
+    >
+      <SelectTrigger aria-label={label} size="sm" className={`w-full ${className}`}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {emptyLabel && <SelectItem value="__empty">{emptyLabel}</SelectItem>}
+        {options.map((o) => (
+          <SelectItem key={o.value} value={o.value}>
+            {o.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
 

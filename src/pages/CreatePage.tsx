@@ -1,24 +1,26 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { CreateLayout } from "@/components/canvas/CreateLayout";
 import { UploadPhase } from "@/components/canvas/UploadPhase";
-import { DataLandedModal } from "@/components/canvas/DataLandedModal";
+
+const TransformPhase = lazy(() =>
+  import("@/components/canvas/TransformPhase").then((m) => ({ default: m.TransformPhase }))
+);
 import { Stage } from "@/components/canvas/Stage";
 import { WidgetCard } from "@/components/canvas/WidgetCard";
 import { AgentPanel, TransformPanel, VisualsPanel } from "@/components/canvas/Panels";
 import { PageStrip } from "@/components/canvas/PageStrip";
 import { useBoard } from "@/lib/board-store";
-import { inferColumns } from "@/lib/data-utils";
 import { useBoardDerived } from "@/app/create/logic/useBoardDerived";
 import { useUploads } from "@/app/create/logic/useUploads";
 import type { DockTab } from "@/app/create/interface";
-import { BOARD_GRID, type ColumnMeta } from "@/types/board";
+import { BOARD_GRID } from "@/types/board";
 import type { StageBackdrop, StageRatio } from "@/components/canvas/Stage";
 
 export function CreatePage() {
   const board = useBoard((s) => s.board);
   const {
-    loadData, addStep, removeWidget, duplicateWidget, moveWidget,
+    loadData, removeWidget, duplicateWidget, moveWidget,
     clampAllWidgets, setTitle,
   } = useBoard();
 
@@ -28,7 +30,7 @@ export function CreatePage() {
   const [agentGoal, setAgentGoal] = useState("");
   const [ratio, setRatio] = useState<StageRatio>("16:10");
   const [backdrop, setBackdrop] = useState<StageBackdrop>("dotted");
-  const [landed, setLanded] = useState<{ columns: ColumnMeta[]; rows: number } | null>(null);
+  const [phase, setPhase] = useState<"load" | "transform" | "canvas">("load");
   const [dragId, setDragId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -47,7 +49,7 @@ export function CreatePage() {
 
   const handleLoad = (source: "inline" | "file" | "sample", records: Record<string, string>[]) => {
     loadData(source, records);
-    setLanded({ columns: inferColumns(records), rows: records.length });
+    setPhase("transform");
     setTab("visualize");
   };
 
@@ -93,7 +95,23 @@ export function CreatePage() {
     </motion.div>
   );
 
-  const showCanvas = hasData || order.length > 0;
+  if (phase === "load" || (phase === "transform" && !hasData)) {
+    return <UploadPhase onLoad={handleLoad} />;
+  }
+
+  if (phase === "transform") {
+    return (
+      <Suspense
+        fallback={
+          <div className="flex h-full items-center justify-center font-mono text-xs text-muted-foreground">
+            Loading transform…
+          </div>
+        }
+      >
+        <TransformPhase onDone={() => setPhase("canvas")} onBack={() => setPhase("load")} />
+      </Suspense>
+    );
+  }
 
   return (
     <CreateLayout
@@ -105,10 +123,7 @@ export function CreatePage() {
       panel={panel}
       agentPanel={<AgentPanel goal={agentGoal} onGoal={setAgentGoal} />}
     >
-      {!showCanvas ? (
-        <UploadPhase onLoad={handleLoad} />
-      ) : (
-        <div className="relative flex min-h-0 flex-1 flex-col px-1 pt-1">
+      <div className="relative flex min-h-0 flex-1 flex-col px-1 pt-1">
           {selectedId === null && order.length > 0 && (
             <div className="absolute top-2.5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-lg border bg-popover px-2 py-1 shadow-xl ring-1 ring-border">
               <span className="px-1 font-mono text-[11px] text-muted-foreground">Board · {ratio}</span>
@@ -177,18 +192,9 @@ export function CreatePage() {
             cleanedCount={cleaned.length}
             usedCells={usedCells}
             capacity={capacity}
+            onBackToData={() => setPhase("transform")}
           />
         </div>
-      )}
-
-      {landed && (
-        <DataLandedModal
-          columns={landed.columns}
-          rows={landed.rows}
-          onQuickClean={() => addStep("dropNulls", { column: "__all__" }, "Drop rows with any null")}
-          onClose={() => setLanded(null)}
-        />
-      )}
     </CreateLayout>
   );
 }
