@@ -2,11 +2,11 @@ import { useRef, useState } from "react";
 import { motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon, Copy01Icon, Drag01Icon, Settings01Icon } from "@hugeicons/core-free-icons";
-import { useStageCols, useStageUnit } from "@/components/canvas/Stage";
-import { useBoard } from "@/lib/board-store";
-import { PropsEditor } from "@/widgets/PropsEditor";
-import { clampSpan, WIDGET_REGISTRY } from "@/widgets/registry";
-import type { WidgetCardProps } from "@/app/create/interface";
+import { useStageCols, useStageUnit } from "@/features/board/components/stage";
+import { useBoard } from "@/app/store/board";
+import { PropsEditor } from "@/features/widgets/components/props-editor";
+import { clampSpan, WIDGET_REGISTRY } from "@/features/widgets/registry";
+import type { WidgetCardProps } from "@/features/board/types";
 
 type ResizeDir = "e" | "s" | "se";
 

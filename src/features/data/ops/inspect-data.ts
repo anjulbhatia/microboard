@@ -1,6 +1,6 @@
 import * as aq from "arquero";
-import type { Dataset, OpDef } from "@/lib/transform/types";
-import { cleanRows } from "@/lib/transform/types";
+import type { Dataset, OpDef } from "@/features/data/ops/types";
+import { cleanRows } from "@/features/data/ops/types";
 
 function runInspect(args: Record<string, unknown>): Dataset {
   const data = args.data as Dataset | undefined;

@@ -1,5 +1,5 @@
-import { parseCSV } from "@/lib/data-utils";
-import { toRecords, type TabularData } from "@/lib/data-providers/types";
+import { parseCSV } from "@/features/data/lib/data-utils";
+import { toRecords, type TabularData } from "@/features/data/providers/types";
 
 export function csvFromText(text: string): TabularData {
   const records = parseCSV(text);

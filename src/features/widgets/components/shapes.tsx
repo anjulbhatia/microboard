@@ -1,4 +1,4 @@
-import type { Widget } from "@/types/board";
+import type { Widget } from "@/features/board/types";
 
 export function ShapesWidget({ widget }: { widget: Widget }) {
   const shape = String(widget.props?.shape ?? "rectangle");

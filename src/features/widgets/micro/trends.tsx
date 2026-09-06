@@ -1,5 +1,5 @@
-import { C2, C3, DES, MUT } from "@/widgets/charts/micro/types";
-import { areaPath, extent, fmt, linear, linePath } from "@/widgets/charts/micro/scale";
+import { C2, C3, DES, MUT } from "@/features/widgets/micro/types";
+import { areaPath, extent, fmt, linear, linePath } from "@/features/widgets/micro/scale";
 
 export function Sparkline({ values = [], w = 120, h = 36 }: { values?: number[]; w?: number; h?: number }) {
   if (values.length === 0) return null;

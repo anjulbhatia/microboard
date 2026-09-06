@@ -1,5 +1,5 @@
 import { readSheet } from "read-excel-file/browser";
-import { toRecords, type CellValue, type TabularData } from "@/lib/data-providers/types";
+import { toRecords, type CellValue, type TabularData } from "@/features/data/providers/types";
 
 function normalize(value: unknown): CellValue {
   if (value == null) return null;

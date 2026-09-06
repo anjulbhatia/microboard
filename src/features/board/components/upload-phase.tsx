@@ -2,11 +2,11 @@ import { lazy, Suspense, useRef, useState } from "react";
 
 import { FileIcon } from "@untitledui/file-icons";
 import { useTheme } from "next-themes";
-import { csvRecords, excelRecords, providerForFile, sheetRecords } from "@/lib/data-providers";
-import type { DataSource as BoardSource } from "@/types/board";
+import { csvRecords, excelRecords, providerForFile, sheetRecords } from "@/features/data/providers";
+import type { DataSource as BoardSource } from "@/features/board/types";
 
 const ClipboardModal = lazy(() =>
-  import("@/components/canvas/ClipboardModal").then((m) => ({ default: m.ClipboardModal }))
+  import("@/features/board/components/clipboard-modal").then((m) => ({ default: m.ClipboardModal }))
 );
 
 export function UploadPhase({ onLoad }: { onLoad: (source: BoardSource, records: Record<string, string>[]) => void }) {

@@ -1,11 +1,11 @@
-import type { Dataset, OpDef } from "@/lib/transform/types";
-import { getDataOp } from "@/lib/transform/get_data";
-import { transformDataOp } from "@/lib/transform/transform_data";
-import { inspectDataOp } from "@/lib/transform/inspect_data";
-import { parseInline } from "@/lib/transform/inline";
+import type { Dataset, OpDef } from "@/features/data/ops/types";
+import { getDataOp } from "@/features/data/ops/get-data";
+import { transformDataOp } from "@/features/data/ops/transform-data";
+import { inspectDataOp } from "@/features/data/ops/inspect-data";
+import { parseInline } from "@/features/data/ops/inline";
 
-export * from "@/lib/transform/types";
-export * from "@/lib/transform/inline";
+export * from "@/features/data/ops/types";
+export * from "@/features/data/ops/inline";
 
 const REGISTRY = new Map<string, OpDef>([
   [getDataOp.name, getDataOp],

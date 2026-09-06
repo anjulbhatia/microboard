@@ -1,5 +1,5 @@
-import { C1, C2, C3, DES, MUT } from "@/widgets/charts/micro/types";
-import { fmt } from "@/widgets/charts/micro/scale";
+import { C1, C2, C3, DES, MUT } from "@/features/widgets/micro/types";
+import { fmt } from "@/features/widgets/micro/scale";
 
 export function MicroDonut({ parts = [] }: { parts?: { label: string; value: number }[] }) {
   const size = 64;

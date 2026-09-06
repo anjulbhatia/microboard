@@ -1,8 +1,8 @@
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { Link } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { SparklesIcon } from '@hugeicons/core-free-icons';
-import { DitherGradient } from '@/components/dither-kit/gradient';
+import { DitherGradient } from '@/shared/components/charts';
 import type { ReactNode } from 'react';
 
 export function Layout({ children }: { children: ReactNode }) {

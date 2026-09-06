@@ -1,6 +1,6 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Image01Icon } from "@hugeicons/core-free-icons";
-import type { Widget } from "@/types/board";
+import type { Widget } from "@/features/board/types";
 
 export function ImageWidget({ widget }: { widget: Widget }) {
   const src = String(widget.props?.src ?? "");

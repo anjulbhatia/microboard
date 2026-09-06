@@ -1,22 +1,22 @@
 import { lazy, Suspense, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { CreateLayout } from "@/components/canvas/CreateLayout";
-import { UploadPhase } from "@/components/canvas/UploadPhase";
+import { CreateLayout } from "@/features/board/components/create-layout";
+import { UploadPhase } from "@/features/board/components/upload-phase";
 
 const TransformPhase = lazy(() =>
-  import("@/components/canvas/TransformPhase").then((m) => ({ default: m.TransformPhase }))
+  import("@/features/board/components/transform-phase").then((m) => ({ default: m.TransformPhase }))
 );
-import { Stage } from "@/components/canvas/Stage";
-import { WidgetCard } from "@/components/canvas/WidgetCard";
-import { AgentPanel, TransformPanel, VisualsPanel } from "@/components/canvas/Panels";
-import { PageStrip } from "@/components/canvas/PageStrip";
-import { QuickAddBar } from "@/components/canvas/QuickAddBar";
-import { useBoard } from "@/lib/board-store";
-import { useBoardDerived } from "@/app/create/logic/useBoardDerived";
-import { useUploads } from "@/app/create/logic/useUploads";
-import type { DockTab } from "@/app/create/interface";
-import { BOARD_GRID } from "@/types/board";
-import type { StageBackdrop, StageRatio } from "@/components/canvas/Stage";
+import { Stage } from "@/features/board/components/stage";
+import { WidgetCard } from "@/features/board/components/widget-card";
+import { AgentPanel, TransformPanel, VisualsPanel } from "@/features/board/components/panels";
+import { PageStrip } from "@/features/board/components/page-strip";
+import { QuickAddBar } from "@/features/board/components/quick-add-bar";
+import { useBoard } from "@/app/store/board";
+import { useBoardDerived } from "@/app/hooks/use-board-derived";
+import { useUploads } from "@/app/hooks/use-uploads";
+import type { DockTab } from "@/features/board/types";
+import { BOARD_GRID } from "@/features/board/types";
+import type { StageBackdrop, StageRatio } from "@/features/board/components/stage";
 
 export function CreatePage() {
   const board = useBoard((s) => s.board);

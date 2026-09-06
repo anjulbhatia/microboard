@@ -1,8 +1,8 @@
 import { useMemo } from "react";
-import { activePage, BOARD_GRID, type Board } from "@/types/board";
-import { WIDGET_REGISTRY } from "@/widgets/registry";
-import { applySteps, inferColumns } from "@/lib/data-utils";
-import type { StageRatio } from "@/components/canvas/Stage";
+import { activePage, BOARD_GRID, type Board } from "@/features/board/types";
+import { WIDGET_REGISTRY } from "@/features/widgets/registry";
+import { applySteps, inferColumns } from "@/features/data/lib/data-utils";
+import type { StageRatio } from "@/features/board/components/stage";
 
 export function useBoardDerived(board: Board, ratio: StageRatio) {
   const page = activePage(board);

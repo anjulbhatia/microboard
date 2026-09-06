@@ -1,5 +1,5 @@
-import type { Widget } from "@/types/board";
-import { WIDGET_REGISTRY } from "@/widgets/registry";
+import type { Widget } from "@/features/board/types";
+import { WIDGET_REGISTRY } from "@/features/widgets/registry";
 
 const inputCls =
   "w-full rounded-md border bg-background px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";

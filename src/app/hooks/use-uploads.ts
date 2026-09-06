@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Upload } from "@/app/create/interface";
+import type { Upload } from "@/features/board/types";
 
 export function useUploads() {
   const [uploads, setUploads] = useState<Upload[]>([]);

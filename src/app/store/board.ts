@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import type { Board, DataSource, Page, StepType, Widget, WidgetType } from "@/types/board";
-import { activePage, freshPage } from "@/types/board";
-import { inferColumns } from "@/lib/data-utils";
+import type { Board, DataSource, Page, StepType, Widget, WidgetType } from "@/features/board/types";
+import { activePage, freshPage } from "@/features/board/types";
+import { inferColumns } from "@/features/data/lib/data-utils";
 
 function newBoard(): Board {
   const now = new Date().toISOString();

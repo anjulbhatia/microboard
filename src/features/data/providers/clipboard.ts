@@ -1,4 +1,4 @@
-import type { CellValue, TabularData } from "@/lib/data-providers/types";
+import type { CellValue, TabularData } from "@/features/data/providers/types";
 
 export type ClipSep = "tab" | "comma" | "semicolon" | "colon" | "space";
 

@@ -1,9 +1,9 @@
-import type { MicroDef } from "@/widgets/charts/micro/types";
-import { Sparkline, SparkBar, DualSparkline, StackedArea, BumpStrip, TrendArrow, Delta } from "@/widgets/charts/micro/trends";
-import { MiniBar, PairedBars, Dumbbell, Dotplot, Slope, Waterfall, Funnel } from "@/widgets/charts/micro/compare";
-import { ActivityGrid, HeatCell, HeatStripe, CalendarStrip, PictogramRow, Segmented, MicroBox, HistogramStrip } from "@/widgets/charts/micro/grids";
-import { MicroDonut, ProgressRing, Progress, Bullet, LikertStrip } from "@/widgets/charts/micro/gauges";
-import { MicroScatter, SpreadBand, ForecastCone, OHLC, NetFlow, RateVolume } from "@/widgets/charts/micro/finance";
+import type { MicroDef } from "@/features/widgets/micro/types";
+import { Sparkline, SparkBar, DualSparkline, StackedArea, BumpStrip, TrendArrow, Delta } from "@/features/widgets/micro/trends";
+import { MiniBar, PairedBars, Dumbbell, Dotplot, Slope, Waterfall, Funnel } from "@/features/widgets/micro/compare";
+import { ActivityGrid, HeatCell, HeatStripe, CalendarStrip, PictogramRow, Segmented, MicroBox, HistogramStrip } from "@/features/widgets/micro/grids";
+import { MicroDonut, ProgressRing, Progress, Bullet, LikertStrip } from "@/features/widgets/micro/gauges";
+import { MicroScatter, SpreadBand, ForecastCone, OHLC, NetFlow, RateVolume } from "@/features/widgets/micro/finance";
 
 const S = [4, 7, 5, 9, 8, 12, 10, 14, 13, 17, 15, 21];
 const A = [3, 5, 4, 8, 7, 10];

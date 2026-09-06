@@ -2,10 +2,10 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowDown01Icon, ArrowUp01Icon, AspectRatioIcon, PlusSignIcon } from "@hugeicons/core-free-icons";
-import { useBoard } from "@/lib/board-store";
-import { BOARD_GRID } from "@/types/board";
-import { SaveStatus } from "@/components/canvas/controls";
-import type { PageStripProps } from "@/app/create/interface";
+import { useBoard } from "@/app/store/board";
+import { BOARD_GRID } from "@/features/board/types";
+import { SaveStatus } from "@/features/board/components/controls";
+import type { PageStripProps } from "@/features/board/types";
 
 export function PageStrip({ ratio, onRatio, cleanedCount, usedCells, capacity }: PageStripProps) {
   const board = useBoard((s) => s.board);

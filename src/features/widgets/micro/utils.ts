@@ -1,4 +1,4 @@
-/** Shared math for src/widgets/charts/micro/*. No deps, no store reads —
+/** Shared math for src/features/widgets/micro/*. No deps, no store reads —
  * every micro chart is a pure function of props so it can render inside
  * the board, the /charts gallery, or a WebMCP tool result identically. */
 

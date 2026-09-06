@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useBoard } from "@/lib/board-store";
-import { applySteps, inferColumns, inferFlashFill } from "@/lib/data-utils";
-import { Btn, CSelect, inputCls } from "@/components/canvas/controls";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import { useBoard } from "@/app/store/board";
+import { applySteps, inferColumns, inferFlashFill } from "@/features/data/lib/data-utils";
+import { Btn, CSelect, inputCls } from "@/features/board/components/controls";
 
 function Shell({
   title,

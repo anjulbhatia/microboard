@@ -1,5 +1,5 @@
-import { csvFromText } from "@/lib/data-providers/csv";
-import { toRecords, type TabularData } from "@/lib/data-providers/types";
+import { csvFromText } from "@/features/data/providers/csv";
+import { toRecords, type TabularData } from "@/features/data/providers/types";
 
 function sheetIdFromUrl(url: string): string | null {
   const match = url.match(/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);

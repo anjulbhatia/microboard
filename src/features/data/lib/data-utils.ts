@@ -1,4 +1,4 @@
-import type { ColumnMeta, Step } from "@/types/board";
+import type { ColumnMeta, Step } from "@/features/board/types";
 
 export function parseCSV(text: string): Record<string, string>[] {
   const rows: string[][] = [];

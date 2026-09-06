@@ -3,9 +3,9 @@ import { FileIcon } from "@untitledui/file-icons";
 import { useTheme } from "next-themes";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { CheckmarkBadge01Icon, Copy01Icon, Link01Icon } from "@hugeicons/core-free-icons";
-import { useBoard } from "@/lib/board-store";
-import { useSession } from "@/lib/session";
-import { exportBoardImage, type BoardImageFormat } from "@/lib/export-board";
+import { useBoard } from "@/app/store/board";
+import { useSession } from "@/app/store/session";
+import { exportBoardImage, type BoardImageFormat } from "@/features/board/lib/export-board";
 
 const FORMATS: { id: BoardImageFormat; label: string; icon: string }[] = [
   { id: "jpg", label: "JPG image", icon: "jpg" },

@@ -1,14 +1,14 @@
 import type { ComponentType } from "react";
-import type { GridSpan, Widget, WidgetType } from "@/types/board";
-import { TextboxWidget } from "@/widgets/textbox";
-import { HeadingWidget } from "@/widgets/heading";
-import { ShapesWidget } from "@/widgets/shapes";
-import { IconsWidget, ICON_CHOICES } from "@/widgets/icons";
-import { ImageWidget } from "@/widgets/image";
-import { BoardWidget } from "@/widgets/board";
-import { CardWidget } from "@/widgets/card";
-import { ChartWidget } from "@/widgets/charts/ChartWidget";
-import { MICRO_IDS, MICRO_REGISTRY } from "@/widgets/charts/micro/registry";
+import type { GridSpan, Widget, WidgetType } from "@/features/board/types";
+import { TextboxWidget } from "@/features/widgets/components/textbox";
+import { HeadingWidget } from "@/features/widgets/components/heading";
+import { ShapesWidget } from "@/features/widgets/components/shapes";
+import { IconsWidget, ICON_CHOICES } from "@/features/widgets/components/icons";
+import { ImageWidget } from "@/features/widgets/components/image";
+import { BoardWidget } from "@/features/widgets/components/board";
+import { CardWidget } from "@/features/widgets/components/card";
+import { ChartWidget } from "@/features/widgets/components/chart-widget";
+import { MICRO_IDS, MICRO_REGISTRY } from "@/features/widgets/micro/registry";
 
 export type FieldType = "text" | "textarea" | "number" | "select" | "color" | "icon";
 

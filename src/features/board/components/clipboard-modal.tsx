@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon, ClipboardIcon } from "@hugeicons/core-free-icons";
-import { CSelect } from "@/components/canvas/controls";
-import { clipboardFromText, detectSep, toRecords, type ClipSep } from "@/lib/data-providers";
+import { CSelect } from "@/features/board/components/controls";
+import { clipboardFromText, detectSep, toRecords, type ClipSep } from "@/features/data/providers";
 
 const SEPS: { value: ClipSep | "auto"; label: string }[] = [
   { value: "auto", label: "Auto" },

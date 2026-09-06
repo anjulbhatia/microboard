@@ -1,16 +1,18 @@
 import { useMemo } from "react";
-import { AreaChart } from "@/components/dither-kit/area-chart";
-import { Area } from "@/components/dither-kit/area";
-import { XAxis } from "@/components/dither-kit/x-axis";
-import { YAxis } from "@/components/dither-kit/y-axis";
-import { Tooltip } from "@/components/dither-kit/tooltip";
-import { BarChart } from "@/components/dither-kit/bar-chart";
-import { Bar } from "@/components/dither-kit/bar";
-import { Sparkline } from "@/components/dither-kit/sparkline";
-import { useBoard } from "@/lib/board-store";
-import { applySteps, inferColumns, toNumber } from "@/lib/data-utils";
-import { MICRO_REGISTRY } from "@/widgets/charts/micro/registry";
-import type { ChartEngine, Widget } from "@/types/board";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  Sparkline,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "@/shared/components/charts";
+import { useBoard } from "@/app/store/board";
+import { applySteps, inferColumns, toNumber } from "@/features/data/lib/data-utils";
+import { MICRO_REGISTRY } from "@/features/widgets/micro/registry";
+import type { ChartEngine, Widget } from "@/features/board/types";
 
 /**
  * Chart widgets by engine. `dither` engine is live (Dither Kit),

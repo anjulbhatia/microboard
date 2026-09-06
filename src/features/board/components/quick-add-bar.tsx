@@ -6,9 +6,9 @@ import {
   PlusSignIcon,
   ShapesIcon,
 } from "@hugeicons/core-free-icons";
-import { useBoard } from "@/lib/board-store";
-import { WIDGET_REGISTRY } from "@/widgets/registry";
-import type { WidgetType } from "@/types/board";
+import { useBoard } from "@/app/store/board";
+import { WIDGET_REGISTRY } from "@/features/widgets/registry";
+import type { WidgetType } from "@/features/board/types";
 
 function useMenu() {
   const [open, setOpen] = useState<string | null>(null);

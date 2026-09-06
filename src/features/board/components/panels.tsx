@@ -8,13 +8,13 @@ import {
   Table01Icon,
   Upload01Icon,
 } from "@hugeicons/core-free-icons";
-import { useBoard } from "@/lib/board-store";
-import { applySteps, downloadJSON, inferColumns } from "@/lib/data-utils";
-import { Btn, CSelect } from "@/components/canvas/controls";
-import { StepForm } from "@/components/canvas/StepForm";
-import { WidgetBuilder } from "@/components/canvas/WidgetBuilder";
-import { DisplayTableModal } from "@/components/canvas/transform-modals";
-import type { AgentPanelProps, TransformPanelProps, VisualsPanelProps } from "@/app/create/interface";
+import { useBoard } from "@/app/store/board";
+import { applySteps, downloadJSON, inferColumns } from "@/features/data/lib/data-utils";
+import { Btn, CSelect } from "@/features/board/components/controls";
+import { StepForm } from "@/features/board/components/step-form";
+import { WidgetBuilder } from "@/features/board/components/widget-builder";
+import { DisplayTableModal } from "@/features/board/components/transform-modals";
+import type { AgentPanelProps, TransformPanelProps, VisualsPanelProps } from "@/features/board/types";
 
 const sectionTitle =
   "border-l-2 border-primary pl-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground";

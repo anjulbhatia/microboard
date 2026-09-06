@@ -1,4 +1,4 @@
-import type { Widget } from "@/types/board";
+import type { Widget } from "@/features/board/types";
 
 const LEVELS: Record<string, string> = {
   "1": "text-3xl font-bold tracking-tight",

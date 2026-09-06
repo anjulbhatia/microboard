@@ -1,4 +1,4 @@
-import type { Widget } from "@/types/board";
+import type { Widget } from "@/features/board/types";
 
 export function BoardWidget({ widget }: { widget: Widget }) {
   const ratio = String(widget.props?.ratio ?? "16:10");

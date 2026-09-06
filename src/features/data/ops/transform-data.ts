@@ -1,7 +1,7 @@
 import * as aq from "arquero";
-import type { Dataset, OpDef } from "@/lib/transform/types";
-import { cleanRows } from "@/lib/transform/types";
-import { inferFlashFill } from "@/lib/data-utils";
+import type { Dataset, OpDef } from "@/features/data/ops/types";
+import { cleanRows } from "@/features/data/ops/types";
+import { inferFlashFill } from "@/features/data/lib/data-utils";
 
 type Table = ReturnType<typeof aq.from>;
 

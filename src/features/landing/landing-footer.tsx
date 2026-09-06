@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { DitherGradient } from "@/components/dither-kit/gradient";
+import { DitherGradient } from "@/shared/components/charts";
 
 export function LandingFooter() {
   return (

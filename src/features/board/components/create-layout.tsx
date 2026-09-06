@@ -7,13 +7,13 @@ import {
   ChevronRightIcon,
   Share01Icon,
 } from "@hugeicons/core-free-icons";
-import { useSession } from "@/lib/session";
+import { useSession } from "@/app/store/session";
 
 const ShareMenu = lazy(() =>
-  import("@/components/canvas/ShareMenu").then((m) => ({ default: m.ShareMenu }))
+  import("@/features/board/components/share-menu").then((m) => ({ default: m.ShareMenu }))
 );
 
-import type { CreateLayoutProps, DockTab } from "@/app/create/interface";
+import type { CreateLayoutProps, DockTab } from "@/features/board/types";
 
 const TABS: { id: DockTab; label: string }[] = [
   { id: "visualize", label: "Visualize" },

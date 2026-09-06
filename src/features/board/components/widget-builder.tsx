@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { PlusSignIcon } from "@hugeicons/core-free-icons";
-import { useBoard, WIDGET_PRESETS, WIDGET_TYPES } from "@/lib/board-store";
-import { Btn, CSelect } from "@/components/canvas/controls";
-import { clampSpan, WIDGET_REGISTRY } from "@/widgets/registry";
-import type { WidgetBuilderProps } from "@/app/create/interface";
-import type { WidgetType } from "@/types/board";
+import { useBoard, WIDGET_PRESETS, WIDGET_TYPES } from "@/app/store/board";
+import { Btn, CSelect } from "@/features/board/components/controls";
+import { clampSpan, WIDGET_REGISTRY } from "@/features/widgets/registry";
+import type { WidgetBuilderProps } from "@/features/board/types";
+import type { WidgetType } from "@/features/board/types";
 
 export function WidgetBuilder({ columns, hasData, chartOnly, gridCols }: WidgetBuilderProps) {
   const addWidget = useBoard((s) => s.addWidget);

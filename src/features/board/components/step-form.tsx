@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useBoard } from "@/lib/board-store";
-import { Btn, CSelect, inputCls } from "@/components/canvas/controls";
-import type { StepFormProps } from "@/app/create/interface";
-import type { StepType } from "@/types/board";
+import { useBoard } from "@/app/store/board";
+import { Btn, CSelect, inputCls } from "@/features/board/components/controls";
+import type { StepFormProps } from "@/features/board/types";
+import type { StepType } from "@/features/board/types";
 
 const STEP_TYPES: { value: StepType; label: string; hint: string }[] = [
   { value: "filter", label: "Filter", hint: "keep matching rows" },

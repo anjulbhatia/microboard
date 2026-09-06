@@ -1,9 +1,7 @@
 import { Routes, Route, useParams } from 'react-router-dom';
-import { Layout } from '@/components/Layout';
-import { LandingPage } from '@/pages/LandingPage';
-import { CreatePage } from '@/pages/CreatePage';
-import { TestPage } from '@/pages/TestPage';
-import { ChartsPage } from '@/pages/ChartsPage';
+import { Layout } from '@/app/layout';
+import { LandingPage } from '@/features/landing';
+import { CreatePage } from '@/features/board';
 
 function Share() {
   return (
@@ -44,8 +42,6 @@ function App() {
         element={
           <Layout>
             <Routes>
-              <Route path="/test" element={<TestPage />} />
-              <Route path="/charts" element={<ChartsPage />} />
               <Route path="/share" element={<Share />} />
               <Route path="/share/:id" element={<SharedBoard />} />
               <Route path="*" element={<NotFound />} />

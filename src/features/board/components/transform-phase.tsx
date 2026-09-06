@@ -24,10 +24,10 @@ import {
   PencilEdit01Icon,
   RowsTwoIcon,
 } from "@hugeicons/core-free-icons";
-import { useBoard } from "@/lib/board-store";
-import { applySteps, inferColumns } from "@/lib/data-utils";
-import { Btn } from "@/components/canvas/controls";
-import { DropColsModal, FillModal, FlashFillModal, GroupByModal, RenameModal, ReplaceModal } from "@/components/canvas/transform-modals";
+import { useBoard } from "@/app/store/board";
+import { applySteps, inferColumns } from "@/features/data/lib/data-utils";
+import { Btn } from "@/features/board/components/controls";
+import { DropColsModal, FillModal, FlashFillModal, GroupByModal, RenameModal, ReplaceModal } from "@/features/board/components/transform-modals";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 

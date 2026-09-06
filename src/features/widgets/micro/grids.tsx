@@ -1,5 +1,5 @@
-import { C1, C2, C3, MUT } from "@/widgets/charts/micro/types";
-import { extent, fmt, linear } from "@/widgets/charts/micro/scale";
+import { C1, C2, C3, MUT } from "@/features/widgets/micro/types";
+import { extent, fmt, linear } from "@/features/widgets/micro/scale";
 
 export function ActivityGrid({ weeks = [], cols = 12 }: { weeks?: number[][]; cols?: number }) {
   const flat = weeks.flat().slice(0, 7 * cols);

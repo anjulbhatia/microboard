@@ -1,10 +1,10 @@
-import type { Dataset, OpDef } from "@/lib/transform/types";
-import { csvFromText } from "@/lib/data-providers/csv";
-import { clipboardFromText, type ClipSep } from "@/lib/data-providers/clipboard";
-import { excelFromFile } from "@/lib/data-providers/excel";
-import { sheetFromUrl } from "@/lib/data-providers/sheet";
-import type { CellValue } from "@/lib/data-providers/types";
-import { SAMPLE_CSV } from "@/lib/data-utils";
+import type { Dataset, OpDef } from "@/features/data/ops/types";
+import { csvFromText } from "@/features/data/providers/csv";
+import { clipboardFromText, type ClipSep } from "@/features/data/providers/clipboard";
+import { excelFromFile } from "@/features/data/providers/excel";
+import { sheetFromUrl } from "@/features/data/providers/sheet";
+import type { CellValue } from "@/features/data/providers/types";
+import { SAMPLE_CSV } from "@/features/data/lib/data-utils";
 
 function tabularToDataset(columns: string[], rows: CellValue[][]): Dataset {
   return {

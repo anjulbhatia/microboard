@@ -1,5 +1,5 @@
-import { C1, C2, C3, DES, MUT } from "@/widgets/charts/micro/types";
-import { extent, fmt, linear } from "@/widgets/charts/micro/scale";
+import { C1, C2, C3, DES, MUT } from "@/features/widgets/micro/types";
+import { extent, fmt, linear } from "@/features/widgets/micro/scale";
 
 export function MicroScatter({ points = [] }: { points?: [number, number][] }) {
   const w = 140;

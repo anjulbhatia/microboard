@@ -13,7 +13,7 @@ import {
   ZapIcon,
   Globe02Icon,
 } from "@hugeicons/core-free-icons";
-import type { Widget } from "@/types/board";
+import type { Widget } from "@/features/board/types";
 
 export const ICON_CHOICES = {
   Sparkles: SparklesIcon,
