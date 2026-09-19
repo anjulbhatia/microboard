@@ -251,7 +251,7 @@ They follow the pattern:
 microboard/
 ├── public/
 │
-├── src/
+├── app/
 │   ├── main.tsx
 │   ├── App.tsx
 │   ├── index.css

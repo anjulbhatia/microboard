@@ -1,6 +1,6 @@
 # ChartMicro — micro chart abstracts (WebMCP guide)
 
-> 33 hand-rolled SVG abstracts in `src/features/widgets/micro/`.
+> 33 hand-rolled SVG abstracts in `app/features/widgets/micro/`.
 > Pure functions of data → SVG. No deps, no animation, theme-aware
 > (`var(--chart-*)`, `currentColor`). Every abstract doubles as a canvas
 > widget (`micro` kind) and an agent-renderable spec.

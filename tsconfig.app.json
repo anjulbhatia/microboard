@@ -9,7 +9,7 @@
     "skipLibCheck": true,
     "ignoreDeprecations": "6.0",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./app/*"]
     },
 
     /* Bundler mode */
@@ -26,5 +26,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["app"]
 }
