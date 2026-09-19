@@ -1,3 +1,28 @@
+# Deps
+node_modules
+.pnp
+.pnp.*
+
+# Build
+dist
+dist-ssr
+*.local
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Convex
+.convex/
+convex/_generated/
+
+# Vercel / Vite
+.vercel
+.vite
+
 # Logs
 logs
 *.log
@@ -7,22 +32,14 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# OS / Editor
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-
-AGENT.md
-legacy
-legacy/*

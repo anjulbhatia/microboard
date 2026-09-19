@@ -27,7 +27,7 @@ get_data --type gsheet --url "https://docs.google.com/spreadsheets/d/ABC123/edit
 In-function:
 
 ```ts
-import { runOp } from "@/lib/transform";
+import { runOp } from "@/features/data/ops";
 
 const d = await runOp("get_data", { type: "sample" });
 // { columns: ["month","channel","visitors","signups"], rows: [...] (12) }

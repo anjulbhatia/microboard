@@ -2,12 +2,13 @@ import { Routes, Route, useParams } from 'react-router-dom';
 import { Layout } from '@/app/layout';
 import { LandingPage } from '@/features/landing';
 import { CreatePage } from '@/features/board';
+import { DashboardPage } from '@/features/dashboard';
 
-function Share() {
+function Showcase() {
   return (
     <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-      <h1 className="text-4xl font-bold tracking-tight">Share</h1>
-      <p className="text-muted-foreground mt-2">Shared boards go here.</p>
+      <h1 className="text-4xl font-bold tracking-tight">Showcase</h1>
+      <p className="text-muted-foreground mt-2">Public gallery of shared boards goes here.</p>
     </div>
   );
 }
@@ -42,7 +43,8 @@ function App() {
         element={
           <Layout>
             <Routes>
-              <Route path="/share" element={<Share />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/showcase" element={<Showcase />} />
               <Route path="/share/:id" element={<SharedBoard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -1,7 +1,7 @@
 # Widgets — specs
 
-> Source of truth lives in `src/widgets/registry.ts` (`WIDGET_REGISTRY` + `clampSpan`).
-> Board grid dims live in `src/types/board.ts` (`BOARD_GRID`).
+> Source of truth lives in `src/features/widgets/registry.ts` (`WIDGET_REGISTRY` + `clampSpan`).
+> Board grid dims live in `src/features/board/types.ts` (`BOARD_GRID`).
 
 ## 1. Unit system
 
@@ -59,7 +59,7 @@ Headings show only the E handle. Icons show E (square) + SE.
 
 ## 4. Chart engines
 
-`src/widgets/charts/ChartWidget.tsx` renders all data widgets.
+`src/features/widgets/components/ChartWidget.tsx` renders all data widgets.
 `CHART_ENGINES` tags each kind:
 
 | Kind | Engine | Status |
@@ -74,7 +74,7 @@ spec: mono follows the dither min-height rule).
 
 ## 5. Adding a kind
 
-1. Component in `src/widgets/<kind>.tsx` receiving `{ widget }`.
+1. Component in `src/features/widgets/components/<kind>.tsx` receiving `{ widget }`.
 2. Entry in `WIDGET_REGISTRY`: label, group, `needsData`, `defaultSpan`,
    `resize` spec, `defaults`, `fields`, `render`.
 3. Props editing is automatic via `PropsEditor` field schema

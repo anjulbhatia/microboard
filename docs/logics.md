@@ -1,12 +1,12 @@
 # Logics — data layer
 
-> Living doc. Updated as the logic layer grows. UI stays in
-> `src/components/*`, route composition in `src/pages/*`.
+> Living doc. Updated as the logic layer grows. Feature UI stays in
+> `src/features/*`, route composition in `src/App.tsx`, shell in `src/app/*`.
 
 ## 1. Map
 
 ```text
-src/lib/data-providers/   ingest: wherever the data is, we retrieve it
+src/features/data/providers/ ingest: wherever the data is, we retrieve it
   types.ts                TabularData { columns, rows }, CellValue, toRecords()
   csv.ts                  comma CSV text → TabularData
   clipboard.ts            pasted text → TabularData (tab/comma/semicolon/colon/space, auto-detected)
@@ -14,18 +14,18 @@ src/lib/data-providers/   ingest: wherever the data is, we retrieve it
   sheet.ts                public Google Sheets link → CSV export → TabularData
   index.ts                providerForFile(name), re-exports
 
-src/lib/transform/         JSON-reproducible operations (human + agent share these)
+src/features/data/ops/         JSON-reproducible operations (human + agent share these)
   types.ts                Dataset { columns, rows }, OpDef, cleanValue/cleanRows
-  get_data.ts             get_data op (all providers)
-  transform_data.ts       transform_data op (Arquero engine)
-  inspect_data.ts         inspect_data op (types, nulls, samples)
+  get-data.ts             get_data op (all providers)
+  transform-data.ts       transform_data op (Arquero engine)
+  inspect-data.ts         inspect_data op (types, nulls, samples)
   inline.ts               inline string form: `op --key value`
   index.ts                runOp(name, args), runInline(cmd), opSpecs()
 
-src/lib/data-utils.ts     UI-side replay (filter/select/rename/dropNulls/sort/groupBy)
-                          + SAMPLE_CSV + downloadJSON. Works today; migrates
-                          onto dataops (same semantics) when the UI needs
-                          derive/Arquero power.
+src/features/data/lib/data-utils.ts UI-side replay (filter/select/rename/dropNulls/sort/groupBy)
+                           + SAMPLE_CSV + downloadJSON. Works today; migrates
+                           onto dataops (same semantics) when the UI needs
+                           derive/Arquero power.
 ```
 
 ## 2. Providers
@@ -56,7 +56,7 @@ runInline('get_data --type csv --text "..."')     // inline form
 ```
 
 - `Dataset` is the wire type: `{ columns, rows }`. Serializable, replayable.
-- `runOp` / `runInline` live in `src/lib/dataops/index.ts`; `opSpecs()`
+- `runOp` / `runInline` live in `src/features/data/ops/index.ts`; `opSpecs()`
   exposes every op's name, description, and params for agents.
 - `get_data` params: `type` (csv|clipboard|excel|gsheet|manual|sample),
   `text`, `sep`, `url`, `headers`, `grid`, `file`. `file` (a `File` object)

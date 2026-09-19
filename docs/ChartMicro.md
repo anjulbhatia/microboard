@@ -1,6 +1,6 @@
 # ChartMicro — micro chart abstracts (WebMCP guide)
 
-> 33 hand-rolled SVG abstracts in `src/widgets/charts/micro/`.
+> 33 hand-rolled SVG abstracts in `src/features/widgets/micro/`.
 > Pure functions of data → SVG. No deps, no animation, theme-aware
 > (`var(--chart-*)`, `currentColor`). Every abstract doubles as a canvas
 > widget (`micro` kind) and an agent-renderable spec.
@@ -16,7 +16,7 @@ One JSON object. `chart` is the registry id, the rest is the chart's props:
 In-function:
 
 ```ts
-import { MICRO_REGISTRY } from "@/widgets/charts/micro/registry";
+import { MICRO_REGISTRY } from "@/features/widgets/micro/registry";
 
 const def = MICRO_REGISTRY["sparkline"];
 const props = def.derive([4, 7, 5, 9]); // bare series → full props
