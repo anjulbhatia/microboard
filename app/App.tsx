@@ -1,26 +1,58 @@
-import { Routes, Route, useParams, Navigate } from 'react-router-dom';
-import { Layout } from '@/layout';
-import { LandingPage } from '@/features/landing';
+import { Routes, Route, useParams, Navigate, Link } from 'react-router-dom';
+import type { ReactNode } from 'react';
+import { LandingPage, HeaderIsland, LandingFooter } from '@/features/landing';
 import { CreatePage } from '@/features/board';
 import { RequireAuth } from '@/features/auth';
 import { HomePage } from '@/features/home';
 import { PublicProfilePage } from '@/features/profile';
 
+/**
+ * Shell map. Landing owns its island + footer; the editor owns CreateLayout;
+ * home owns its sidebar. No global header/footer — each route picks chrome:
+ * - landing chrome (island + footer): /, /showcase, /u/:username
+ * - bare: /share/:id (embed-friendly), 404
+ * - own shell: /new (CreateLayout), /home (sidebar)
+ */
+function LandingChrome({ children }: { children: ReactNode }) {
+  return (
+    <div className="min-h-svh bg-background">
+      <HeaderIsland />
+      <main>{children}</main>
+      <LandingFooter />
+    </div>
+  );
+}
+
+function Brand() {
+  return (
+    <Link to="/" aria-label="Microboard home" className="font-display text-sm tracking-[0.2em] text-muted-foreground hover:text-foreground">
+      MICROBOARD
+    </Link>
+  );
+}
+
 function Showcase() {
   return (
-    <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-      <h1 className="text-4xl font-bold tracking-tight">Showcase</h1>
-      <p className="text-muted-foreground mt-2">Public gallery of shared boards goes here.</p>
-    </div>
+    <LandingChrome>
+      <div className="flex flex-col items-center justify-center px-8 pt-28 pb-16 text-center">
+        <h1 className="text-4xl font-bold tracking-tight">Showcase</h1>
+        <p className="text-muted-foreground mt-2">Public gallery of shared boards goes here.</p>
+      </div>
+    </LandingChrome>
   );
 }
 
 function SharedBoard() {
   const { id } = useParams<{ id: string }>();
   return (
-    <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-      <h1 className="text-4xl font-bold tracking-tight">Shared board</h1>
-      <p className="text-muted-foreground mt-2 font-mono">{id}</p>
+    <div className="flex h-svh flex-col bg-background">
+      <div className="flex shrink-0 items-center justify-between px-4 py-3">
+        <Brand />
+      </div>
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center p-8 text-center">
+        <h1 className="text-4xl font-bold tracking-tight">Shared board</h1>
+        <p className="text-muted-foreground mt-2 font-mono">{id}</p>
+      </div>
     </div>
   );
 }
@@ -30,10 +62,21 @@ function LegacySharedBoard() {
   return <Navigate to={`/share/${id}`} replace />;
 }
 
+function Profile() {
+  return (
+    <LandingChrome>
+      <div className="px-4 pt-24 pb-8">
+        <PublicProfilePage />
+      </div>
+    </LandingChrome>
+  );
+}
+
 function NotFound() {
   return (
-    <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-      <h1 className="text-4xl font-bold tracking-tight">404</h1>
+    <div className="flex h-svh flex-col items-center justify-center gap-2 p-8 text-center">
+      <Brand />
+      <h1 className="mt-4 text-4xl font-bold tracking-tight">404</h1>
       <p className="text-muted-foreground mt-2">Page not found.</p>
     </div>
   );
@@ -50,7 +93,7 @@ function NewBoard() {
 function Home() {
   return (
     <RequireAuth next="/home">
-      <HomePage />
+      <div className="h-svh bg-background"><HomePage /></div>
     </RequireAuth>
   );
 }
@@ -63,21 +106,12 @@ function App() {
       <Route path="/new" element={<NewBoard />} />
       <Route path="/create" element={<Navigate to="/new" replace />} />
       <Route path="/dashboard" element={<Navigate to="/home" replace />} />
-      <Route
-        path="*"
-        element={
-          <Layout>
-            <Routes>
-              <Route path="/home" element={<Home />} />
-              <Route path="/showcase" element={<Showcase />} />
-              <Route path="/share/:id" element={<SharedBoard />} />
-              <Route path="/b/:id" element={<LegacySharedBoard />} />
-              <Route path="/u/:username" element={<PublicProfilePage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Layout>
-        }
-      />
+      <Route path="/home" element={<Home />} />
+      <Route path="/showcase" element={<Showcase />} />
+      <Route path="/share/:id" element={<SharedBoard />} />
+      <Route path="/b/:id" element={<LegacySharedBoard />} />
+      <Route path="/u/:username" element={<Profile />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
