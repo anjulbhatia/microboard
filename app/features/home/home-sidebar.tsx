@@ -14,7 +14,7 @@ import { HOME_SECTIONS, NEW_PATH, profilePath, type HomeSection } from "@/lib/ro
 import { useSession } from "@/store/session";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 
-const SECTION_ICONS: Record<HomeSection, typeof LibraryIcon> = {
+export const SECTION_ICONS: Record<HomeSection, typeof LibraryIcon> = {
   library: LibraryIcon,
   data: Database02Icon,
   mailing: Mail01Icon,
@@ -38,7 +38,7 @@ export function HomeSidebar({ section, onSection }: HomeSidebarProps) {
   return (
     <aside
       aria-label="Home navigation"
-      className="flex w-60 shrink-0 flex-col rounded-2xl border bg-card shadow-md"
+      className="hidden w-60 shrink-0 flex-col rounded-2xl border bg-card shadow-md md:flex"
     >
       <Link
         to="/"

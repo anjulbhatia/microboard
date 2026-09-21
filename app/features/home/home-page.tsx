@@ -1,22 +1,29 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { PlusSignIcon, SparklesIcon } from "@hugeicons/core-free-icons";
 import { useBoard } from "@/store/board";
 import { useSession } from "@/store/session";
-import { NEW_PATH, profilePath, type HomeSection } from "@/lib/routes";
-import { HomeSidebar } from "@/features/home/home-sidebar";
+import { HOME_SECTIONS, NEW_PATH, profilePath, type HomeSection } from "@/lib/routes";
+import { HomeSidebar, SECTION_ICONS } from "@/features/home/home-sidebar";
+import { ThemeToggle } from "@/shared/components/theme-toggle";
 
 /**
  * Home — logged-in SPA. Sections: library (board cards), data sources
  * (sources + integrations + transforms), mailing list, history,
  * analytics, profile. Convex collections (listByOwner) slot into Library.
+ *
+ * Responsive: desktop gets the island sidebar; phones get a top island
+ * bar (brand, new, theme, avatar) plus a bottom island tab bar.
  */
 export function HomePage() {
   const [section, setSection] = useState<HomeSection>("library");
 
   return (
-    <div className="flex h-full min-h-0 gap-3 bg-muted/40 p-3">
+    <div className="flex h-full min-h-0 flex-col gap-3 bg-muted/40 p-3 md:flex-row">
+      <MobileTopBar onProfile={() => setSection("profile")} />
       <HomeSidebar section={section} onSection={setSection} />
-      <div className="min-w-0 flex-1 overflow-y-auto rounded-2xl border bg-card p-6 shadow-sm">
+      <div className="min-w-0 flex-1 overflow-y-auto rounded-2xl border bg-card p-4 shadow-sm md:p-6">
         {section === "library" && <LibraryPanel />}
         {section === "data" && <DataPanel />}
         {section === "mailing" && <MailingPanel />}
@@ -24,7 +31,71 @@ export function HomePage() {
         {section === "analytics" && <Placeholder title="Analytics" body="Views and shares per board land here." />}
         {section === "profile" && <ProfilePanel />}
       </div>
+      <MobileTabBar section={section} onSection={setSection} />
     </div>
+  );
+}
+
+function MobileTopBar({ onProfile }: { onProfile: () => void }) {
+  const user = useSession((s) => s.user);
+  return (
+    <div className="flex shrink-0 items-center gap-2 rounded-2xl border bg-card px-3 py-2 shadow-sm md:hidden">
+      <Link to="/" aria-label="Microboard home" className="flex items-center gap-1.5">
+        <HugeiconsIcon icon={SparklesIcon} size={18} strokeWidth={1.5} className="text-primary" />
+        <span className="font-display text-xs tracking-[0.2em]">MICROBOARD</span>
+      </Link>
+      <span className="flex-1" />
+      <ThemeToggle />
+      <Link
+        to={NEW_PATH}
+        aria-label="Create new board"
+        className="flex items-center gap-1 rounded-xl bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
+      >
+        <HugeiconsIcon icon={PlusSignIcon} size={14} strokeWidth={2.5} />
+        New
+      </Link>
+      {user && (
+        <button
+          type="button"
+          onClick={onProfile}
+          aria-label="Open profile"
+          className="flex size-8 items-center justify-center rounded-full text-xs font-bold text-white"
+          style={{ backgroundColor: `hsl(${user.hue} 55% 42%)` }}
+        >
+          {user.username.charAt(0).toUpperCase()}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function MobileTabBar({ section, onSection }: { section: HomeSection; onSection: (s: HomeSection) => void }) {
+  return (
+    <nav
+      aria-label="Home sections"
+      className="grid shrink-0 grid-cols-6 gap-0.5 rounded-2xl border bg-card p-2 shadow-md md:hidden"
+    >
+      {HOME_SECTIONS.map((s) => {
+        const Icon = SECTION_ICONS[s.id];
+        const active = section === s.id;
+        return (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => onSection(s.id)}
+            title={s.label}
+            aria-label={s.label}
+            aria-current={active ? "page" : undefined}
+            className={`flex flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] transition-colors ${
+              active ? "bg-muted font-medium text-foreground" : "text-muted-foreground"
+            }`}
+          >
+            <HugeiconsIcon icon={Icon} size={19} strokeWidth={1.5} className={active ? "text-primary" : undefined} />
+            <span className="max-w-full truncate leading-none">{s.short}</span>
+          </button>
+        );
+      })}
+    </nav>
   );
 }
 
