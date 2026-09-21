@@ -7,12 +7,12 @@
 - **Repo:** https://github.com/anjulbhatia/microboard
 - **Frontend:** Vercel
 - **Convex deployment:** not deployed
-- **Components:** none
-- **Convex features:** schema, tables, indexes, queries, mutations
-- **Auth:** none
+- **Components:** @convex-dev/auth
+- **Convex features:** schema, tables, indexes, mutations
+- **Auth:** Convex Auth
 - **AI models:** none
 - **Started:** 2026-09-03T22:20:34Z
-- **Last updated:** 2026-09-21T17:47:03Z
+- **Last updated:** 2026-09-21T17:53:55Z
 
 ## Log
 
@@ -36,3 +36,6 @@ Renamed src to app, hardened the feature layout, and scaffolded the Convex backe
 
 ### 2026-09-21 - working tree
 Uncommitted rework of the board editor, dashboard, share menu, and widget components, plus this first hackathon log and the installed Convex hackathon skill (`.agents/skills/convex-hackathon-skill/`). No Convex deployment, components, auth, or model wiring yet.
+
+### 2026-09-21 - working tree
+Correction: removed the uncommitted sponsor scaffolding (AI Gateway suggest, Firecrawl scrape, AgentMail inbox, static hosting) and reset `convex/` to app tables plus Convex Auth v2. Registered auth core, password, and username components in `convex/convex.config.ts`; public sign-up/sign-in/change-password in `convex/auth.ts` with user rows in `convex/users.ts`. Convex features: schema, tables, indexes, mutations. Pending: `npx convex dev` codegen, `AUTH_PRIVATE_KEY`/`AUTH_JWKS` env, `ConvexAuthProvider` wiring, first deploy.
