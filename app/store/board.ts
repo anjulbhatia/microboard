@@ -39,6 +39,10 @@ interface BoardStore {
   board: Board;
   setTitle: (title: string) => void;
   loadData: (source: DataSource, raw: Record<string, string>[]) => void;
+  /** Replace rows in place — keeps source config, steps, pages. */
+  refreshData: (raw: Record<string, string>[]) => void;
+  /** Point the board at an API endpoint + poll interval. */
+  setSourceConfig: (url: string, refreshMinutes: number) => void;
   addStep: (type: StepType, params: Record<string, string>, description: string) => void;
   removeStep: (id: string) => void;
   clearSteps: () => void;
@@ -98,6 +102,27 @@ export const useBoard = create<BoardStore>()((set) => ({
         }),
       };
     }),
+
+  refreshData: (raw) =>
+    set((s) => ({
+      board: touch({
+        ...s.board,
+        data: {
+          ...s.board.data,
+          raw,
+          columns: inferColumns(raw),
+          lastRefresh: new Date().toISOString(),
+        },
+      }),
+    })),
+
+  setSourceConfig: (url, refreshMinutes) =>
+    set((s) => ({
+      board: touch({
+        ...s.board,
+        data: { ...s.board.data, sourceUrl: url, refreshMinutes },
+      }),
+    })),
 
   addStep: (type, params, description) =>
     set((s) => ({
