@@ -26,19 +26,19 @@ export function HeaderIsland() {
       </Link>
       <div className="flex items-center gap-2">
         <Link
-          to="/create"
+          to="/new"
           className="rounded-full bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
         >
           Create new
         </Link>
-        <button
-          type="button"
-          title="Sign in (soon)"
+        <Link
+          to="/home"
+          title="Sign in"
           className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           <HugeiconsIcon icon={UserIcon} size={14} strokeWidth={1.5} />
           Sign in
-        </button>
+        </Link>
       </div>
     </motion.header>
   );

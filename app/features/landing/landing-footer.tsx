@@ -11,7 +11,7 @@ export function LandingFooter() {
           ship dashboards — with your agent on the same live canvas.
         </p>
         <div className="mt-5 flex items-center justify-center gap-6 text-sm">
-          <Link to="/create" className="font-medium text-primary hover:underline">
+          <Link to="/new" className="font-medium text-primary hover:underline">
             Create
           </Link>
           <Link to="/share" className="text-muted-foreground transition-colors hover:text-foreground">

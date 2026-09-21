@@ -2,7 +2,9 @@ import { Routes, Route, useParams, Navigate } from 'react-router-dom';
 import { Layout } from '@/layout';
 import { LandingPage } from '@/features/landing';
 import { CreatePage } from '@/features/board';
-import { DashboardPage } from '@/features/dashboard';
+import { RequireAuth } from '@/features/auth';
+import { HomePage } from '@/features/home';
+import { PublicProfilePage } from '@/features/profile';
 
 function Showcase() {
   return (
@@ -37,21 +39,40 @@ function NotFound() {
   );
 }
 
+function NewBoard() {
+  return (
+    <RequireAuth next="/new">
+      <div className="h-svh"><CreatePage /></div>
+    </RequireAuth>
+  );
+}
+
+function Home() {
+  return (
+    <RequireAuth next="/home">
+      <HomePage />
+    </RequireAuth>
+  );
+}
+
 function App() {
-  
+
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/create" element={<div className="h-svh"><CreatePage /></div>} />
+      <Route path="/new" element={<NewBoard />} />
+      <Route path="/create" element={<Navigate to="/new" replace />} />
+      <Route path="/dashboard" element={<Navigate to="/home" replace />} />
       <Route
         path="*"
         element={
           <Layout>
             <Routes>
-              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/home" element={<Home />} />
               <Route path="/showcase" element={<Showcase />} />
               <Route path="/share/:id" element={<SharedBoard />} />
               <Route path="/b/:id" element={<LegacySharedBoard />} />
+              <Route path="/u/:username" element={<PublicProfilePage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>

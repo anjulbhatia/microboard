@@ -13,11 +13,11 @@ export function SiteHeader() {
             <span>Microboard</span>
           </Link>
           <nav className="flex items-center gap-1 text-sm">
-            <Link to="/create" className="rounded-md px-3 py-2 hover:bg-accent">
+            <Link to="/new" className="rounded-md px-3 py-2 hover:bg-accent">
               Create
             </Link>
-            <Link to="/dashboard" className="rounded-md px-3 py-2 hover:bg-accent">
-              Dashboard
+            <Link to="/home" className="rounded-md px-3 py-2 hover:bg-accent">
+              Home
             </Link>
             <Link to="/showcase" className="rounded-md px-3 py-2 text-muted-foreground hover:bg-accent hover:text-foreground">
               Showcase

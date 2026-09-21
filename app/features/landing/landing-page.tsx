@@ -57,7 +57,7 @@ export function LandingPage() {
                 You and your agent build on the same live canvas. Propose, approve, apply.
               </p>
               <div className="mt-5 flex items-center gap-3">
-                <Link to="/create">
+                <Link to="/new">
                   <DitherButton color="purple" variant="gradient" className="px-6 py-2.5 text-sm">
                     Start creating
                   </DitherButton>
@@ -121,7 +121,7 @@ export function LandingPage() {
             ))}
           </div>
           <div className="mt-10 text-center">
-            <Link to="/create">
+            <Link to="/new">
               <DitherButton color="purple" variant="gradient" className="px-8 py-3 text-sm">
                 Open the canvas
               </DitherButton>
