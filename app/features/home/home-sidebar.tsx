@@ -60,7 +60,7 @@ export function HomeSidebar({ section, onSection }: HomeSidebarProps) {
       </div>
 
       <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-3" aria-label="Home sections">
-        {HOME_SECTIONS.map((s) => {
+        {HOME_SECTIONS.filter((s) => s.id !== "profile").map((s) => {
           const Icon = SECTION_ICONS[s.id];
           const active = section === s.id;
           return (

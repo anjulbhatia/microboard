@@ -21,7 +21,7 @@ export function HomePage() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 bg-muted/40 p-3 md:flex-row">
-      <MobileTopBar onProfile={() => setSection("profile")} />
+      <MobileTopBar onHome={() => setSection("library")} onProfile={() => setSection("profile")} />
       <HomeSidebar section={section} onSection={setSection} />
       <div className="min-w-0 flex-1 overflow-y-auto rounded-2xl border bg-card p-4 shadow-sm md:p-6">
         {section === "library" && <LibraryPanel />}
@@ -36,14 +36,19 @@ export function HomePage() {
   );
 }
 
-function MobileTopBar({ onProfile }: { onProfile: () => void }) {
+function MobileTopBar({ onHome, onProfile }: { onHome: () => void; onProfile: () => void }) {
   const user = useSession((s) => s.user);
   return (
     <div className="flex shrink-0 items-center gap-2 rounded-2xl border bg-card px-3 py-2 shadow-sm md:hidden">
-      <Link to="/" aria-label="Microboard home" className="flex items-center gap-1.5">
+      <button
+        type="button"
+        onClick={onHome}
+        aria-label="Microboard home"
+        className="flex items-center gap-1.5"
+      >
         <HugeiconsIcon icon={SparklesIcon} size={18} strokeWidth={1.5} className="text-primary" />
         <span className="font-display text-xs tracking-[0.2em]">MICROBOARD</span>
-      </Link>
+      </button>
       <span className="flex-1" />
       <ThemeToggle />
       <Link
@@ -73,9 +78,9 @@ function MobileTabBar({ section, onSection }: { section: HomeSection; onSection:
   return (
     <nav
       aria-label="Home sections"
-      className="grid shrink-0 grid-cols-6 gap-0.5 rounded-2xl border bg-card p-2 shadow-md md:hidden"
+      className="grid shrink-0 grid-cols-5 gap-0.5 rounded-2xl border bg-card p-2 shadow-md md:hidden"
     >
-      {HOME_SECTIONS.map((s) => {
+      {HOME_SECTIONS.filter((s) => s.id !== "profile").map((s) => {
         const Icon = SECTION_ICONS[s.id];
         const active = section === s.id;
         return (
