@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { Board, DataSource, Page, StepType, Widget, WidgetType } from "@/features/board/types";
-import { activePage, clampWidgetToGrid, freshPage, nextPosition } from "@/features/board/types";
+import { activePage, clampWidgetToGrid, freshPage, nextPosition, normalizeWidget } from "@/features/board/types";
 import { inferColumns } from "@/features/data/lib/data-utils";
 
 function newBoard(): Board {
@@ -51,6 +51,8 @@ interface BoardStore {
   removePage: (id: string) => void;
   setActivePage: (id: string) => void;
   clampAllWidgets: (cols: number) => void;
+  /** Replace the working board (open from library). Normalizes widgets. */
+  loadBoard: (board: Board) => void;
   reset: () => void;
 }
 
@@ -237,4 +239,17 @@ export const useBoard = create<BoardStore>()((set) => ({
     }),
 
   reset: () => set({ board: newBoard() }),
+
+  loadBoard: (board) =>
+    set(() => ({
+      board: {
+        ...board,
+        pages: board.pages.map((p) => ({
+          ...p,
+          widgets: Object.fromEntries(
+            Object.entries(p.widgets).map(([id, w]) => [id, normalizeWidget(w)])
+          ),
+        })),
+      },
+    })),
 }));

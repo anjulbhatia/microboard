@@ -6,6 +6,7 @@ import { useBoard } from "@/store/board";
 import { useSession } from "@/store/session";
 import { HOME_SECTIONS, NEW_PATH, profilePath, type HomeSection } from "@/lib/routes";
 import { HomeSidebar, SECTION_ICONS } from "@/features/home/home-sidebar";
+import { LibraryPanel } from "@/features/library";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 
 /**
@@ -131,34 +132,6 @@ function MobileTabBar({ onHome, onProfile }: { onHome: () => void; onProfile: ()
         Profile
       </button>
     </nav>
-  );
-}
-
-function LibraryPanel() {
-  const board = useBoard((s) => s.board);
-  const widgets = Object.keys(board.pages[0]?.widgets ?? {}).length;
-  return (
-    <div className="flex max-w-2xl flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">My Library</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Boards you created. Cloud sync via Convex lands next.</p>
-      </div>
-      <div className="rounded-lg border p-5">
-        <p className="font-mono text-xs text-muted-foreground">CURRENT BOARD · v{board.version}</p>
-        <p className="mt-1 text-lg font-semibold">{board.title}</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {widgets} widgets · {board.steps.length} steps · {board.pages.length} pages
-        </p>
-        <div className="mt-4 flex gap-2">
-          <Link to={NEW_PATH} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
-            Open in editor
-          </Link>
-          <Link to="/showcase" className="rounded-md border px-4 py-2 text-sm">
-            Showcase
-          </Link>
-        </div>
-      </div>
-    </div>
   );
 }
 
