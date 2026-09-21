@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Home01Icon, PlusSignIcon, SparklesIcon } from "@hugeicons/core-free-icons";
-import { useBoard } from "@/store/board";
 import { useSession } from "@/store/session";
 import { HOME_SECTIONS, NEW_PATH, profilePath, type HomeSection } from "@/lib/routes";
 import { HomeSidebar, SECTION_ICONS } from "@/features/home/home-sidebar";
 import { LibraryPanel } from "@/features/library";
+import { DataPanel } from "@/features/home/data-panel";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 
 /**
@@ -132,35 +132,6 @@ function MobileTabBar({ onHome, onProfile }: { onHome: () => void; onProfile: ()
         Profile
       </button>
     </nav>
-  );
-}
-
-function DataPanel() {
-  const board = useBoard((s) => s.board);
-  const cols = board.data.columns.map((c) => c.name);
-  return (
-    <div className="flex max-w-2xl flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Data Sources</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Sources, integrations, and everything data on the current board.</p>
-      </div>
-      <div className="rounded-lg border p-5">
-        <p className="font-mono text-xs text-muted-foreground">SOURCE</p>
-        <p className="mt-1 text-sm font-medium">{board.data.source ?? "none yet — load data in the editor"}</p>
-        <p className="mt-3 font-mono text-xs text-muted-foreground">COLUMNS · {cols.length}</p>
-        <p className="mt-1 font-mono text-xs">{cols.length > 0 ? cols.join(", ") : "—"}</p>
-        <p className="mt-3 font-mono text-xs text-muted-foreground">TRANSFORMS · {board.steps.length}</p>
-        {board.steps.length > 0 ? (
-          <ul className="mt-1 list-disc pl-5 text-sm">
-            {board.steps.map((s) => (
-              <li key={s.id}>{s.description}</li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-1 text-sm text-muted-foreground">No transforms yet.</p>
-        )}
-      </div>
-    </div>
   );
 }
 

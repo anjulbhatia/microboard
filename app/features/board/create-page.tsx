@@ -15,6 +15,7 @@ import { useBoard } from "@/store/board";
 import { useBoardDerived } from "@/hooks/use-board-derived";
 import { useUploads } from "@/hooks/use-uploads";
 import type { DockTab } from "@/features/board/types";
+import type { DataSource } from "@/features/board/types";
 import { BOARD_GRID } from "@/features/board/types";
 import type { StageBackdrop, StageRatio } from "@/features/board/components/stage";
 
@@ -43,7 +44,7 @@ export function CreatePage() {
     setPanelOpen(true);
   };
 
-  const handleLoad = (source: "inline" | "file" | "sample", records: Record<string, string>[]) => {
+  const handleLoad = (source: DataSource, records: Record<string, string>[]) => {
     loadData(source, records);
     setPhase("transform");
     setTab("visualize");

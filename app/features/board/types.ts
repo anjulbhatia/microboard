@@ -76,7 +76,7 @@ export interface ColumnMeta {
   nulls: number;
 }
 
-export type DataSource = "inline" | "file" | "sample";
+export type DataSource = "inline" | "file" | "sample" | "sheet" | "api";
 
 export interface Page {
   id: string;
@@ -95,6 +95,10 @@ export interface Board {
     source: DataSource | null;
     raw: Record<string, string>[];
     columns: ColumnMeta[];
+    /** API source config: JSON endpoint + poll interval. */
+    sourceUrl?: string;
+    refreshMinutes?: number;
+    lastRefresh?: string;
   };
   steps: Step[];
   pages: Page[];
@@ -250,5 +254,5 @@ export interface PageStripProps {
 }
 
 export interface UploadPhaseProps {
-  onLoad: (source: "inline" | "file" | "sample", records: Record<string, string>[]) => void;
+  onLoad: (source: DataSource, records: Record<string, string>[]) => void;
 }
