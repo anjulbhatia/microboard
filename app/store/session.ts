@@ -1,8 +1,11 @@
 import { create } from "zustand";
+import { normalizeUsername } from "@/lib/routes";
 
 export interface SessionUser {
   /** Stable id used as boards ownerId. Demo: localStorage-backed. */
   id: string;
+  /** Public handle. Identifier for u/[username]. */
+  username: string;
   name: string;
   hue: number;
   demo: boolean;
@@ -10,7 +13,7 @@ export interface SessionUser {
 
 interface SessionStore {
   user: SessionUser | null;
-  signIn: () => void;
+  signIn: (username?: string) => void;
   signOut: () => void;
 }
 
@@ -31,10 +34,11 @@ function demoId(): string {
 /** Stub auth until email OTP (AgentMail) lands. Demo provisions a stable id. */
 export const useSession = create<SessionStore>()((set) => ({
   user: null,
-  signIn: () =>
+  signIn: (username) =>
     set({
       user: {
         id: demoId(),
+        username: normalizeUsername(username ?? "Guest Creator"),
         name: "Guest Creator",
         hue: Math.floor(Math.random() * 360),
         demo: true,
