@@ -16,13 +16,13 @@ export type HomeSection =
   | "analytics"
   | "profile";
 
-export const HOME_SECTIONS: { id: HomeSection; label: string }[] = [
-  { id: "library", label: "My Library" },
-  { id: "data", label: "Data" },
-  { id: "mailing", label: "Mailing List" },
-  { id: "history", label: "History" },
-  { id: "analytics", label: "Analytics" },
-  { id: "profile", label: "Profile" },
+export const HOME_SECTIONS: { id: HomeSection; label: string; blurb: string }[] = [
+  { id: "library", label: "My Library", blurb: "Boards you created" },
+  { id: "data", label: "Data Sources", blurb: "Sources, integrations — everything data lives here" },
+  { id: "mailing", label: "Mailing List", blurb: "Subscribers for board drops" },
+  { id: "history", label: "History", blurb: "Versions and restores" },
+  { id: "analytics", label: "Analytics", blurb: "Views and shares" },
+  { id: "profile", label: "Profile", blurb: "Account and public page" },
 ];
 
 export function sharePath(id: string): string {

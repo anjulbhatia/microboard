@@ -6,17 +6,17 @@ import { NEW_PATH, profilePath, type HomeSection } from "@/lib/routes";
 import { HomeSidebar } from "@/features/home/home-sidebar";
 
 /**
- * Home — logged-in SPA. Sections: library (board cards), data
- * (sources + transforms), mailing list, history, analytics, profile.
- * Convex collections (listByOwner) slot into Library next.
+ * Home — logged-in SPA. Sections: library (board cards), data sources
+ * (sources + integrations + transforms), mailing list, history,
+ * analytics, profile. Convex collections (listByOwner) slot into Library.
  */
 export function HomePage() {
   const [section, setSection] = useState<HomeSection>("library");
 
   return (
-    <div className="flex h-full min-h-0">
+    <div className="flex h-full min-h-0 gap-3 bg-muted/40 p-3">
       <HomeSidebar section={section} onSection={setSection} />
-      <div className="min-w-0 flex-1 overflow-y-auto border-l p-6">
+      <div className="min-w-0 flex-1 overflow-y-auto rounded-2xl border bg-card p-6 shadow-sm">
         {section === "library" && <LibraryPanel />}
         {section === "data" && <DataPanel />}
         {section === "mailing" && <MailingPanel />}
@@ -62,8 +62,8 @@ function DataPanel() {
   return (
     <div className="flex max-w-2xl flex-col gap-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Data</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Sources and transforms on the current board.</p>
+        <h1 className="text-2xl font-bold tracking-tight">Data Sources</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Sources, integrations, and everything data on the current board.</p>
       </div>
       <div className="rounded-lg border p-5">
         <p className="font-mono text-xs text-muted-foreground">SOURCE</p>
