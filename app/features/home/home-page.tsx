@@ -207,7 +207,11 @@ function MailingPanel() {
 
 function ProfilePanel() {
   const user = useSession((s) => s.user);
+  const rename = useSession((s) => s.rename);
+  const signOut = useSession((s) => s.signOut);
+  const [name, setName] = useState(user?.username ?? "");
   if (!user) return null;
+  const preview = profilePath(name || user.username);
   return (
     <div className="flex max-w-2xl flex-col gap-4">
       <div>
@@ -215,11 +219,38 @@ function ProfilePanel() {
         <p className="mt-1 text-sm text-muted-foreground">Your internal config and public page.</p>
       </div>
       <div className="rounded-lg border p-5 text-sm">
-        <p><span className="font-mono text-xs text-muted-foreground">USERNAME · </span>{user.username}</p>
-        <p className="mt-1"><span className="font-mono text-xs text-muted-foreground">ID · </span><span className="font-mono text-xs">{user.id}</span></p>
-        <Link to={profilePath(user.username)} className="mt-3 inline-block rounded-md border px-4 py-2 text-sm">
-          View public profile
-        </Link>
+        <p><span className="font-mono text-xs text-muted-foreground">ID · </span><span className="font-mono text-xs">{user.id}</span></p>
+        <label className="mt-3 block text-xs font-medium text-muted-foreground" htmlFor="profile-username">
+          Username — public page {preview}
+        </label>
+        <div className="mt-1 flex gap-2">
+          <input
+            id="profile-username"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="min-w-0 flex-1 rounded-md border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none"
+          />
+          <button
+            type="button"
+            onClick={() => rename(name)}
+            disabled={name.trim().length === 0}
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          >
+            Save
+          </button>
+        </div>
+        <div className="mt-3 flex gap-2">
+          <Link to={profilePath(user.username)} className="rounded-md border px-4 py-2 text-sm">
+            View public profile
+          </Link>
+          <button
+            type="button"
+            onClick={signOut}
+            className="rounded-md border border-destructive/40 px-4 py-2 text-sm text-destructive"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
     </div>
   );

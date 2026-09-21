@@ -7,7 +7,7 @@ export default defineSchema({
   users: defineTable({
     name: v.optional(v.string()),
     createdAt: v.optional(v.string()),
-  }),
+  }).index("by_name", ["name"]),
 
   // Board snapshots. Separate table with ownerId (not embedded in users)
   // so sharing/showcase query without loading private docs.

@@ -1,4 +1,4 @@
-import { internalMutation } from "./_generated/server";
+import { internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
@@ -19,5 +19,16 @@ export const createUser = internalMutation({
       name: args.provider.profile.username,
       createdAt: new Date().toISOString(),
     });
+  },
+});
+
+/** Public lookup for u/[username]. Returns null when unknown. */
+export const getByUsername = query({
+  args: { username: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("by_name", (q) => q.eq("name", args.username))
+      .unique();
   },
 });

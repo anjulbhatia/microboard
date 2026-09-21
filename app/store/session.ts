@@ -14,6 +14,7 @@ export interface SessionUser {
 interface SessionStore {
   user: SessionUser | null;
   signIn: (username?: string) => void;
+  rename: (username: string) => void;
   signOut: () => void;
 }
 
@@ -45,4 +46,11 @@ export const useSession = create<SessionStore>()((set) => ({
       },
     }),
   signOut: () => set({ user: null }),
+  rename: (username) =>
+    set((s) => {
+      if (!s.user) return s;
+      const slug = normalizeUsername(username);
+      if (slug === s.user.username) return s;
+      return { user: { ...s.user, username: slug } };
+    }),
 }));
