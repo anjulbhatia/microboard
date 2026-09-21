@@ -30,4 +30,11 @@ export default defineSchema({
     boardId: v.id("boards"),
     createdAt: v.string(),
   }).index("by_slug", ["slug"]),
+
+  // Mailing list per owner. Send via AgentMail slots in later.
+  subscribers: defineTable({
+    ownerId: v.string(),
+    email: v.string(),
+    createdAt: v.string(),
+  }).index("by_owner", ["ownerId"]),
 });

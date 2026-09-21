@@ -7,6 +7,7 @@ import { HOME_SECTIONS, NEW_PATH, profilePath, type HomeSection } from "@/lib/ro
 import { HomeSidebar, SECTION_ICONS } from "@/features/home/home-sidebar";
 import { LibraryPanel } from "@/features/library";
 import { DataPanel } from "@/features/home/data-panel";
+import { MailingPanel } from "@/features/home/mailing-panel";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 
 /**
@@ -132,20 +133,6 @@ function MobileTabBar({ onHome, onProfile }: { onHome: () => void; onProfile: ()
         Profile
       </button>
     </nav>
-  );
-}
-
-function MailingPanel() {
-  return (
-    <div className="flex max-w-2xl flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Mailing List</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Subscribers for board drops. AgentMail send lands here.</p>
-      </div>
-      <div className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">
-        No subscribers yet. Add emails after AgentMail integration — 0 today.
-      </div>
-    </div>
   );
 }
 
