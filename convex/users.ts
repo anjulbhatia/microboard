@@ -14,7 +14,10 @@ export const createUser = internalMutation({
     }),
   },
   returns: v.id("users"),
-  handler: async (ctx) => {
-    return await ctx.db.insert("users", {});
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("users", {
+      name: args.provider.profile.username,
+      createdAt: new Date().toISOString(),
+    });
   },
 });
