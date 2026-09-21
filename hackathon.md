@@ -12,7 +12,7 @@
 - **Auth:** Convex Auth
 - **AI models:** none
 - **Started:** 2026-09-03T22:20:34Z
-- **Last updated:** 2026-09-21T17:53:55Z
+- **Last updated:** 2026-09-22T00:00:00Z
 
 ## Log
 
@@ -39,3 +39,9 @@ Uncommitted rework of the board editor, dashboard, share menu, and widget compon
 
 ### 2026-09-21 - working tree
 Correction: removed the uncommitted sponsor scaffolding (AI Gateway suggest, Firecrawl scrape, AgentMail inbox, static hosting) and reset `convex/` to app tables plus Convex Auth v2. Registered auth core, password, and username components in `convex/convex.config.ts`; public sign-up/sign-in/change-password in `convex/auth.ts` with user rows in `convex/users.ts`. Convex features: schema, tables, indexes, mutations. Pending: `npx convex dev` codegen, `AUTH_PRIVATE_KEY`/`AUTH_JWKS` env, `ConvexAuthProvider` wiring, first deploy.
+
+### 2026-09-22 - routes, shells, home
+Flattened `app/app` to `app`, then built the route map: canonical `/share/:id` with `/b/:id` redirect, `/new` canvas behind a login gate, `/home` SPA, public `/u/:username`, legacy `/create` and `/dashboard` redirects. Dropped the global header/footer for per-route chrome (landing island, bare share, sidebar home). Home gained an island sidebar (brand header, icon nav, theme toggle, profile footer) with a phone layout: top bar, section tabs, bottom main nav. Session is demo-grade with stable ids and editable usernames; email OTP via AgentMail slots into the same modal.
+
+### 2026-09-22 - board schema and features
+Schema-first widget grid: `col`/`row` position plus `dataX`/`dataY` bindings with legacy `x`/`y` compat, flow placement, 16-column clamp, 160-cell capacity. Then vertical slices, each tested: library cards with local persistence and cloud slot (`loadBoard`); data-source registry with API endpoint, JSON coercion, auto-refresh polling that swaps rows in place; `/new` template picker (blank 16:10, blank 3:4, sample data); mailing list with validation and a Convex `subscribers` mirror; history snapshots (cap 10) with restore; analytics views/shares counters. Convex additions: `boards.ownerId` with `by_owner`, `users.by_name` plus `getByUsername`, board save/get/list/showcase functions. 40 bun tests green (`bun test tests/`), `tsc -b` clean. Full detail in `docs/convex.md`.
