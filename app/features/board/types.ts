@@ -48,8 +48,14 @@ export interface Widget {
   id: string;
   type: WidgetType;
   title: string;
+  /** Data column bindings (chart field names). Prefer dataX/dataY; x/y kept for compat. */
   x?: string;
   y?: string;
+  dataX?: string;
+  dataY?: string;
+  /** Grid position in cell units. 0-based, col in [0, cols). */
+  col: number;
+  row: number;
   /** Size in grid units. */
   w: number;
   h: number;
@@ -102,6 +108,77 @@ export function freshPage(name: string): Page {
 
 export function activePage(board: Board): Page {
   return board.pages.find((p) => p.id === board.activePageId) ?? board.pages[0];
+}
+
+/** Data binding readers — dataX/dataY win, legacy x/y fall back. */
+export function widgetDataX(w: Pick<Widget, "x" | "dataX">): string {
+  return w.dataX ?? w.x ?? "";
+}
+
+export function widgetDataY(w: Pick<Widget, "y" | "dataY">): string {
+  return w.dataY ?? w.y ?? "";
+}
+
+/** Fill missing position/bindings on load so old snapshots parse. */
+export function normalizeWidget(w: Widget): Widget {
+  return {
+    ...w,
+    col: Number.isFinite(w.col) ? Math.max(0, Math.floor(w.col)) : 0,
+    row: Number.isFinite(w.row) ? Math.max(0, Math.floor(w.row)) : 0,
+    dataX: w.dataX ?? w.x,
+    dataY: w.dataY ?? w.y,
+  };
+}
+
+/** Flow-place a span after existing widgets on a cols-wide grid. */
+export function nextPosition(
+  order: string[],
+  widgets: Record<string, Widget>,
+  span: GridSpan,
+  cols = 16
+): { col: number; row: number } {
+  let col = 0;
+  let row = 0;
+  let rowH = 0;
+  for (const id of order) {
+    const w = widgets[id];
+    if (!w) continue;
+    if (col + w.w > cols) {
+      col = 0;
+      row += rowH;
+      rowH = 0;
+    }
+    col += w.w;
+    rowH = Math.max(rowH, w.h);
+    if (col >= cols) {
+      col = 0;
+      row += rowH;
+      rowH = 0;
+    }
+  }
+  const w = Math.min(span.w, cols);
+  if (col + w > cols) {
+    col = 0;
+    row += rowH;
+  }
+  return { col, row };
+}
+
+/** Clamp span + position into a cols×rows grid. Pure, no UI. */
+export function clampWidgetToGrid(
+  w: Widget,
+  cols = 16,
+  rows = 10
+): Widget {
+  const cw = Math.max(1, Math.min(Math.round(w.w), cols));
+  const ch = Math.max(1, Math.min(Math.round(w.h), rows));
+  return {
+    ...w,
+    w: cw,
+    h: ch,
+    col: Math.max(0, Math.min(Math.floor(w.col), Math.max(0, cols - cw))),
+    row: Math.max(0, Math.floor(w.row)),
+  };
 }
 
 export type DockTab = "visualize" | "transform";

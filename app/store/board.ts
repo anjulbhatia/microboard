@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { Board, DataSource, Page, StepType, Widget, WidgetType } from "@/features/board/types";
-import { activePage, freshPage } from "@/features/board/types";
+import { activePage, clampWidgetToGrid, freshPage, nextPosition } from "@/features/board/types";
 import { inferColumns } from "@/features/data/lib/data-utils";
 
 function newBoard(): Board {
@@ -42,7 +42,7 @@ interface BoardStore {
   addStep: (type: StepType, params: Record<string, string>, description: string) => void;
   removeStep: (id: string) => void;
   clearSteps: () => void;
-  addWidget: (widget: Omit<Widget, "id">) => void;
+  addWidget: (widget: Omit<Widget, "id" | "col" | "row"> & Partial<Pick<Widget, "col" | "row">>) => void;
   updateWidget: (id: string, patch: Partial<Omit<Widget, "id">>) => void;
   duplicateWidget: (id: string) => void;
   moveWidget: (dragId: string, targetId: string) => void;
@@ -113,11 +113,25 @@ export const useBoard = create<BoardStore>()((set) => ({
   addWidget: (widget) =>
     set((s) => {
       const id = crypto.randomUUID();
+      const page = activePage(s.board);
+      const span = {
+        w: Math.max(1, Math.min(Math.round(widget.w), 16)),
+        h: Math.max(1, Math.min(Math.round(widget.h), 16)),
+      };
+      const pos =
+        widget.col !== undefined && widget.row !== undefined
+          ? { col: widget.col, row: widget.row }
+          : nextPosition(page.order, page.widgets, span, 16);
+      const placed = clampWidgetToGrid(
+        { ...widget, id, w: span.w, h: span.h, col: pos.col, row: pos.row } as Widget,
+        16,
+        16
+      );
       return {
         board: touch(
           withPage(s.board, (p) => ({
             ...p,
-            widgets: { ...p.widgets, [id]: { ...widget, id } },
+            widgets: { ...p.widgets, [id]: placed },
             order: [...p.order, id],
           }))
         ),
@@ -205,21 +219,18 @@ export const useBoard = create<BoardStore>()((set) => ({
   clampAllWidgets: (cols) =>
     set((s) => {
       let changed = false;
+      const rowsByCols = cols === 10 ? 16 : 10;
       const pages = s.board.pages.map((p) => {
         let order = p.order;
-        let widgets = p.widgets;
-        const next: typeof widgets = {};
-        for (const [wid, w] of Object.entries(widgets)) {
-          const cw = Math.max(1, Math.min(w.w, cols));
-          if (cw !== w.w) {
+        const next: typeof p.widgets = {};
+        for (const [wid, w] of Object.entries(p.widgets)) {
+          const clamped = clampWidgetToGrid(w, cols, rowsByCols);
+          if (clamped.w !== w.w || clamped.h !== w.h || clamped.col !== w.col || clamped.row !== w.row) {
             changed = true;
-            next[wid] = { ...w, w: cw };
-          } else {
-            next[wid] = w;
           }
+          next[wid] = clamped;
         }
-        widgets = next;
-        return { ...p, order, widgets };
+        return { ...p, order, widgets: next };
       });
       if (!changed) return s;
       return { board: touch({ ...s.board, pages }) };

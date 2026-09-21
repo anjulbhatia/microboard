@@ -13,6 +13,7 @@ import { useBoard } from "@/store/board";
 import { applySteps, inferColumns, toNumber } from "@/features/data/lib/data-utils";
 import { MICRO_REGISTRY } from "@/features/widgets/micro/registry";
 import type { ChartEngine, Widget } from "@/features/board/types";
+import { widgetDataX, widgetDataY } from "@/features/board/types";
 
 /**
  * Chart widgets by engine. `dither` engine is live (Dither Kit),
@@ -33,8 +34,9 @@ export function ChartWidget({ widget }: { widget: Widget }) {
 
   if (widget.type === "micro") {
     const def = MICRO_REGISTRY[String(widget.props?.chart ?? "sparkline")] ?? MICRO_REGISTRY.sparkline;
+    const yCol = widgetDataY(widget);
     const nums = cleaned
-      .map((r) => toNumber(r[widget.y ?? ""] ?? ""))
+      .map((r) => toNumber(r[yCol] ?? ""))
       .filter((n): n is number => n != null);
     const Body = def.Component;
     return <Body {...def.derive(nums.length > 0 ? nums : [4, 7, 5, 9])} />;
@@ -66,7 +68,9 @@ export function ChartWidget({ widget }: { widget: Widget }) {
     );
   }
 
-  const nums = cleaned.map((r) => toNumber(r[widget.y ?? ""] ?? "")).filter((n): n is number => n != null);
+  const yCol = widgetDataY(widget);
+  const xCol = widgetDataX(widget);
+  const nums = cleaned.map((r) => toNumber(r[yCol] ?? "")).filter((n): n is number => n != null);
   if (widget.type === "kpi") {
     const total = nums.reduce((a, b) => a + b, 0);
     const rounded = Math.round(total * 100) / 100;
@@ -74,7 +78,7 @@ export function ChartWidget({ widget }: { widget: Widget }) {
       <div>
         <p className="text-4xl font-bold tracking-tight">{rounded.toLocaleString()}</p>
         <p className="mt-1 font-mono text-xs text-muted-foreground">
-          {widget.y} · {cleaned.length} rows
+          {yCol} · {cleaned.length} rows
         </p>
       </div>
     );
@@ -85,10 +89,10 @@ export function ChartWidget({ widget }: { widget: Widget }) {
   }
 
   const points = cleaned.slice(0, 12).map((r) => ({
-    x: String(r[widget.x ?? ""] ?? ""),
-    v: toNumber(r[widget.y ?? ""] ?? "") ?? 0,
+    x: String(r[xCol] ?? ""),
+    v: toNumber(r[yCol] ?? "") ?? 0,
   }));
-  const config = { v: { label: widget.y ?? "value", color: "purple" as const } };
+  const config = { v: { label: yCol || "value", color: "purple" as const } };
   if (widget.type === "dither-area") {
     return (
       <div className="h-64">

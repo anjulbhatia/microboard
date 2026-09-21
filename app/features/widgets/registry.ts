@@ -55,6 +55,20 @@ export function clampSpan(type: WidgetType, span: GridSpan, cols = 16): GridSpan
   };
 }
 
+/** Clamp a grid position so a w×h span stays inside cols×rows. Pure logic. */
+export function clampPosition(
+  col: number,
+  row: number,
+  w: number,
+  cols = 16
+): { col: number; row: number } {
+  const cw = Math.max(1, Math.min(Math.round(w), cols));
+  return {
+    col: Math.max(0, Math.min(Math.floor(col), Math.max(0, cols - cw))),
+    row: Math.max(0, Math.floor(row)),
+  };
+}
+
 const SHAPE_COLORS = [
   { value: "var(--chart-3)", label: "Purple" },
   { value: "var(--chart-1)", label: "Deep" },

@@ -35,6 +35,7 @@ export function useBoardDerived(board: Board, ratio: StageRatio) {
     [order, widgets]
   );
   const capacity = dims.cols * dims.rows;
+  const overCapacity = usedCells > capacity;
 
-  return { page, order, widgets, cleaned, cleanedCols, rawCols, hasData, chartWidgets, dims, usedCells, capacity };
+  return { page, order, widgets, cleaned, cleanedCols, rawCols, hasData, chartWidgets, dims, usedCells, capacity, overCapacity };
 }

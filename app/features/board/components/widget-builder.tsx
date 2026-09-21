@@ -30,6 +30,8 @@ export function WidgetBuilder({ columns, hasData, chartOnly, gridCols }: WidgetB
       title: meta.needsData ? `${meta.label} · ${y || x}` : meta.defaults.title,
       x: meta.needsData ? x : undefined,
       y: meta.needsData ? y : undefined,
+      dataX: meta.needsData ? x : undefined,
+      dataY: meta.needsData ? y : undefined,
       w: span.w,
       h: span.h,
       props: { ...meta.defaults.props },
