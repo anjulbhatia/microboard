@@ -8,6 +8,8 @@ import { HomeSidebar, SECTION_ICONS } from "@/features/home/home-sidebar";
 import { LibraryPanel } from "@/features/library";
 import { DataPanel } from "@/features/home/data-panel";
 import { MailingPanel } from "@/features/home/mailing-panel";
+import { HistoryPanel } from "@/features/home/history-panel";
+import { AnalyticsPanel } from "@/features/home/analytics-panel";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 
 /**
@@ -30,8 +32,8 @@ export function HomePage() {
         {section === "library" && <LibraryPanel />}
         {section === "data" && <DataPanel />}
         {section === "mailing" && <MailingPanel />}
-        {section === "history" && <Placeholder title="History" body="Board versions and restores land here." />}
-        {section === "analytics" && <Placeholder title="Analytics" body="Views and shares per board land here." />}
+        {section === "history" && <HistoryPanel />}
+        {section === "analytics" && <AnalyticsPanel />}
         {section === "profile" && <ProfilePanel />}
       </div>
       <MobileTabBar onHome={() => setSection("library")} onProfile={() => setSection("profile")} />
@@ -183,15 +185,6 @@ function ProfilePanel() {
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Placeholder({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="flex max-w-2xl flex-col gap-2">
-      <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-      <div className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">{body}</div>
     </div>
   );
 }
