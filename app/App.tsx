@@ -1,7 +1,7 @@
 import { Routes, Route, useParams, Navigate, Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { LandingPage, HeaderIsland, LandingFooter } from '@/features/landing';
-import { CreatePage } from '@/features/board';
+import { NewPage } from '@/features/board';
 import { RequireAuth } from '@/features/auth';
 import { HomePage } from '@/features/home';
 import { PublicProfilePage } from '@/features/profile';
@@ -85,7 +85,7 @@ function NotFound() {
 function NewBoard() {
   return (
     <RequireAuth next="/new">
-      <div className="h-svh"><CreatePage /></div>
+      <div className="h-svh"><NewPage /></div>
     </RequireAuth>
   );
 }

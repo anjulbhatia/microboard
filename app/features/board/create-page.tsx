@@ -19,7 +19,10 @@ import type { DataSource } from "@/features/board/types";
 import { BOARD_GRID } from "@/features/board/types";
 import type { StageBackdrop, StageRatio } from "@/features/board/components/stage";
 
-export function CreatePage() {
+export function CreatePage({ initialRatio = "16:10", startAt = "load" }: {
+  initialRatio?: StageRatio;
+  startAt?: "load" | "transform" | "canvas";
+} = {}) {
   const board = useBoard((s) => s.board);
   const {
     loadData, removeWidget, duplicateWidget, moveWidget,
@@ -29,9 +32,9 @@ export function CreatePage() {
   const [tab, setTab] = useState<DockTab>("visualize");
   const [panelOpen, setPanelOpen] = useState(false);
   const [agentGoal, setAgentGoal] = useState("");
-  const [ratio, setRatio] = useState<StageRatio>("16:10");
+  const [ratio, setRatio] = useState<StageRatio>(initialRatio);
   const [backdrop, setBackdrop] = useState<StageBackdrop>("dotted");
-  const [phase, setPhase] = useState<"load" | "transform" | "canvas">("load");
+  const [phase, setPhase] = useState<"load" | "transform" | "canvas">(startAt);
   const [dragId, setDragId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
