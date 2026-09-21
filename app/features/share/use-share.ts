@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useBoard } from '@/app/store/board';
-import { isBackendConfigured } from '@/app/lib/backend';
+import { useBoard } from '@/store/board';
+import { isBackendConfigured } from '@/lib/backend';
 import { boardSnapshot, publicBoardUrl, type ShareResult, type ShareStatus } from '@/features/share/types';
 
 /**

@@ -24,7 +24,7 @@ import {
   PencilEdit01Icon,
   RowsTwoIcon,
 } from "@hugeicons/core-free-icons";
-import { useBoard } from "@/app/store/board";
+import { useBoard } from "@/store/board";
 import { applySteps, inferColumns } from "@/features/data/lib/data-utils";
 import { Btn } from "@/features/board/components/controls";
 import { DropColsModal, FillModal, FlashFillModal, GroupByModal, RenameModal, ReplaceModal } from "@/features/board/components/transform-modals";

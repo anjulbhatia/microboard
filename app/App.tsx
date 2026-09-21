@@ -1,5 +1,5 @@
 import { Routes, Route, useParams } from 'react-router-dom';
-import { Layout } from '@/app/layout';
+import { Layout } from '@/layout';
 import { LandingPage } from '@/features/landing';
 import { CreatePage } from '@/features/board';
 import { DashboardPage } from '@/features/dashboard';

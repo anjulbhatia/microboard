@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { PlusSignIcon } from "@hugeicons/core-free-icons";
-import { useBoard, WIDGET_PRESETS, WIDGET_TYPES } from "@/app/store/board";
+import { useBoard, WIDGET_PRESETS, WIDGET_TYPES } from "@/store/board";
 import { Btn, CSelect } from "@/features/board/components/controls";
 import { clampSpan, WIDGET_REGISTRY } from "@/features/widgets/registry";
 import type { WidgetBuilderProps } from "@/features/board/types";

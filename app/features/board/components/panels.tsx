@@ -8,7 +8,7 @@ import {
   Table01Icon,
   Upload01Icon,
 } from "@hugeicons/core-free-icons";
-import { useBoard } from "@/app/store/board";
+import { useBoard } from "@/store/board";
 import { applySteps, downloadJSON, inferColumns } from "@/features/data/lib/data-utils";
 import { Btn, CSelect } from "@/features/board/components/controls";
 import { StepForm } from "@/features/board/components/step-form";

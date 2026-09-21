@@ -1,6 +1,3 @@
-// DRAFT — not compiled (convex/ excluded from tsconfig). Your job: adjust
-// after `npx convex dev` generates convex/_generated/.
-
 import { query } from "./_generated/server";
 
 export const list = query({

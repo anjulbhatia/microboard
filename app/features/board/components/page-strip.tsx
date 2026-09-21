@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowDown01Icon, ArrowUp01Icon, AspectRatioIcon, PlusSignIcon } from "@hugeicons/core-free-icons";
-import { useBoard } from "@/app/store/board";
+import { useBoard } from "@/store/board";
 import { BOARD_GRID } from "@/features/board/types";
 import { SaveStatus } from "@/features/board/components/controls";
 import type { PageStripProps } from "@/features/board/types";

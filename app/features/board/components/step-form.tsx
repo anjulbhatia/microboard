@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useBoard } from "@/app/store/board";
+import { useBoard } from "@/store/board";
 import { Btn, CSelect, inputCls } from "@/features/board/components/controls";
 import type { StepFormProps } from "@/features/board/types";
 import type { StepType } from "@/features/board/types";

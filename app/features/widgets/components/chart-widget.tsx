@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "@/shared/components/charts";
-import { useBoard } from "@/app/store/board";
+import { useBoard } from "@/store/board";
 import { applySteps, inferColumns, toNumber } from "@/features/data/lib/data-utils";
 import { MICRO_REGISTRY } from "@/features/widgets/micro/registry";
 import type { ChartEngine, Widget } from "@/features/board/types";

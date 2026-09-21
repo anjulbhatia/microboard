@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useBoard } from '@/app/store/board';
+import { useBoard } from '@/store/board';
 
 /**
  * Dashboard — collections home for the agentic Canva vision.

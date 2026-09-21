@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { Checkbox } from "@/shared/components/ui/checkbox";
-import { useBoard } from "@/app/store/board";
+import { useBoard } from "@/store/board";
 import { applySteps, inferColumns, inferFlashFill } from "@/features/data/lib/data-utils";
 import { Btn, CSelect, inputCls } from "@/features/board/components/controls";
 

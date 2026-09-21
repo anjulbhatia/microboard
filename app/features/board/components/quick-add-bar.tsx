@@ -6,7 +6,7 @@ import {
   PlusSignIcon,
   ShapesIcon,
 } from "@hugeicons/core-free-icons";
-import { useBoard } from "@/app/store/board";
+import { useBoard } from "@/store/board";
 import { WIDGET_REGISTRY } from "@/features/widgets/registry";
 import type { WidgetType } from "@/features/board/types";
 

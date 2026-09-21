@@ -7,7 +7,7 @@ import {
   ChevronRightIcon,
   Share01Icon,
 } from "@hugeicons/core-free-icons";
-import { useSession } from "@/app/store/session";
+import { useSession } from "@/store/session";
 
 const ShareMenu = lazy(() =>
   import("@/features/board/components/share-menu").then((m) => ({ default: m.ShareMenu }))
