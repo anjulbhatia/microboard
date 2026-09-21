@@ -12,12 +12,12 @@ export interface ShareResult {
 export type ShareStatus = 'idle' | 'publishing' | 'done' | 'error';
 
 /**
- * Build the public URL for a board id. Route is `/b/:id` per AGENT.md
- * (legacy `/share/:id` still resolves — see App).
+ * Build the public URL for a board id. Canonical route is `/share/:id`
+ * (legacy `/b/:id` redirects — see App).
  */
 export function publicBoardUrl(publicId: string): string {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  return `${origin}/b/${publicId}`;
+  return `${origin}/share/${publicId}`;
 }
 
 /** Serialize the versioned board for the backend. Snapshot = source of truth. */

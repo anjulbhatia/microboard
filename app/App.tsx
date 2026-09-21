@@ -1,4 +1,4 @@
-import { Routes, Route, useParams } from 'react-router-dom';
+import { Routes, Route, useParams, Navigate } from 'react-router-dom';
 import { Layout } from '@/layout';
 import { LandingPage } from '@/features/landing';
 import { CreatePage } from '@/features/board';
@@ -21,6 +21,11 @@ function SharedBoard() {
       <p className="text-muted-foreground mt-2 font-mono">{id}</p>
     </div>
   );
+}
+
+function LegacySharedBoard() {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={`/share/${id}`} replace />;
 }
 
 function NotFound() {
@@ -46,6 +51,7 @@ function App() {
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/showcase" element={<Showcase />} />
               <Route path="/share/:id" element={<SharedBoard />} />
+              <Route path="/b/:id" element={<LegacySharedBoard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>
