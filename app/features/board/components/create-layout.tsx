@@ -28,11 +28,11 @@ export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, onPanelTog
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
-      <header className="flex shrink-0 flex-wrap items-baseline gap-x-2 gap-y-1 bg-card px-2 py-1.5">
+      <header className="flex h-11 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 bg-card px-2">
         <Link
           to="/"
           aria-label="Microboard home"
-          className="rounded-md px-2 py-1 font-display text-lg leading-none tracking-[0.2em] text-foreground transition-opacity hover:opacity-70"
+          className="rounded-md px-2 py-1 font-display text-base leading-none tracking-[0.2em] text-foreground transition-opacity hover:opacity-70"
         >
           MICROBOARD
         </Link>
@@ -45,7 +45,7 @@ export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, onPanelTog
             onFocus={(e) => e.target.select()}
             aria-label="Visualisation name"
             placeholder="Untitled Board"
-            className="w-full truncate rounded-md bg-transparent py-1 pr-12 pl-1.5 text-left text-sm font-medium text-primary focus-visible:bg-muted focus-visible:outline-none"
+            className="w-full truncate rounded-md bg-transparent py-1 pr-12 pl-1.5 text-left text-[13px] font-medium tracking-tight text-primary focus-visible:bg-muted focus-visible:outline-none"
           />
           <button
             type="button"
@@ -64,7 +64,7 @@ export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, onPanelTog
             onClick={() => setAgentOpen((v) => !v)}
             aria-label="Toggle agent panel"
             title="Agent inputs"
-            className={`rounded-lg border px-2.5 py-1.5 font-mono text-xs font-semibold tracking-wider transition-colors hover:bg-muted hover:text-foreground ${
+            className={`rounded-[9px] border px-2.5 py-1 font-mono text-[11px] font-semibold tracking-wider transition-all hover:bg-muted hover:text-foreground active:scale-[0.97] ${
               agentOpen ? "border-primary text-foreground" : "text-muted-foreground"
             }`}
           >
@@ -76,7 +76,7 @@ export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, onPanelTog
               onClick={() => setShareOpen((v) => !v)}
               aria-label="Share"
               aria-expanded={shareOpen}
-              className="flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+              className="flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-1.5 text-[13px] font-medium text-primary-foreground transition-all hover:opacity-90 active:scale-[0.97]"
             >
               <HugeiconsIcon icon={Share01Icon} size={16} strokeWidth={1.5} />
               Share

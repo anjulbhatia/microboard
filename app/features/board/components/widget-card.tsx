@@ -75,7 +75,7 @@ export function WidgetCard({ widget, selected, onSelect, onRemove, onDuplicate, 
       className={`relative ${selected ? "corner-brackets" : ""}`}
     >
       {selected && (
-        <div className="absolute top-2 left-1/2 z-20 flex -translate-x-1/2 items-center gap-0.5 rounded-full border bg-popover/95 py-1 pr-1.5 pl-2.5 shadow-xl ring-1 ring-border backdrop-blur">
+        <div className="absolute top-2 left-1/2 z-20 flex -translate-x-1/2 items-center gap-0.5 rounded-full border bg-popover/95 py-1 pr-1.5 pl-2.5 shadow-xl ring-1 ring-border backdrop-blur animate-in fade-in zoom-in-95 duration-100">
           <span className="pr-1 font-mono text-[10px] tracking-wide text-muted-foreground">{meta.label}</span>
           <span aria-hidden className="h-4 w-px bg-border" />
           <span

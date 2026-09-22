@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { AnimatePresence, motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Home01Icon, PlusSignIcon, SparklesIcon } from "@hugeicons/core-free-icons";
 import { useSession } from "@/store/session";
@@ -36,16 +37,23 @@ export function HomePage() {
       <MobileTopBar onHome={() => setSection("home")} />
       <HomeSidebar section={section} onSection={setSection} />
       <MobileSectionTabs section={section} onSection={setSection} />
-      <div
-        key={section}
-        className="min-w-0 flex-1 overflow-y-auto rounded-2xl border bg-card p-4 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-200 md:p-6"
-      >
-        {section === "home" && <LibraryPanel />}
-        {section === "data" && <DataPanel />}
-        {section === "mailing" && <MailingPanel />}
-        {section === "history" && <HistoryPanel />}
-        {section === "analytics" && <AnalyticsPanel />}
-        {section === "profile" && <ProfilePanel />}
+      <div className="min-w-0 flex-1 overflow-y-auto rounded-2xl border bg-card p-4 shadow-sm md:p-6">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={section}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {section === "home" && <LibraryPanel />}
+            {section === "data" && <DataPanel />}
+            {section === "mailing" && <MailingPanel />}
+            {section === "history" && <HistoryPanel />}
+            {section === "analytics" && <AnalyticsPanel />}
+            {section === "profile" && <ProfilePanel />}
+          </motion.div>
+        </AnimatePresence>
       </div>
       <MobileTabBar onHome={() => setSection("home")} onProfile={() => setSection("profile")} />
     </div>

@@ -27,8 +27,8 @@ export function Btn({
       disabled={disabled}
       className={
         primary
-          ? `rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50 ${className}`
-          : `rounded-lg border px-3 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50 ${className}`
+          ? `rounded-[9px] bg-primary px-3 py-1.5 text-[13px] font-medium tracking-tight text-primary-foreground transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 ${className}`
+          : `rounded-[9px] border px-3 py-1.5 text-[13px] font-medium tracking-tight transition-all hover:bg-muted active:scale-[0.98] disabled:opacity-50 ${className}`
       }
     >
       {children}

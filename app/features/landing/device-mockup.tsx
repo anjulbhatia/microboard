@@ -9,7 +9,10 @@ export function DeviceMockup({ large, flat }: { large?: boolean; flat?: boolean 
       style={{ perspective: 1500 }}
       className={large ? "mx-auto w-full max-w-3xl" : "mx-auto w-full max-w-md"}
     >
-      <img src={"/proto.png"} className="w-full rounded-3xl border border-border" />
+      <img
+        src={"/proto.png"}
+        className="corner-brackets w-full rounded-3xl border border-border shadow-2xl ring-1 ring-foreground/10"
+      />
     </motion.div>
   );
 }

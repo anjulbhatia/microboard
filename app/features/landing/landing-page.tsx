@@ -44,7 +44,8 @@ export function LandingPage() {
 
       <div ref={heroRef} className="relative h-[220svh]">
         <div className="sticky top-0 flex h-svh items-center overflow-hidden">
-          <div className="mx-auto grid w-full max-w-6xl grid-cols-12 items-center gap-6 px-6">
+          <div aria-hidden className="dot-pattern pointer-events-none absolute inset-0 opacity-60 [mask-image:radial-gradient(70%_60%_at_50%_40%,black,transparent)]" />
+          <div className="relative mx-auto grid w-full max-w-6xl grid-cols-12 items-center gap-6 px-6">
             <motion.div style={{ opacity: textOpacity, x: textX }} className="col-span-5">
               <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-xs text-muted-foreground">
                 <HugeiconsIcon icon={SparklesIcon} size={14} strokeWidth={1.5} />
@@ -57,12 +58,12 @@ export function LandingPage() {
                 You and your agent build on the same live canvas. Propose, approve, apply.
               </p>
               <div className="mt-5 flex items-center gap-3">
-                <Link to="/new">
+                <Link to="/new" className="inline-block transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98]">
                   <DitherButton color="purple" variant="gradient" className="px-6 py-2.5 text-sm">
                     Start creating
                   </DitherButton>
                 </Link>
-                <Link to="/share">
+                <Link to="/share" className="inline-block transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98]">
                   <DitherButton color="grey" variant="solid" className="px-6 py-2.5 text-sm">
                     View shared
                   </DitherButton>
