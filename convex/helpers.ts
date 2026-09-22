@@ -1,14 +1,18 @@
 import type { QueryCtx, MutationCtx } from "./_generated/server";
+import type { GenericActionCtx } from "convex/server";
+import type { DataModel } from "./_generated/dataModel";
+
+type AnyCtx =
+  | QueryCtx
+  | MutationCtx
+  | GenericActionCtx<DataModel>;
 
 /**
  * Resolve the acting userKey: Convex Auth subject when signed in,
  * otherwise the caller-passed demo key. Central so OTP hardening
  * touches one place.
  */
-export async function userKey(
-  ctx: QueryCtx | MutationCtx,
-  fallback?: string
-): Promise<string> {
+export async function userKey(ctx: AnyCtx, fallback?: string): Promise<string> {
   const identity = await ctx.auth.getUserIdentity();
   if (identity?.subject) return identity.subject;
   if (fallback) return fallback;

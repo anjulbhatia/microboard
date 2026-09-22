@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@agentmail/convex": "^0.1.0",
     "@base-ui/react": "^1.7.0",
     "@convex-dev/auth": "^2.0.0-alpha.2",
     "@fontsource-variable/geist": "^5.3.0",

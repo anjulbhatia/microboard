@@ -3,11 +3,13 @@ import { v } from "convex/values";
 import auth from "@convex-dev/auth/core/convex.config.js";
 import passwordProvider from "@convex-dev/auth/providers/password/convex.config.js";
 import username from "@convex-dev/auth/username/convex.config.js";
+import agentmail from "@agentmail/convex/convex.config";
 
 const app = defineApp({
   env: {
     AUTH_PRIVATE_KEY: v.string(),
     AUTH_JWKS: v.string(),
+    AGENTMAIL_API_KEY: v.optional(v.string()),
   },
 });
 
@@ -20,5 +22,6 @@ app.use(auth, {
 });
 app.use(passwordProvider);
 app.use(username);
+app.use(agentmail);
 
 export default app;

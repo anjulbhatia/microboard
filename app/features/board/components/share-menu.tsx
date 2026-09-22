@@ -1,11 +1,17 @@
-import { useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { FileIcon } from "@untitledui/file-icons";
 import { useTheme } from "next-themes";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { CheckmarkBadge01Icon, Copy01Icon, Link01Icon } from "@hugeicons/core-free-icons";
 import { useBoard } from "@/store/board";
 import { useSession } from "@/store/session";
+import { isBackendConfigured } from "@/lib/backend";
 import { exportBoardImage, type BoardImageFormat } from "@/features/board/lib/export-board";
+
+// Codegen-backed panel — lazy so offline clones still build.
+const SendToSubscribers = lazy(() =>
+  import("@/features/share/send-to-subscribers").then((m) => ({ default: m.SendToSubscribers }))
+);
 
 const FORMATS: { id: BoardImageFormat; label: string; icon: string }[] = [
   { id: "jpg", label: "JPG image", icon: "jpg" },
@@ -110,6 +116,15 @@ export function ShareMenu({ onClose }: { onClose: () => void }) {
         </button>
       )}
       {error && <p className="px-2 pt-1 font-mono text-[11px] text-destructive">{error}</p>}
+
+      {isBackendConfigured() && user && (
+        <>
+          <div className="my-1.5 h-px bg-border" aria-hidden />
+          <Suspense fallback={null}>
+            <SendToSubscribers />
+          </Suspense>
+        </>
+      )}
     </div>
   );
 }

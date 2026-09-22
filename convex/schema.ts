@@ -75,4 +75,11 @@ export default defineSchema({
     text: v.string(),
     createdAt: v.string(),
   }).index("by_board", ["boardId"]),
+
+  // AgentMail inbox per owner. Board drops send from here.
+  mailInboxes: defineTable({
+    ownerId: v.string(),
+    inboxId: v.string(),
+    createdAt: v.string(),
+  }).index("by_owner", ["ownerId"]),
 });
