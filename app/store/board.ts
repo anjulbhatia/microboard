@@ -1,4 +1,5 @@
-import { create } from "zustand";
+import { create, type StateCreator } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { Board, DataSource, Page, StepType, Widget, WidgetType } from "@/features/board/types";
 import { activePage, BOARD_GRID, clampWidgetToGrid, freshPage, nextPosition, normalizeWidget } from "@/features/board/types";
 import { inferColumns } from "@/features/data/lib/data-utils";
@@ -83,7 +84,27 @@ export const WIDGET_TYPES: { value: WidgetType; label: string }[] = [
   { value: "dither-bar", label: "Dither bar" },
 ];
 
-export const useBoard = create<BoardStore>()((set) => ({
+/** Normalize + clamp a board (rehydration, old snapshots, cloud docs). */
+function sanitizeBoard(board: Board): Board {
+  return {
+    ...board,
+    pages: board.pages.map((p) => ({
+      ...p,
+      widgets: Object.fromEntries(
+        Object.entries(p.widgets).map(([id, w]) => [
+          id,
+          clampWidgetToGrid(normalizeWidget(w), BOARD_GRID.cols, BOARD_GRID.rows),
+        ])
+      ),
+    })),
+  };
+}
+
+const hasBrowserStorage =
+  typeof localStorage !== "undefined" && typeof window !== "undefined";
+
+const boardCreator: StateCreator<BoardStore> = (set) => {
+  return {
   board: newBoard(),
 
   setTitle: (title) =>
@@ -264,16 +285,24 @@ export const useBoard = create<BoardStore>()((set) => ({
 
   reset: () => set({ board: newBoard() }),
 
-  loadBoard: (board) =>
-    set(() => ({
-      board: {
-        ...board,
-        pages: board.pages.map((p) => ({
-          ...p,
-          widgets: Object.fromEntries(
-            Object.entries(p.widgets).map(([id, w]) => [id, normalizeWidget(w)])
-          ),
-        })),
-      },
-    })),
-}));
+  loadBoard: (board) => set(() => ({ board: sanitizeBoard(board) })),
+  };
+}
+
+/** Persisted in browsers (survives reload, guest included); plain in tests. */
+const persistedCreator = persist(boardCreator, {
+  name: "microboard.board.v1",
+  storage: createJSONStorage(() => localStorage),
+  partialize: (s) => ({ board: s.board }) as BoardStore,
+  merge: (persisted, current) => {
+    const p = persisted as Partial<BoardStore>;
+    return {
+      ...current,
+      board: p.board ? sanitizeBoard(p.board) : current.board,
+    };
+  },
+}) as StateCreator<BoardStore>;
+
+export const useBoard = create<BoardStore>()(
+  hasBrowserStorage ? persistedCreator : boardCreator
+);

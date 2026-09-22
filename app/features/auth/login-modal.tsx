@@ -13,13 +13,15 @@ interface LoginModalProps {
   /** Where to go after sign-in. Defaults to /home. */
   next?: string;
   onDone?: () => void;
+  /** Dismiss without signing in (X button). */
+  onClose?: () => void;
 }
 
 /**
  * Login / signup modal. Demo today: pick a username, get a local session.
  * Email OTP via AgentMail slots into this same modal later.
  */
-export function LoginModal({ next = HOME_PATH, onDone }: LoginModalProps) {
+export function LoginModal({ next = HOME_PATH, onDone, onClose }: LoginModalProps) {
   const signIn = useSession((s) => s.signIn);
   const [raw, setRaw] = useState("");
   const [touched, setTouched] = useState(false);
@@ -43,7 +45,17 @@ export function LoginModal({ next = HOME_PATH, onDone }: LoginModalProps) {
       aria-label="Log in or sign up"
       className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4 backdrop-blur-sm"
     >
-      <div className="w-full max-w-sm rounded-xl border bg-card p-5 shadow-xl">
+      <div className="relative w-full max-w-sm rounded-xl border bg-card p-5 shadow-xl">
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close login"
+            className="absolute top-3 right-3 flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            ×
+          </button>
+        )}
         <h2 className="text-lg font-bold tracking-tight">Log in / Sign up</h2>
         {isBackendConfigured() ? (
           <>

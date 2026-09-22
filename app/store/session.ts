@@ -1,4 +1,5 @@
-import { create } from "zustand";
+import { create, type StateCreator } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { normalizeUsername } from "@/lib/routes";
 
 export interface SessionUser {
@@ -34,8 +35,10 @@ function demoId(): string {
   }
 }
 
-/** Stub auth until email OTP (AgentMail) lands. Demo provisions a stable id. */
-export const useSession = create<SessionStore>()((set) => ({
+const hasBrowserStorage =
+  typeof localStorage !== "undefined" && typeof window !== "undefined";
+
+const sessionCreator: StateCreator<SessionStore> = (set) => ({
   user: null,
   signIn: (username) =>
     set({
@@ -65,4 +68,15 @@ export const useSession = create<SessionStore>()((set) => ({
       if (slug === s.user.username) return s;
       return { user: { ...s.user, username: slug } };
     }),
-}));
+});
+
+const persistedSession = persist(sessionCreator, {
+  name: "microboard.session.v1",
+  storage: createJSONStorage(() => localStorage),
+  partialize: (s) => ({ user: s.user }) as SessionStore,
+}) as StateCreator<SessionStore>;
+
+/** Stub auth until email OTP (AgentMail) lands. Demo provisions a stable id. */
+export const useSession = create<SessionStore>()(
+  hasBrowserStorage ? persistedSession : sessionCreator
+);

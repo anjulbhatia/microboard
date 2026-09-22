@@ -8,6 +8,7 @@ import {
   Share01Icon,
 } from "@hugeicons/core-free-icons";
 import { useSession } from "@/store/session";
+import { LoginModal } from "@/features/auth";
 
 const ShareMenu = lazy(() =>
   import("@/features/board/components/share-menu").then((m) => ({ default: m.ShareMenu }))
@@ -24,7 +25,8 @@ export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, onPanelTog
   const nameRef = useRef<HTMLInputElement>(null);
   const [agentOpen, setAgentOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const { user, signOut } = useSession();
+  const [loginOpen, setLoginOpen] = useState(false);
+  const { user } = useSession();
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
@@ -96,19 +98,26 @@ export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, onPanelTog
             )}
           </div>
           {user ? (
+            <Link
+              to="/home"
+              className="rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-all hover:bg-muted active:scale-[0.97]"
+            >
+              Home
+            </Link>
+          ) : (
             <button
               type="button"
-              onClick={signOut}
-              title={`${user.name} — sign out`}
-              aria-label="Profile — sign out"
-              className="flex size-8 items-center justify-center rounded-full text-xs font-bold text-white"
-              style={{ backgroundColor: `hsl(${user.hue} 55% 42%)` }}
+              onClick={() => setLoginOpen(true)}
+              className="rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-all hover:bg-muted active:scale-[0.97]"
             >
-              {user.name.charAt(0).toUpperCase()}
+              Log in / Sign up
             </button>
-          ) : null}
+          )}
         </div>
       </header>
+      {loginOpen && !user && (
+        <LoginModal next="/new" onDone={() => setLoginOpen(false)} onClose={() => setLoginOpen(false)} />
+      )}
 
       {toolbar}
 

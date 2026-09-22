@@ -118,11 +118,8 @@ function NotFound() {
 }
 
 function NewBoard() {
-  return (
-    <RequireAuth next="/new">
-      <div className="h-svh"><CreatePage /></div>
-    </RequireAuth>
-  );
+  // Open canvas: no gate, no upfront user. Login lives in the header.
+  return <div className="h-svh"><CreatePage /></div>;
 }
 
 function Home() {

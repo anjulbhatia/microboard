@@ -6,6 +6,7 @@ import { CheckmarkBadge01Icon, Copy01Icon, Link01Icon } from "@hugeicons/core-fr
 import { useBoard } from "@/store/board";
 import { useSession } from "@/store/session";
 import { isBackendConfigured } from "@/lib/backend";
+import { LoginModal } from "@/features/auth";
 import { exportBoardImage, type BoardImageFormat } from "@/features/board/lib/export-board";
 
 // Codegen-backed panel — lazy so offline clones still build.
@@ -22,12 +23,13 @@ const FORMATS: { id: BoardImageFormat; label: string; icon: string }[] = [
 
 export function ShareMenu({ onClose }: { onClose: () => void }) {
   const board = useBoard((s) => s.board);
-  const { user, signIn } = useSession();
+  const { user } = useSession();
   const { resolvedTheme } = useTheme();
   const [busy, setBusy] = useState<BoardImageFormat | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [published, setPublished] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
   const iconTheme = resolvedTheme === "dark" ? "dark" : "light";
 
   const download = async (format: BoardImageFormat) => {
@@ -107,7 +109,7 @@ export function ShareMenu({ onClose }: { onClose: () => void }) {
         <button
           type="button"
           onClick={() => {
-            signIn();
+            setLoginOpen(true);
             onClose();
           }}
           className="w-full rounded-md bg-primary px-2 py-2.5 text-center text-xs font-semibold tracking-widest text-primary-foreground uppercase transition-opacity hover:opacity-90"
@@ -116,6 +118,10 @@ export function ShareMenu({ onClose }: { onClose: () => void }) {
         </button>
       )}
       {error && <p className="px-2 pt-1 font-mono text-[11px] text-destructive">{error}</p>}
+
+      {loginOpen && !user && (
+        <LoginModal next="/new" onDone={() => setLoginOpen(false)} onClose={() => setLoginOpen(false)} />
+      )}
 
       {isBackendConfigured() && user && (
         <>
