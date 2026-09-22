@@ -8,7 +8,8 @@ const TransformPhase = lazy(() =>
 );
 import { Stage } from "@/features/board/components/stage";
 import { WidgetCard } from "@/features/board/components/widget-card";
-import { AgentPanel, TransformPanel, VisualsPanel } from "@/features/board/components/panels";
+import { TransformPanel, VisualsPanel } from "@/features/board/components/panels";
+import { ChatPanel } from "@/features/agent";
 import { PageStrip } from "@/features/board/components/page-strip";
 import { QuickAddBar } from "@/features/board/components/quick-add-bar";
 import { useBoard } from "@/store/board";
@@ -31,7 +32,6 @@ export function CreatePage({ initialRatio = "16:10", startAt = "load" }: {
 
   const [tab, setTab] = useState<DockTab>("visualize");
   const [panelOpen, setPanelOpen] = useState(false);
-  const [agentGoal, setAgentGoal] = useState("");
   const [ratio, setRatio] = useState<StageRatio>(initialRatio);
   const [backdrop, setBackdrop] = useState<StageBackdrop>("dotted");
   const [phase, setPhase] = useState<"load" | "transform" | "canvas">(startAt);
@@ -116,7 +116,7 @@ export function CreatePage({ initialRatio = "16:10", startAt = "load" }: {
       panelOpen={panelOpen}
       onPanelToggle={() => setPanelOpen((v) => !v)}
       panel={panel}
-      agentPanel={<AgentPanel goal={agentGoal} onGoal={setAgentGoal} />}
+      agentPanel={<ChatPanel />}
       toolbar={<QuickAddBar />}
     >
       <div className="relative flex min-h-0 flex-1 flex-col px-1 pt-1">
