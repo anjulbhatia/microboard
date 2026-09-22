@@ -80,27 +80,48 @@ async function titledNode(title: string): Promise<{ node: HTMLElement; cleanup: 
 export async function exportBoardImage(format: BoardImageFormat, boardName: string): Promise<void> {
   const { node, cleanup } = await titledNode(boardName.trim() || "board");
   const name = slug(boardName);
+  // Let webfonts settle — mid-load fonts rasterize as blank text.
   try {
-    if (format === "png") {
-      download(await toPng(node, { pixelRatio: 2 }), `${name}.png`);
-    } else if (format === "svg") {
-      download(await toSvg(node), `${name}.svg`);
-    } else if (format === "pdf") {
-      const url = await toJpeg(node, { pixelRatio: 2 });
-      const img = new Image();
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve();
-        img.onerror = () => reject(new Error("Could not rasterize board."));
-        img.src = url;
-      });
-      const landscape = img.width >= img.height;
-      const pdf = new jsPDF({ orientation: landscape ? "landscape" : "portrait", unit: "px", format: [img.width, img.height] });
-      pdf.addImage(url, "JPEG", 0, 0, img.width, img.height);
-      pdf.save(`${name}.pdf`);
-    } else {
-      download(await toJpeg(node, { quality: 0.92, pixelRatio: 2 }), `${name}.jpg`);
+    await document.fonts.ready;
+  } catch {
+    // Font API unavailable — proceed anyway.
+  }
+  try {
+    // Large boards can exceed canvas limits at 2x; retry at 1x.
+    const ratios = format === "svg" ? [1] : [2, 1];
+    let lastError: unknown = null;
+    for (const pixelRatio of ratios) {
+      try {
+        if (format === "png") {
+          download(await toPng(node, { pixelRatio }), `${name}.png`);
+        } else if (format === "svg") {
+          download(await toSvg(node), `${name}.svg`);
+        } else if (format === "pdf") {
+          await downloadPdf(node, name, pixelRatio);
+        } else {
+          download(await toJpeg(node, { quality: 0.92, pixelRatio }), `${name}.jpg`);
+        }
+        return;
+      } catch (e) {
+        lastError = e;
+      }
     }
+    throw lastError instanceof Error ? lastError : new Error("Export failed.");
   } finally {
     cleanup();
   }
+}
+
+async function downloadPdf(node: HTMLElement, name: string, pixelRatio: number): Promise<void> {
+  const url = await toJpeg(node, { pixelRatio });
+  const img = new Image();
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = () => reject(new Error("Could not rasterize board."));
+    img.src = url;
+  });
+  const landscape = img.width >= img.height;
+  const pdf = new jsPDF({ orientation: landscape ? "landscape" : "portrait", unit: "px", format: [img.width, img.height] });
+  pdf.addImage(url, "JPEG", 0, 0, img.width, img.height);
+  pdf.save(`${name}.pdf`);
 }

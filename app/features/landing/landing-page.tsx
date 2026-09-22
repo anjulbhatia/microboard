@@ -6,7 +6,6 @@ import {
   BotIcon,
   ChartColumnIcon,
   CleanIcon,
-  SparklesIcon,
   Upload01Icon,
 } from "@hugeicons/core-free-icons";
 import { DitherButton } from "@/shared/components/charts";
@@ -36,7 +35,7 @@ export function LandingPage() {
   const mockY = useTransform(scrollYProgress, [0, 1], ["20vh", "0vh"]);
   const mockScale = useTransform(scrollYProgress, [0, 1], [1.4, 1.1]);
   const textOpacity = useTransform(scrollYProgress, [0, 0.45], [1, 0]);
-  const textX = useTransform(scrollYProgress, [0, 0.45], ["0vw", "-100vw"]);
+  const textX = useTransform(scrollYProgress, [0, 0.45], ["0vw", "-40vw"]);
 
   return (
     <div className="min-h-svh bg-background">
@@ -47,10 +46,6 @@ export function LandingPage() {
           <div aria-hidden className="dot-pattern pointer-events-none absolute inset-0 opacity-60 [mask-image:radial-gradient(70%_60%_at_50%_40%,black,transparent)]" />
           <div className="relative mx-auto grid w-full max-w-6xl grid-cols-12 items-center gap-6 px-6">
             <motion.div style={{ opacity: textOpacity, x: textX }} className="col-span-5">
-              <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-xs text-muted-foreground">
-                <HugeiconsIcon icon={SparklesIcon} size={14} strokeWidth={1.5} />
-                data-to-dashboard
-              </span>
               <h1 className="mt-4 text-4xl leading-[1.05] font-bold font-display tracking-wide text-balance md:text-5xl">
                 Craft microcharts. <span className="text-primary">Ship dashboards.</span>
               </h1>
@@ -59,14 +54,14 @@ export function LandingPage() {
               </p>
               <div className="mt-5 flex items-center gap-3">
                 <Link to="/new" className="inline-block transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98]">
-                  <DitherButton color="purple" variant="gradient" className="px-6 py-2.5 text-sm">
+                  <DitherButton color="purple" variant="gradient" className="px-6 py-2.5 text-sm text-foreground">
                     Start creating
                   </DitherButton>
                 </Link>
-                <Link to="/share" className="inline-block transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98]">
-                  <DitherButton color="grey" variant="solid" className="px-6 py-2.5 text-sm">
-                    View shared
-                  </DitherButton>
+                <Link to="/showcase" className="inline-block transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98]">
+                  <button className="px-6 py-2.5 text-sm border-2 border-accent font-semibold rounded-lg text-foreground hover:bg-accent/10 active:bg-accent/20 transition-colors">
+                    Showcase
+                  </button>
                 </Link>
               </div>
             </motion.div>

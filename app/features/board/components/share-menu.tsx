@@ -7,6 +7,7 @@ import { useBoard } from "@/store/board";
 import { useSession } from "@/store/session";
 import { isBackendConfigured } from "@/lib/backend";
 import { LoginModal } from "@/features/auth";
+import { useShare } from "@/features/share/use-share";
 import { exportBoardImage, type BoardImageFormat } from "@/features/board/lib/export-board";
 
 // Codegen-backed panel — lazy so offline clones still build.
@@ -25,10 +26,10 @@ export function ShareMenu({ onClose }: { onClose: () => void }) {
   const board = useBoard((s) => s.board);
   const { user } = useSession();
   const { resolvedTheme } = useTheme();
+  const { status: publishStatus, result: publishResult, error: publishError, publish } = useShare();
   const [busy, setBusy] = useState<BoardImageFormat | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
-  const [published, setPublished] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const iconTheme = resolvedTheme === "dark" ? "dark" : "light";
 
@@ -44,14 +45,25 @@ export function ShareMenu({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const copyLink = async () => {
+  const copyLink = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}/share/${board.id}`);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(text);
     } catch {
-      setError("Could not copy link.");
+      // Non-secure contexts (plain http) block the Clipboard API — fallback.
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+      } finally {
+        ta.remove();
+      }
     }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const shareUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/share/${board.id}`;
@@ -82,7 +94,7 @@ export function ShareMenu({ onClose }: { onClose: () => void }) {
       <p className="px-2 font-mono text-[10px] tracking-wider text-muted-foreground uppercase">Share via link</p>
       <button
         type="button"
-        onClick={() => void copyLink()}
+        onClick={() => void copyLink(`${window.location.origin}/share/${board.id}`).catch(() => setError("Could not copy link."))}
         className="group mt-0.5 flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-muted"
       >
         <HugeiconsIcon icon={copied ? CheckmarkBadge01Icon : Link01Icon} size={20} strokeWidth={1.5} className="shrink-0 text-muted-foreground" />
@@ -98,13 +110,35 @@ export function ShareMenu({ onClose }: { onClose: () => void }) {
       <div className="my-1.5 h-px bg-border" aria-hidden />
 
       {user ? (
-        <button
-          type="button"
-          onClick={() => setPublished(true)}
-          className="w-full rounded-md bg-primary px-2 py-2.5 text-center text-xs font-semibold tracking-widest text-primary-foreground uppercase transition-opacity hover:opacity-90"
-        >
-          {published ? "Published" : "Publish"}
-        </button>
+        <div className="flex flex-col gap-1">
+          <button
+            type="button"
+            onClick={() => void publish().catch(() => {})}
+            disabled={publishStatus === "publishing"}
+            className="w-full rounded-md bg-primary px-2 py-2.5 text-center text-xs font-semibold tracking-widest text-primary-foreground uppercase transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
+            {publishStatus === "publishing"
+              ? "Publishing…"
+              : publishStatus === "done"
+                ? "Published ✓"
+                : "Publish"}
+          </button>
+          {publishStatus === "done" && publishResult && (
+            <button
+              type="button"
+              onClick={() =>
+                void copyLink(publishResult.url).catch(() => setError("Could not copy link."))
+              }
+              className="truncate rounded-md border px-2 py-1.5 text-left font-mono text-[11px] transition-colors hover:bg-muted"
+              title="Click to copy published link"
+            >
+              {publishResult.url}
+            </button>
+          )}
+          {publishStatus === "error" && publishError && (
+            <p className="px-2 font-mono text-[11px] text-destructive">{publishError}</p>
+          )}
+        </div>
       ) : (
         <button
           type="button"
