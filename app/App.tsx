@@ -1,10 +1,24 @@
 import { Routes, Route, useParams, Navigate, Link } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
 import type { ReactNode } from 'react';
 import { LandingPage, HeaderIsland, LandingFooter } from '@/features/landing';
 import { NewPage } from '@/features/board';
 import { RequireAuth } from '@/features/auth';
 import { HomePage } from '@/features/home';
 import { PublicProfilePage } from '@/features/profile';
+import { isBackendConfigured } from '@/lib/backend';
+
+// Codegen-backed pages — lazy so offline clones still build.
+const ShowcasePage = lazy(() =>
+  import('@/features/showcase/showcase-page').then((m) => ({ default: m.ShowcasePage }))
+);
+const ShareDetailPage = lazy(() =>
+  import('@/features/showcase/share-detail-page').then((m) => ({ default: m.ShareDetailPage }))
+);
+
+function LiveFallback() {
+  return <p className="p-8 font-mono text-xs text-muted-foreground">Loading…</p>;
+}
 
 /**
  * Shell map. Landing owns its island + footer; the editor owns CreateLayout;
@@ -32,27 +46,48 @@ function Brand() {
 }
 
 function Showcase() {
+  if (!isBackendConfigured()) {
+    return (
+      <LandingChrome>
+        <div className="flex flex-col items-center justify-center px-8 pt-28 pb-16 text-center">
+          <h1 className="text-4xl font-bold tracking-tight">Showcase</h1>
+          <p className="text-muted-foreground mt-2">Public gallery of shared boards goes here.</p>
+        </div>
+      </LandingChrome>
+    );
+  }
   return (
     <LandingChrome>
-      <div className="flex flex-col items-center justify-center px-8 pt-28 pb-16 text-center">
-        <h1 className="text-4xl font-bold tracking-tight">Showcase</h1>
-        <p className="text-muted-foreground mt-2">Public gallery of shared boards goes here.</p>
-      </div>
+      <Suspense fallback={<LiveFallback />}>
+        <ShowcasePage />
+      </Suspense>
     </LandingChrome>
   );
 }
 
 function SharedBoard() {
   const { id } = useParams<{ id: string }>();
+  if (!isBackendConfigured()) {
+    return (
+      <div className="flex h-svh flex-col bg-background">
+        <div className="flex shrink-0 items-center justify-between px-4 py-3">
+          <Brand />
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center p-8 text-center">
+          <h1 className="text-4xl font-bold tracking-tight">Shared board</h1>
+          <p className="text-muted-foreground mt-2 font-mono">{id}</p>
+        </div>
+      </div>
+    );
+  }
   return (
-    <div className="flex h-svh flex-col bg-background">
-      <div className="flex shrink-0 items-center justify-between px-4 py-3">
+    <div className="min-h-svh bg-background">
+      <div className="mx-auto flex w-full max-w-2xl items-center justify-between px-4 pt-4">
         <Brand />
       </div>
-      <div className="flex min-h-0 flex-1 flex-col items-center justify-center p-8 text-center">
-        <h1 className="text-4xl font-bold tracking-tight">Shared board</h1>
-        <p className="text-muted-foreground mt-2 font-mono">{id}</p>
-      </div>
+      <Suspense fallback={<LiveFallback />}>
+        <ShareDetailPage />
+      </Suspense>
     </div>
   );
 }
