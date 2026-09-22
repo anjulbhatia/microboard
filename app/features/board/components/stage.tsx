@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { BOARD_GRID } from "@/features/board/types";
 
-export type StageRatio = "16:10" | "3:4";
 export type StageBackdrop = "dotted" | "grid" | "plain";
 
 /** Fitted stage metrics — provided to widgets for unit math. */
-const StageContext = createContext({ unit: 56, cols: 16 });
+const StageContext = createContext({ unit: 56, cols: BOARD_GRID.cols });
 
 export function useStageUnit(): number {
   return useContext(StageContext).unit;
@@ -28,14 +28,15 @@ const BACKDROPS: Record<StageBackdrop, React.CSSProperties> = {
   plain: {},
 };
 
-/** Screen-size-aware stage: largest ratio box that fits its container. */
+/**
+ * Fluid 8x5 stage. Fits its container and scales presentation to screen —
+ * one canvas, no aspect variants.
+ */
 export function Stage({
-  ratio,
   backdrop,
   toolbar,
   children,
 }: {
-  ratio: StageRatio;
   backdrop: StageBackdrop;
   toolbar?: ReactNode;
   children: ReactNode;
@@ -54,11 +55,10 @@ export function Stage({
     return () => ro.disconnect();
   }, []);
 
-  const [rw, rh] = ratio === "3:4" ? [3, 4] : [16, 10];
-  const cols = ratio === "3:4" ? 10 : 16;
+  const { cols, rows } = BOARD_GRID;
   // Reserve the board's own my-2 breathing room from the fit area.
-  const scale = size.w > 0 && size.h > 0 ? Math.min(size.w / rw, (size.h - 16) / rh) : 0;
-  const unit = scale > 0 ? Math.max(24, Math.floor((rw * scale) / cols)) : 56;
+  const scale = size.w > 0 && size.h > 0 ? Math.min(size.w / cols, (size.h - 16) / rows) : 0;
+  const unit = scale > 0 ? Math.max(24, Math.floor(scale)) : 56;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2">
@@ -68,7 +68,7 @@ export function Stage({
           <div
             id="board-stage"
             className="slim-scroll my-2 overflow-y-auto rounded-lg border bg-background shadow-xl transition-[width,height] duration-300 ease-out"
-            style={{ width: Math.floor(rw * scale), height: Math.floor(rh * scale), ...BACKDROPS[backdrop] }}
+            style={{ width: Math.floor(cols * scale), height: Math.floor(rows * scale), ...BACKDROPS[backdrop] }}
           >
             <StageContext.Provider value={{ unit, cols }}>
               <div className="min-h-full p-3">{children}</div>

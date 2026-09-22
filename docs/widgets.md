@@ -5,17 +5,13 @@
 
 ## 1. Unit system
 
-- 1 grid unit = 1 cell. Columns depend on aspect ratio (`BOARD_GRID`).
-- Both ratios hold the **same 160-cell capacity** — 16:10 is a wide
-  deck/dashboard, 3:4 is a tall post/poster, neither fits more:
-  - `16:10` → 16 cols × 10 rows = **160 cells**
-  - `3:4` → 10 cols × 16 rows = **160 cells**
-- **1×1** is the smallest degree (fits an icon). Width caps at the board's
-  column count; height caps at 16. Switching ratio clamps overflowing
-  widgets to the new column count.
+- 1 grid unit = 1 cell. One fluid canvas: **8 cols × 5 rows = 40 cells**.
+  Presentation scales to screen — no aspect variants.
+- **1×1** is the smallest degree (fits an icon). Width caps at 8 columns;
+  height caps at 5 rows.
 - Pixel size of a unit is derived from the fitted stage
-  (`Stage` → `useStageUnit()`): `unit = stageWidth / 16`, min 24px.
-- Capacity is advisory, not blocking: toolbar + board palette show
+  (`Stage` → `useStageUnit()`): `unit = stageWidth / 8`, min 24px.
+- Capacity is advisory, not blocking: the board palette shows
   `used / capacity` cells. Used = Σ `w × h` over widgets.
 
 ## 2. Resize rules per kind

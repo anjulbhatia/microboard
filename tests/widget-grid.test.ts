@@ -19,8 +19,8 @@ function widget(over: Partial<Widget> = {}): Widget {
     title: "t",
     col: 0,
     row: 0,
-    w: 4,
-    h: 3,
+    w: 3,
+    h: 2,
     ...over,
   };
 }
@@ -41,26 +41,27 @@ describe("widget data bindings (legacy x/y compat)", () => {
 });
 
 describe("grid placement", () => {
-  test("nextPosition flows left-to-right and wraps at 16 cols", () => {
-    const a = widget({ id: "a", w: 12, h: 3 });
-    // 12 + 4 fits the row; 12 + 8 overflows and wraps.
-    expect(nextPosition(["a"], { a }, { w: 4, h: 2 }, 16)).toEqual({ col: 12, row: 0 });
-    expect(nextPosition(["a"], { a }, { w: 8, h: 3 }, 16)).toEqual({ col: 0, row: 3 });
-    const b = widget({ id: "b", w: 16, h: 3 });
-    expect(nextPosition(["b"], { b }, { w: 4, h: 2 }, 16)).toEqual({ col: 0, row: 3 });
+  test("nextPosition flows left-to-right and wraps at 8 cols", () => {
+    const a = widget({ id: "a", w: 6, h: 2 });
+    // 6 + 2 fits the row; 6 + 4 overflows and wraps.
+    expect(nextPosition(["a"], { a }, { w: 2, h: 2 })).toEqual({ col: 6, row: 0 });
+    expect(nextPosition(["a"], { a }, { w: 4, h: 2 })).toEqual({ col: 0, row: 2 });
+    const b = widget({ id: "b", w: 8, h: 2 });
+    expect(nextPosition(["b"], { b }, { w: 2, h: 1 })).toEqual({ col: 0, row: 2 });
   });
 
-  test("clampWidgetToGrid keeps span inside cols x rows", () => {
-    const c = clampWidgetToGrid(widget({ w: 99, h: 99, col: 15, row: -2 }), 16, 10);
-    expect(c.w).toBe(16);
-    expect(c.h).toBe(10);
+  test("clampWidgetToGrid keeps span inside the 8x5 canvas", () => {
+    const c = clampWidgetToGrid(widget({ w: 99, h: 99, col: 7, row: -2 }));
+    expect(c.w).toBe(8);
+    expect(c.h).toBe(5);
     expect(c.col).toBe(0);
     expect(c.row).toBe(0);
   });
 
-  test("BOARD_GRID keeps 160-cell capacity on both ratios", () => {
-    expect(BOARD_GRID["16:10"].cols * BOARD_GRID["16:10"].rows).toBe(160);
-    expect(BOARD_GRID["3:4"].cols * BOARD_GRID["3:4"].rows).toBe(160);
+  test("BOARD_GRID is one fluid 8x5 canvas, 40 cells", () => {
+    expect(BOARD_GRID.cols).toBe(8);
+    expect(BOARD_GRID.rows).toBe(5);
+    expect(BOARD_GRID.cols * BOARD_GRID.rows).toBe(40);
   });
 
   test("board JSON round-trips position + bindings", () => {

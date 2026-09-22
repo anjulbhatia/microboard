@@ -104,10 +104,9 @@ The JSON the client serializes with `boardSnapshot(board)`:
   `col/row` are 0-based grid cells; `col + w <= cols` always.
   `x/y` (legacy data-column names) still parse — readers prefer
   `dataX/dataY` via `widgetDataX/Y()`, old snapshots normalize on load.
-- Grid is **16 cols × 10 rows, 160-cell capacity** (`BOARD_GRID`).
-  `3:4` portrait is 10×16 (same 160 cells). Store clamps every widget
-  with `clampWidgetToGrid`; `clampAllWidgets(cols)` re-clamps on ratio
-  change; `useBoardDerived` exposes `overCapacity` when
+- Grid is one fluid canvas: **8 cols × 5 rows = 40 cells** (`BOARD_GRID`).
+  Presentation scales to screen. Store clamps every widget
+  with `clampWidgetToGrid`; `useBoardDerived` exposes `overCapacity` when
   `usedCells > capacity`.
 - Mobile rule: order array is reading order; small screens stack in
   `order` sequence (position ignored, size becomes full-width). Desktop

@@ -3,6 +3,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { SparklesIcon } from "@hugeicons/core-free-icons";
 import { useBoard } from "@/store/board";
 import { WIDGET_REGISTRY, clampSpan } from "@/features/widgets/registry";
+import { BOARD_GRID } from "@/features/board/types";
 import { applySteps, inferColumns } from "@/features/data/lib/data-utils";
 import { csvRecords } from "@/features/data/providers/csv";
 import { SAMPLE_CSV } from "@/features/data/lib/data-utils";
@@ -37,7 +38,7 @@ export function ChatPanel() {
       useBoard.getState().addStep(type, params, description),
     addChart: (kind: ChartKind, x, y) => {
       const meta = WIDGET_REGISTRY[kind];
-      const span = clampSpan(kind, meta.defaultSpan, 16);
+      const span = clampSpan(kind, meta.defaultSpan, BOARD_GRID.cols);
       useBoard.getState().addWidget({
         type: kind,
         title: `${meta.label} · ${y}`,

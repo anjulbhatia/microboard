@@ -2,9 +2,9 @@ import { useMemo } from "react";
 import { activePage, BOARD_GRID, type Board } from "@/features/board/types";
 import { WIDGET_REGISTRY } from "@/features/widgets/registry";
 import { applySteps, inferColumns } from "@/features/data/lib/data-utils";
-import type { StageRatio } from "@/features/board/components/stage";
 
-export function useBoardDerived(board: Board, ratio: StageRatio) {
+/** Derived board state on the single fluid 8x5 canvas. */
+export function useBoardDerived(board: Board) {
   const page = activePage(board);
   const order = page.order;
   const widgets = page.widgets;
@@ -25,7 +25,7 @@ export function useBoardDerived(board: Board, ratio: StageRatio) {
     [order, widgets]
   );
 
-  const dims = BOARD_GRID[ratio];
+  const dims = BOARD_GRID;
   const usedCells = useMemo(
     () =>
       order.reduce((acc, id) => {

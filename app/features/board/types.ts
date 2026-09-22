@@ -38,7 +38,7 @@ export type WidgetType =
 /** Chart engine tag — micro/mono engines plug in here later. */
 export type ChartEngine = "micro" | "mono" | "dither" | "none";
 
-/** Grid unit = 1 cell of the board. 1x1 fits an icon, 16x16 is a full page. */
+/** Grid unit = 1 cell of the board. 1x1 fits an icon, 8x5 is a full canvas. */
 export interface GridSpan {
   w: number;
   h: number;
@@ -62,13 +62,8 @@ export interface Widget {
   props?: Record<string, string | number>;
 }
 
-/** Board grid dimensions per aspect ratio — equal 160-cell capacity. */
-export const BOARD_GRID = {
-  "16:10": { cols: 16, rows: 10 },
-  "3:4": { cols: 10, rows: 16 },
-} as const;
-
-export type BoardRatio = keyof typeof BOARD_GRID;
+/** Fluid canvas: 8 columns x 5 rows = 40 cells. Presentation scales to screen. */
+export const BOARD_GRID = { cols: 8, rows: 5 } as const;
 
 export interface ColumnMeta {
   name: string;
@@ -134,12 +129,12 @@ export function normalizeWidget(w: Widget): Widget {
   };
 }
 
-/** Flow-place a span after existing widgets on a cols-wide grid. */
+/** Flow-place a span after existing widgets on the 8-wide grid. */
 export function nextPosition(
   order: string[],
   widgets: Record<string, Widget>,
   span: GridSpan,
-  cols = 16
+  cols: number = BOARD_GRID.cols
 ): { col: number; row: number } {
   let col = 0;
   let row = 0;
@@ -168,11 +163,11 @@ export function nextPosition(
   return { col, row };
 }
 
-/** Clamp span + position into a cols×rows grid. Pure, no UI. */
+/** Clamp span + position into the 8x5 grid. Pure, no UI. */
 export function clampWidgetToGrid(
   w: Widget,
-  cols = 16,
-  rows = 10
+  cols: number = BOARD_GRID.cols,
+  rows: number = BOARD_GRID.rows
 ): Widget {
   const cw = Math.max(1, Math.min(Math.round(w.w), cols));
   const ch = Math.max(1, Math.min(Math.round(w.h), rows));
@@ -246,13 +241,7 @@ export interface AgentPanelProps {
 }
 
 export interface PageStripProps {
-  ratio: import("./components/stage").StageRatio;
-  onRatio: (r: import("./components/stage").StageRatio) => void;
   cleanedCount: number;
   usedCells: number;
   capacity: number;
-}
-
-export interface UploadPhaseProps {
-  onLoad: (source: DataSource, records: Record<string, string>[]) => void;
 }

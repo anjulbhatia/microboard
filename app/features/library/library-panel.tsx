@@ -42,6 +42,7 @@ export function BoardPreview({ snapshot }: { snapshot: string }) {
       let row = 0;
       let rowH = 0;
       const out: { id: string; left: number; top: number; w: number; h: number; tint: string }[] = [];
+      const cols = 8;
       const cells: { id: string; w: number; h: number; type: string }[] = page.order
         .map((id) => {
           const w = page.widgets[id];
@@ -49,9 +50,9 @@ export function BoardPreview({ snapshot }: { snapshot: string }) {
         })
         .slice(0, 12);
       for (const c of cells) {
-        const w = Math.max(1, Math.min(Math.round(c.w), 16));
+        const w = Math.max(1, Math.min(Math.round(c.w), cols));
         const h = Math.max(1, Math.round(c.h));
-        if (col + w > 16) {
+        if (col + w > cols) {
           col = 0;
           row += rowH;
           rowH = 0;
@@ -63,9 +64,9 @@ export function BoardPreview({ snapshot }: { snapshot: string }) {
       const totalRows = Math.max(1, row + rowH);
       return out.map((b) => ({
         ...b,
-        leftPct: (b.left / 16) * 100,
+        leftPct: (b.left / cols) * 100,
         topPct: (b.top / totalRows) * 100,
-        wPct: (b.w / 16) * 100,
+        wPct: (b.w / cols) * 100,
         hPct: (b.h / totalRows) * 100,
       }));
     } catch {

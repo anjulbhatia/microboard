@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowDown01Icon, ArrowUp01Icon, AspectRatioIcon, PlusSignIcon } from "@hugeicons/core-free-icons";
+import { ArrowDown01Icon, ArrowUp01Icon, PlusSignIcon } from "@hugeicons/core-free-icons";
 import { useBoard } from "@/store/board";
 import { BOARD_GRID } from "@/features/board/types";
 import { SaveStatus } from "@/features/board/components/controls";
 import type { PageStripProps } from "@/features/board/types";
 
-export function PageStrip({ ratio, onRatio, cleanedCount, usedCells, capacity }: PageStripProps) {
+export function PageStrip({ cleanedCount, usedCells, capacity }: PageStripProps) {
   const board = useBoard((s) => s.board);
   const { addPage, removePage, setActivePage } = useBoard();
   const [expanded, setExpanded] = useState(false);
-  const cols = BOARD_GRID[ratio].cols;
+  const cols = BOARD_GRID.cols;
 
   return (
     <div className="shrink-0">
@@ -44,7 +44,7 @@ export function PageStrip({ ratio, onRatio, cleanedCount, usedCells, capacity }:
                     <span
                       aria-hidden
                       className="flex flex-wrap content-start gap-px rounded border bg-background p-1"
-                      style={{ aspectRatio: ratio === "3:4" ? "3 / 4" : "16 / 10" }}
+                      style={{ aspectRatio: "8 / 5" }}
                     >
                       {ids.length === 0 && <span className="m-auto font-mono text-[9px] text-muted-foreground">empty</span>}
                       {ids.map((id) => {
@@ -153,20 +153,9 @@ export function PageStrip({ ratio, onRatio, cleanedCount, usedCells, capacity }:
               Add canvas
             </span>
           </div>
-          <div className="group relative">
-            <button
-              type="button"
-              onClick={() => onRatio(ratio === "16:10" ? "3:4" : "16:10")}
-              aria-label="Toggle resolution"
-              className="flex h-7 items-center gap-1 rounded-md border px-1.5 font-mono text-[11px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <HugeiconsIcon icon={AspectRatioIcon} size={13} strokeWidth={1.5} />
-              {ratio}
-            </button>
-            <span className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 hidden -translate-x-1/2 rounded-md border bg-popover px-2 py-1 font-mono text-[11px] whitespace-nowrap text-popover-foreground shadow group-hover:block">
-              Resolution · {ratio} · {capacity} cells
-            </span>
-          </div>
+          <span className="flex h-7 items-center gap-1 rounded-md border px-1.5 font-mono text-[11px] text-muted-foreground">
+            8×5 · {capacity}
+          </span>
         </div>
         <span className="w-28 shrink-0 text-right font-mono text-[10px] text-muted-foreground">
           {cleanedCount}r · {usedCells}/{capacity}

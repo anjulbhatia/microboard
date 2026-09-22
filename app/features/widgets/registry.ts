@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import type { GridSpan, Widget, WidgetType } from "@/features/board/types";
+import { BOARD_GRID, type GridSpan, type Widget, type WidgetType } from "@/features/board/types";
 import { TextboxWidget } from "@/features/widgets/components/textbox";
 import { HeadingWidget } from "@/features/widgets/components/heading";
 import { ShapesWidget } from "@/features/widgets/components/shapes";
@@ -42,7 +42,7 @@ export interface WidgetMeta {
 }
 
 /** Clamp a span to a kind's resize spec (and the board's column cap). */
-export function clampSpan(type: WidgetType, span: GridSpan, cols = 16): GridSpan {
+export function clampSpan(type: WidgetType, span: GridSpan, cols: number = BOARD_GRID.cols): GridSpan {
   const spec = WIDGET_REGISTRY[type].resize;
   const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, Math.round(v)));
   if (spec.square) {
@@ -51,16 +51,16 @@ export function clampSpan(type: WidgetType, span: GridSpan, cols = 16): GridSpan
   }
   return {
     w: clamp(span.w, spec.minW, Math.min(spec.maxW, cols)),
-    h: clamp(span.h, spec.minH, Math.min(spec.maxH, 16)),
+    h: clamp(span.h, spec.minH, Math.min(spec.maxH, BOARD_GRID.rows)),
   };
 }
 
-/** Clamp a grid position so a w×h span stays inside cols×rows. Pure logic. */
+/** Clamp a grid position so a w×h span stays inside the 8 cols. Pure logic. */
 export function clampPosition(
   col: number,
   row: number,
   w: number,
-  cols = 16
+  cols: number = BOARD_GRID.cols
 ): { col: number; row: number } {
   const cw = Math.max(1, Math.min(Math.round(w), cols));
   return {
@@ -83,8 +83,8 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
     label: "Textbox",
     group: "content",
     needsData: false,
-    defaultSpan: { w: 5, h: 3 },
-    resize: { minW: 2, maxW: 16, minH: 2, maxH: 8 },
+    defaultSpan: { w: 3, h: 2 },
+    resize: { minW: 2, maxW: 6, minH: 1, maxH: 3 },
     defaults: { title: "Textbox", props: { text: "Add some text…" } },
     fields: [{ key: "text", label: "Text", type: "textarea" }],
     render: TextboxWidget,
@@ -93,8 +93,8 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
     label: "Heading",
     group: "content",
     needsData: false,
-    defaultSpan: { w: 8, h: 2 },
-    resize: { minW: 2, maxW: 16, minH: 2, maxH: 2, fixedH: true },
+    defaultSpan: { w: 6, h: 1 },
+    resize: { minW: 2, maxW: 8, minH: 1, maxH: 1, fixedH: true },
     defaults: { title: "Heading", props: { text: "Heading", level: "2" } },
     fields: [
       { key: "text", label: "Text", type: "text" },
@@ -115,8 +115,8 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
     label: "Shape",
     group: "content",
     needsData: false,
-    defaultSpan: { w: 5, h: 4 },
-    resize: { minW: 2, maxW: 16, minH: 2, maxH: 8 },
+    defaultSpan: { w: 3, h: 2 },
+    resize: { minW: 2, maxW: 6, minH: 1, maxH: 3 },
     defaults: { title: "Shape", props: { shape: "rectangle", color: "var(--chart-3)" } },
     fields: [
       {
@@ -142,7 +142,7 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
     group: "media",
     needsData: false,
     defaultSpan: { w: 2, h: 2 },
-    resize: { minW: 1, maxW: 6, minH: 1, maxH: 6, square: true },
+    resize: { minW: 1, maxW: 4, minH: 1, maxH: 4, square: true },
     defaults: { title: "Icon", props: { icon: "Sparkles", size: 32 } },
     fields: [
       {
@@ -159,8 +159,8 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
     label: "Image",
     group: "media",
     needsData: false,
-    defaultSpan: { w: 8, h: 5 },
-    resize: { minW: 2, maxW: 16, minH: 2, maxH: 10 },
+    defaultSpan: { w: 4, h: 3 },
+    resize: { minW: 2, maxW: 8, minH: 2, maxH: 4 },
     defaults: { title: "Image", props: { src: "", fit: "cover" } },
     fields: [
       { key: "src", label: "Image URL", type: "text" },
@@ -180,19 +180,10 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
     label: "Board",
     group: "board",
     needsData: false,
-    defaultSpan: { w: 10, h: 7 },
-    resize: { minW: 4, maxW: 16, minH: 4, maxH: 12 },
-    defaults: { title: "Board", props: { ratio: "16:10", label: "Slide board" } },
+    defaultSpan: { w: 6, h: 4 },
+    resize: { minW: 4, maxW: 8, minH: 2, maxH: 5 },
+    defaults: { title: "Board", props: { label: "Slide board" } },
     fields: [
-      {
-        key: "ratio",
-        label: "Aspect",
-        type: "select",
-        options: [
-          { value: "16:10", label: "16:10" },
-          { value: "3:4", label: "3:4" },
-        ],
-      },
       { key: "label", label: "Label", type: "text" },
     ],
     render: BoardWidget,
@@ -201,8 +192,8 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
     label: "Card",
     group: "content",
     needsData: false,
-    defaultSpan: { w: 5, h: 4 },
-    resize: { minW: 2, maxW: 16, minH: 2, maxH: 8 },
+    defaultSpan: { w: 3, h: 2 },
+    resize: { minW: 2, maxW: 6, minH: 1, maxH: 3 },
     defaults: { title: "Card", props: { title: "Card title", body: "Add a short description here.", stat: "" } },
     fields: [
       { key: "stat", label: "Stat", type: "text" },
@@ -215,8 +206,8 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
     label: "KPI",
     group: "charts",
     needsData: true,
-    defaultSpan: { w: 4, h: 3 },
-    resize: { minW: 2, maxW: 8, minH: 2, maxH: 4 },
+    defaultSpan: { w: 2, h: 2 },
+    resize: { minW: 2, maxW: 4, minH: 1, maxH: 2 },
     defaults: { title: "KPI", props: {} },
     fields: [],
     render: ChartWidget,
@@ -225,8 +216,8 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
     label: "Sparkline",
     group: "charts",
     needsData: true,
-    defaultSpan: { w: 8, h: 3 },
-    resize: { minW: 2, maxW: 16, minH: 1, maxH: 4 },
+    defaultSpan: { w: 4, h: 2 },
+    resize: { minW: 2, maxW: 8, minH: 1, maxH: 2 },
     defaults: { title: "Sparkline", props: {} },
     fields: [],
     render: ChartWidget,
@@ -235,8 +226,8 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
     label: "Micro chart",
     group: "charts",
     needsData: true,
-    defaultSpan: { w: 8, h: 4 },
-    resize: { minW: 2, maxW: 16, minH: 2, maxH: 8 },
+    defaultSpan: { w: 4, h: 2 },
+    resize: { minW: 2, maxW: 8, minH: 1, maxH: 3 },
     defaults: { title: "Micro chart", props: { chart: "sparkline" } },
     fields: [
       {
@@ -252,8 +243,8 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
     label: "Table",
     group: "charts",
     needsData: true,
-    defaultSpan: { w: 12, h: 6 },
-    resize: { minW: 4, maxW: 16, minH: 2, maxH: 10 },
+    defaultSpan: { w: 6, h: 3 },
+    resize: { minW: 4, maxW: 8, minH: 2, maxH: 4 },
     defaults: { title: "Table", props: {} },
     fields: [],
     render: ChartWidget,
@@ -262,8 +253,8 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
     label: "Dither area",
     group: "charts",
     needsData: true,
-    defaultSpan: { w: 12, h: 7 },
-    resize: { minW: 4, maxW: 16, minH: 5, maxH: 12 },
+    defaultSpan: { w: 6, h: 3 },
+    resize: { minW: 4, maxW: 8, minH: 2, maxH: 4 },
     defaults: { title: "Dither area", props: {} },
     fields: [],
     render: ChartWidget,
@@ -272,8 +263,8 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
     label: "Dither bar",
     group: "charts",
     needsData: true,
-    defaultSpan: { w: 12, h: 7 },
-    resize: { minW: 4, maxW: 16, minH: 5, maxH: 12 },
+    defaultSpan: { w: 6, h: 3 },
+    resize: { minW: 4, maxW: 8, minH: 2, maxH: 4 },
     defaults: { title: "Dither bar", props: {} },
     fields: [],
     render: ChartWidget,

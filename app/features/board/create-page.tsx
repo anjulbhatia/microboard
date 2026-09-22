@@ -1,11 +1,6 @@
-import { lazy, Suspense, useState } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { CreateLayout } from "@/features/board/components/create-layout";
-import { UploadPhase } from "@/features/board/components/upload-phase";
-
-const TransformPhase = lazy(() =>
-  import("@/features/board/components/transform-phase").then((m) => ({ default: m.TransformPhase }))
-);
 import { Stage } from "@/features/board/components/stage";
 import { WidgetCard } from "@/features/board/components/widget-card";
 import { TransformPanel, VisualsPanel } from "@/features/board/components/panels";
@@ -16,30 +11,27 @@ import { useBoard } from "@/store/board";
 import { useBoardDerived } from "@/hooks/use-board-derived";
 import { useUploads } from "@/hooks/use-uploads";
 import type { DockTab } from "@/features/board/types";
-import type { DataSource } from "@/features/board/types";
-import { BOARD_GRID } from "@/features/board/types";
-import type { StageBackdrop, StageRatio } from "@/features/board/components/stage";
+import type { StageBackdrop } from "@/features/board/components/stage";
 
-export function CreatePage({ initialRatio = "16:10", startAt = "load" }: {
-  initialRatio?: StageRatio;
-  startAt?: "load" | "transform" | "canvas";
-} = {}) {
+/**
+ * Canvas. Create lands straight here — no picker, no import gate.
+ * Data arrives later via Data Sources; transforms live in the dock.
+ */
+export function CreatePage() {
   const board = useBoard((s) => s.board);
   const {
-    loadData, removeWidget, duplicateWidget, moveWidget,
-    clampAllWidgets, setTitle,
+    removeWidget, duplicateWidget, moveWidget,
+    setTitle,
   } = useBoard();
 
   const [tab, setTab] = useState<DockTab>("visualize");
   const [panelOpen, setPanelOpen] = useState(false);
-  const [ratio, setRatio] = useState<StageRatio>(initialRatio);
   const [backdrop, setBackdrop] = useState<StageBackdrop>("dotted");
-  const [phase, setPhase] = useState<"load" | "transform" | "canvas">(startAt);
   const [dragId, setDragId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { order, widgets, cleanedCols, rawCols, hasData, dims, usedCells, capacity, cleaned } =
-    useBoardDerived(board, ratio);
+    useBoardDerived(board);
   const { uploads, addUploads } = useUploads();
 
   const toggleTab = (t: DockTab) => {
@@ -47,22 +39,11 @@ export function CreatePage({ initialRatio = "16:10", startAt = "load" }: {
     setPanelOpen(true);
   };
 
-  const handleLoad = (source: DataSource, records: Record<string, string>[]) => {
-    loadData(source, records);
-    setPhase("transform");
-    setTab("visualize");
-  };
-
   const dropWidget = (targetId: string) => {
     if (dragId) {
       moveWidget(dragId, targetId);
       setDragId(null);
     }
-  };
-
-  const changeRatio = (r: StageRatio) => {
-    setRatio(r);
-    clampAllWidgets(BOARD_GRID[r].cols);
   };
 
   const panelContent =
@@ -89,24 +70,6 @@ export function CreatePage({ initialRatio = "16:10", startAt = "load" }: {
     </motion.div>
   );
 
-  if (phase === "load" || (phase === "transform" && !hasData)) {
-    return <UploadPhase onLoad={handleLoad} />;
-  }
-
-  if (phase === "transform") {
-    return (
-      <Suspense
-        fallback={
-          <div className="flex h-full items-center justify-center font-mono text-xs text-muted-foreground">
-            Loading transform…
-          </div>
-        }
-      >
-        <TransformPhase onDone={() => setPhase("canvas")} onBack={() => setPhase("load")} />
-      </Suspense>
-    );
-  }
-
   return (
     <CreateLayout
       title={board.title}
@@ -122,7 +85,7 @@ export function CreatePage({ initialRatio = "16:10", startAt = "load" }: {
       <div className="relative flex min-h-0 flex-1 flex-col px-1 pt-1">
           {selectedId === null && order.length > 0 && (
             <div className="absolute top-2.5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-lg border bg-popover px-2 py-1 shadow-xl ring-1 ring-border">
-              <span className="px-1 font-mono text-[11px] text-muted-foreground">Board · {ratio}</span>
+              <span className="px-1 font-mono text-[11px] text-muted-foreground">Board · 8×5</span>
               {(["dotted", "grid", "plain"] as const).map((b) => (
                 <button
                   key={b}
@@ -140,7 +103,7 @@ export function CreatePage({ initialRatio = "16:10", startAt = "load" }: {
               </span>
             </div>
           )}
-          <Stage ratio={ratio} backdrop={backdrop}>
+          <Stage backdrop={backdrop}>
             {order.length === 0 ? (
               <div
                 onClick={() => setSelectedId(null)}
@@ -183,8 +146,6 @@ export function CreatePage({ initialRatio = "16:10", startAt = "load" }: {
             )}
           </Stage>
           <PageStrip
-            ratio={ratio}
-            onRatio={changeRatio}
             cleanedCount={cleaned.length}
             usedCells={usedCells}
             capacity={capacity}
