@@ -2,6 +2,7 @@ import { action, internalMutation, query } from "./_generated/server";
 import { api, components, internal } from "./_generated/api";
 import { v } from "convex/values";
 import { AgentMail } from "@agentmail/convex";
+import { shareBoardTemplate } from "../agentmail/templates";
 import { now, userKey } from "./helpers";
 
 /**
@@ -84,11 +85,13 @@ export const dispatchBatch = internalMutation({
   handler: async (ctx, args) => {
     const mail = new AgentMail(components.agentmail);
     const url = `${process.env.SITE_URL ?? ""}/share/${args.boardPublicId}`;
+    const tpl = shareBoardTemplate({ url, boardTitle: args.boardTitle });
     for (const to of args.emails) {
       await mail.sendMessage(ctx, args.inboxId, {
         to,
-        subject: `Microboard: ${args.boardTitle}`,
-        text: `${args.boardTitle} is shared with you:\n\n${url}`,
+        subject: tpl.subject,
+        text: tpl.text,
+        html: tpl.html,
       });
     }
   },
