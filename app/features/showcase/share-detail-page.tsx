@@ -65,7 +65,7 @@ export function ShareDetailPage() {
             type="button"
             disabled={!user}
             onClick={() => void toggleLike({ publicId: id, userKey: user?.id }).catch(() => {})}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors hover:bg-muted ${liked ? "text-primary" : ""}`}
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-all hover:scale-105 hover:bg-muted active:scale-95 ${liked ? "text-primary" : ""}`}
           >
             <HugeiconsIcon icon={FavouriteIcon} size={16} strokeWidth={1.5} />
             {board.likeCount ?? 0}
@@ -74,7 +74,7 @@ export function ShareDetailPage() {
             type="button"
             disabled={!user}
             onClick={() => void toggleSave({ publicId: id, userKey: user?.id }).catch(() => {})}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors hover:bg-muted ${saved ? "text-primary" : ""}`}
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-all hover:scale-105 hover:bg-muted active:scale-95 ${saved ? "text-primary" : ""}`}
           >
             <HugeiconsIcon icon={Bookmark01Icon} size={16} strokeWidth={1.5} />
             {board.saveCount ?? 0}
@@ -82,7 +82,7 @@ export function ShareDetailPage() {
           <button
             type="button"
             onClick={() => void navigator.clipboard.writeText(window.location.href).catch(() => {})}
-            className="flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors hover:bg-muted"
+            className="flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-all hover:scale-105 hover:bg-muted active:scale-95"
           >
             <HugeiconsIcon icon={Share01Icon} size={16} strokeWidth={1.5} />
             Copy link

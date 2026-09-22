@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { EyeIcon, GridIcon, Share01Icon } from "@hugeicons/core-free-icons";
 import { useBoard } from "@/store/board";
 import { Card, SectionHead, Stat } from "@/features/home/section";
 import { loadStats, totals } from "@/features/analytics";
@@ -29,9 +30,9 @@ export function AnalyticsPanel() {
       />
 
       <div className="grid grid-cols-3 gap-2">
-        <Stat value={t.boards} label="Boards" />
-        <Stat value={t.views} label="Views" />
-        <Stat value={t.shares} label="Shares" />
+        <Stat value={t.boards} label="Boards" icon={GridIcon} />
+        <Stat value={t.views} label="Views" icon={EyeIcon} />
+        <Stat value={t.shares} label="Shares" icon={Share01Icon} />
       </div>
 
       <Card>

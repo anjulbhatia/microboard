@@ -57,7 +57,7 @@ export function ShowcasePage() {
                 disabled={!user}
                 title={user ? "Like" : "Sign in to like"}
                 onClick={() => act(() => toggleLike({ publicId: b.publicId, userKey: user?.id })) }
-                className={`flex items-center gap-1 rounded-md px-2 py-1 transition-colors hover:bg-muted ${b.liked ? "text-primary" : ""}`}
+                className={`flex items-center gap-1 rounded-md px-2 py-1 transition-all hover:scale-105 hover:bg-muted active:scale-95 ${b.liked ? "text-primary" : ""}`}
               >
                 <HugeiconsIcon icon={FavouriteIcon} size={15} strokeWidth={1.5} />
                 {b.likeCount}
@@ -67,7 +67,7 @@ export function ShowcasePage() {
                 disabled={!user}
                 title={user ? "Save" : "Sign in to save"}
                 onClick={() => act(() => toggleSave({ publicId: b.publicId, userKey: user?.id }))}
-                className={`flex items-center gap-1 rounded-md px-2 py-1 transition-colors hover:bg-muted ${b.saved ? "text-primary" : ""}`}
+                className={`flex items-center gap-1 rounded-md px-2 py-1 transition-all hover:scale-105 hover:bg-muted active:scale-95 ${b.saved ? "text-primary" : ""}`}
               >
                 <HugeiconsIcon icon={Bookmark01Icon} size={15} strokeWidth={1.5} />
                 {b.saveCount}

@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
-import { Card, Empty, SectionHead } from "@/features/home/section";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Delete02Icon, PlusSignIcon } from "@hugeicons/core-free-icons";
+import { Card, Empty, IconBtn, SectionHead } from "@/features/home/section";
 import {
   MAILING_KEY,
   addSubscriber,
@@ -70,8 +72,9 @@ export function MailingPanel() {
           <button
             type="button"
             onClick={add}
-            className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            className="flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 active:scale-[0.97]"
           >
+            <HugeiconsIcon icon={PlusSignIcon} size={15} strokeWidth={2} />
             Add
           </button>
         </div>
@@ -101,14 +104,8 @@ export function MailingPanel() {
                     <td className="px-4 py-2.5 font-mono text-[11px] text-muted-foreground whitespace-nowrap">
                       {new Date(s.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="px-4 py-2.5 text-right">
-                      <button
-                        type="button"
-                        onClick={() => persist(removeSubscriber(list, s.email))}
-                        className="text-xs text-muted-foreground hover:text-destructive"
-                      >
-                        Remove
-                      </button>
+                    <td className="px-4 py-2 text-right">
+                      <IconBtn label={`Remove ${s.email}`} onClick={() => persist(removeSubscriber(list, s.email))} icon={Delete02Icon} danger />
                     </td>
                   </tr>
                 ))}

@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight01Icon, Copy01Icon, Delete02Icon, EyeIcon, GridIcon, HistoryIcon } from "@hugeicons/core-free-icons";
 import { useBoard } from "@/store/board";
 import { NEW_PATH } from "@/lib/routes";
 import { useShare } from "@/features/share";
-import { Card, Empty, SectionHead, Stat } from "@/features/home/section";
+import { Card, Empty, IconBtn, SectionHead, Stat } from "@/features/home/section";
 import {
   browserStorage,
   loadLibrary,
@@ -181,9 +183,9 @@ export function LibraryPanel() {
         </p>
         <p className="mt-1 truncate text-xl font-bold tracking-tight">{board.title}</p>
         <div className="mt-3 grid grid-cols-3 gap-2">
-          <Stat value={widgets} label="Widgets" />
-          <Stat value={board.steps.length} label="Steps" />
-          <Stat value={board.pages.length} label="Pages" />
+          <Stat value={widgets} label="Widgets" icon={GridIcon} />
+          <Stat value={board.steps.length} label="Steps" icon={HistoryIcon} />
+          <Stat value={board.pages.length} label="Pages" icon={EyeIcon} />
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link to={NEW_PATH} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90">
@@ -213,7 +215,7 @@ export function LibraryPanel() {
           {saved.map((s) => (
             <li
               key={s.id}
-              className="group relative flex aspect-square flex-col overflow-hidden rounded-xl border bg-background transition-shadow hover:shadow-md"
+              className="group relative flex aspect-square flex-col overflow-hidden rounded-xl border bg-background transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
             >
               <button
                 type="button"
@@ -221,34 +223,25 @@ export function LibraryPanel() {
                 aria-label={`Open ${s.title}`}
                 className="block flex-1 p-2 pb-0"
               >
-                <BoardPreview snapshot={s.snapshot} />
+                <span className="block transition-transform duration-200 group-hover:scale-[1.02]">
+                  <BoardPreview snapshot={s.snapshot} />
+                </span>
               </button>
-              <div className="p-2.5 pt-1.5">
-                <p className="truncate text-xs font-bold">{s.title}</p>
-                <p className="font-mono text-[10px] text-muted-foreground">
-                  v{s.version} · {s.widgets}w · {s.steps}s
-                </p>
+              <div className="flex items-center gap-1 p-2.5 pt-1.5">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-bold">{s.title}</p>
+                  <p className="font-mono text-[10px] text-muted-foreground">
+                    v{s.version} · {s.widgets}w · {s.steps}s
+                  </p>
+                </div>
+                <span className="flex gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                  <IconBtn label={`Duplicate ${s.title}`} onClick={() => duplicate(s)} icon={Copy01Icon} />
+                  <IconBtn label={`Delete ${s.title}`} onClick={() => store(removeSaved(saved, s.id))} icon={Delete02Icon} danger />
+                </span>
               </div>
-              <div className="absolute top-3.5 right-3.5 hidden gap-1 group-hover:flex group-focus-within:flex">
-                <button
-                  type="button"
-                  onClick={() => duplicate(s)}
-                  title="Duplicate"
-                  aria-label={`Duplicate ${s.title}`}
-                  className="rounded-md border bg-background/95 px-2 py-1 font-mono text-[10px] shadow-sm hover:bg-muted"
-                >
-                  Dupe
-                </button>
-                <button
-                  type="button"
-                  onClick={() => store(removeSaved(saved, s.id))}
-                  title="Delete"
-                  aria-label={`Delete ${s.title}`}
-                  className="rounded-md border border-destructive/40 bg-background/95 px-2 py-1 font-mono text-[10px] text-destructive shadow-sm hover:bg-destructive/10"
-                >
-                  Del
-                </button>
-              </div>
+              <span className="absolute top-3.5 left-3.5 hidden rounded-md bg-background/90 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground opacity-0 shadow-sm transition-opacity group-hover:flex group-hover:opacity-100">
+                Open <HugeiconsIcon icon={ArrowRight01Icon} size={11} strokeWidth={2} />
+              </span>
             </li>
           ))}
         </ul>

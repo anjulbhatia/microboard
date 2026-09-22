@@ -1,8 +1,10 @@
 import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, Refresh01Icon, Upload01Icon } from "@hugeicons/core-free-icons";
 import { useBoard } from "@/store/board";
 import { NEW_PATH } from "@/lib/routes";
-import { Card, Empty, SectionHead } from "@/features/home/section";
+import { Card, Empty, IconBtn, SectionHead } from "@/features/home/section";
 import {
   Dialog,
   DialogContent,
@@ -61,8 +63,9 @@ export function DataPanel() {
           <button
             type="button"
             onClick={() => setUploadOpen(true)}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 active:scale-[0.97]"
           >
+            <HugeiconsIcon icon={Upload01Icon} size={15} strokeWidth={1.5} />
             Upload data
           </button>
         }
@@ -142,17 +145,10 @@ export function DataPanel() {
                 <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-bold text-primary">
                   {i + 1}
                 </span>
-                <span className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-muted/60 px-3 py-1.5 text-sm">
+                <span className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-muted/60 px-3 py-1.5 text-sm transition-colors hover:bg-muted">
                   <span className="min-w-0 flex-1 truncate">{s.description}</span>
                   <span className="shrink-0 font-mono text-[10px] text-muted-foreground">{s.type}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeStep(s.id)}
-                    aria-label={`Remove step ${i + 1}`}
-                    className="shrink-0 text-xs text-muted-foreground hover:text-destructive"
-                  >
-                    Remove
-                  </button>
+                  <IconBtn label={`Remove step ${i + 1}`} onClick={() => removeStep(s.id)} icon={Cancel01Icon} />
                 </span>
               </li>
             ))}
@@ -235,14 +231,20 @@ function ApiCard() {
         >
           Connect
         </button>
-        <button
-          type="button"
-          onClick={() => void refreshNow()}
-          disabled={refreshing || !board.data.sourceUrl}
-          className="rounded-lg border px-4 py-1.5 text-xs font-medium transition-colors hover:bg-muted disabled:opacity-50"
-        >
-          {refreshing ? "Refreshing…" : "Refresh now"}
-        </button>
+          <button
+            type="button"
+            onClick={() => void refreshNow()}
+            disabled={refreshing || !board.data.sourceUrl}
+            className="flex items-center gap-1.5 rounded-lg border px-4 py-1.5 text-xs font-medium transition-all hover:bg-muted active:scale-[0.97] disabled:opacity-50"
+          >
+            <HugeiconsIcon
+              icon={Refresh01Icon}
+              size={13}
+              strokeWidth={2}
+              className={refreshing ? "animate-spin" : undefined}
+            />
+            {refreshing ? "Refreshing…" : "Refresh now"}
+          </button>
         {board.data.lastRefresh && (
           <span className="font-mono text-[11px] text-muted-foreground">
             Last: {new Date(board.data.lastRefresh).toLocaleString()}

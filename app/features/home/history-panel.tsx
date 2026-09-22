@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { HistoryIcon, Refresh01Icon } from "@hugeicons/core-free-icons";
 import { useBoard } from "@/store/board";
 import { parseBoard } from "@/features/library";
-import { Card, Empty, SectionHead } from "@/features/home/section";
+import { Card, Empty, IconBtn, SectionHead } from "@/features/home/section";
 import {
   HISTORY_KEY,
   loadHistory,
@@ -43,8 +45,9 @@ export function HistoryPanel() {
           <button
             type="button"
             onClick={() => persist(pushHistory(entries, takeSnapshot(board)))}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 active:scale-[0.97]"
           >
+            <HugeiconsIcon icon={HistoryIcon} size={15} strokeWidth={1.5} />
             Snapshot now
           </button>
         }
@@ -74,13 +77,11 @@ export function HistoryPanel() {
                       v{e.version} · {new Date(e.createdAt).toLocaleString()}
                     </span>
                   </span>
-                  <button
-                    type="button"
+                  <IconBtn
+                    label={`Restore ${e.title} v${e.version}`}
                     onClick={() => loadBoard(parseBoard(e.snapshot))}
-                    className="shrink-0 rounded-lg border px-3 py-1 text-xs font-medium transition-colors hover:bg-muted"
-                  >
-                    Restore
-                  </button>
+                    icon={Refresh01Icon}
+                  />
                 </span>
               </li>
             ))}
