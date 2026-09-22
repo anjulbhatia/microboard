@@ -72,7 +72,7 @@ export function WidgetCard({ widget, selected, onSelect, onRemove, onDuplicate, 
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ type: "spring", stiffness: 320, damping: 28 }}
       style={{ gridColumn: `span ${w} / span ${w}` }}
-      className="relative"
+      className={`relative ${selected ? "corner-brackets" : ""}`}
     >
       {selected && (
         <div className="absolute top-2 left-1/2 z-20 flex -translate-x-1/2 items-center gap-0.5 rounded-full border bg-popover/95 py-1 pr-1.5 pl-2.5 shadow-xl ring-1 ring-border backdrop-blur">

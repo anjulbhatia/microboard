@@ -91,11 +91,11 @@ export function ChatPanel() {
       <h2 className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
         Agent chat
       </h2>
-      <div ref={boxRef} className="slim-scroll flex min-h-24 flex-1 flex-col gap-2 overflow-y-auto">
+      <div ref={boxRef} className="chat-scroll flex min-h-24 flex-1 flex-col gap-2 overflow-y-auto">
         {messages.map((m, i) => (
           <div
             key={i}
-            className={`rounded-lg px-2.5 py-1.5 text-xs leading-relaxed ${
+            className={`rounded-lg px-2.5 py-1.5 text-xs leading-relaxed animate-in fade-in slide-in-from-bottom-1 duration-150 ${
               m.role === "user" ? "self-end bg-primary text-primary-foreground" : "self-start bg-muted"
             }`}
           >

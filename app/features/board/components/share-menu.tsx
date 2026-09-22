@@ -55,7 +55,7 @@ export function ShareMenu({ onClose }: { onClose: () => void }) {
   const shareUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/share/${board.id}`;
 
   return (
-    <div className="w-72 rounded-lg border bg-popover p-2 shadow-xl ring-1 ring-border">
+    <div className="w-72 rounded-xl border bg-popover p-2 shadow-xl ring-1 ring-border animate-in fade-in zoom-in-95 duration-100">
       <p className="px-2 pt-1 font-mono text-[10px] tracking-wider text-muted-foreground uppercase">Download</p>
       <div className="flex items-stretch gap-1 px-1 py-1">
         {FORMATS.map((f) => (

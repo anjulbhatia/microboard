@@ -7,22 +7,22 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.99 0.002 280);
-  --foreground: oklch(0.15 0.015 280);
+  --background: oklch(0.99 0.004 95);
+  --foreground: oklch(0.20 0.012 95);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0.015 280);
+  --card-foreground: oklch(0.20 0.012 95);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0.015 280);
+  --popover-foreground: oklch(0.20 0.012 95);
   --primary: oklch(0.52 0.22 285);
   --primary-foreground: oklch(0.99 0.002 280);
-  --secondary: oklch(0.96 0.008 280);
-  --secondary-foreground: oklch(0.25 0.02 280);
-  --muted: oklch(0.96 0.005 280);
-  --muted-foreground: oklch(0.52 0.015 280);
-  --accent: oklch(0.93 0.015 280);
-  --accent-foreground: oklch(0.25 0.02 280);
+  --secondary: oklch(0.96 0.008 95);
+  --secondary-foreground: oklch(0.28 0.014 95);
+  --muted: oklch(0.96 0.006 95);
+  --muted-foreground: oklch(0.52 0.014 95);
+  --accent: oklch(0.94 0.010 95);
+  --accent-foreground: oklch(0.28 0.014 95);
   --destructive: oklch(0.58 0.22 27);
-  --input: oklch(0.93 0.005 280);
+  --input: oklch(0.93 0.006 95);
   --ring: oklch(0.52 0.22 285);
   --chart-1: oklch(0.52 0.22 285);
   --chart-2: oklch(0.62 0.16 260);
@@ -30,35 +30,35 @@
   --chart-4: oklch(0.68 0.12 240);
   --chart-5: oklch(0.55 0.20 310);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
+  --sidebar: oklch(0.985 0.003 95);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent: oklch(0.97 0.004 95);
   --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-border: oklch(0.922 0.006 95);
   --sidebar-ring: oklch(0.708 0 0);
-  --border: oklch(0.93 0.005 280);
+  --border: oklch(0.92 0.008 95);
 }
 
 .dark {
-  --background: oklch(0.11 0.015 280);
-  --foreground: oklch(0.94 0.005 280);
-  --card: oklch(0.15 0.018 280);
-  --card-foreground: oklch(0.94 0.005 280);
-  --popover: oklch(0.15 0.018 280);
-  --popover-foreground: oklch(0.94 0.005 280);
+  --background: oklch(0.145 0.012 95);
+  --foreground: oklch(0.93 0.004 95);
+  --card: oklch(0.185 0.014 95);
+  --card-foreground: oklch(0.93 0.004 95);
+  --popover: oklch(0.185 0.014 95);
+  --popover-foreground: oklch(0.93 0.004 95);
   --primary: oklch(0.65 0.20 285);
   --primary-foreground: oklch(0.11 0.015 280);
-  --secondary: oklch(0.22 0.02 280);
-  --secondary-foreground: oklch(0.90 0.005 280);
-  --muted: oklch(0.22 0.02 280);
-  --muted-foreground: oklch(0.60 0.015 280);
-  --accent: oklch(0.25 0.025 280);
-  --accent-foreground: oklch(0.94 0.005 280);
+  --secondary: oklch(0.25 0.016 95);
+  --secondary-foreground: oklch(0.90 0.004 95);
+  --muted: oklch(0.25 0.016 95);
+  --muted-foreground: oklch(0.64 0.012 95);
+  --accent: oklch(0.28 0.018 95);
+  --accent-foreground: oklch(0.93 0.004 95);
   --destructive: oklch(0.70 0.19 22);
-  --border: oklch(0.24 0.015 280);
-  --input: oklch(0.24 0.015 280);
+  --border: oklch(0.28 0.012 95);
+  --input: oklch(0.28 0.012 95);
   --ring: oklch(0.65 0.20 285);
   --chart-1: oklch(0.65 0.20 285);
   --chart-2: oklch(0.68 0.14 260);
@@ -124,10 +124,30 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
   }
   html {
     @apply font-sans;
+  }
+  /* Kill button focus flicker (december-style); inputs keep their calm ring. */
+  button:focus,
+  button:active,
+  button:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  button,
+  input,
+  textarea,
+  select {
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+  ::selection {
+    background-color: rgba(38, 79, 120, 0.85);
+    color: inherit;
   }
 }
 
@@ -137,8 +157,8 @@
     scrollbar-color: var(--border) transparent;
   }
   .slim-scroll::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
   }
   .slim-scroll::-webkit-scrollbar-track {
     background: transparent;
@@ -149,6 +169,92 @@
   }
   .slim-scroll::-webkit-scrollbar-thumb:hover {
     background: var(--muted-foreground);
+  }
+  .slim-scroll::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+  /* Ultra-thin chat scrollbar — december-style, no steppers. */
+  .chat-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--muted-foreground) 35%, transparent) transparent;
+  }
+  .chat-scroll::-webkit-scrollbar {
+    width: 2px !important;
+    height: 2px !important;
+  }
+  .chat-scroll::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+  .chat-scroll::-webkit-scrollbar-track {
+    background: transparent !important;
+  }
+  .chat-scroll::-webkit-scrollbar-thumb {
+    background: color-mix(in oklch, var(--muted-foreground) 35%, transparent) !important;
+    border-radius: 999px !important;
+  }
+  .chat-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground) !important;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  /* Loading shimmer bar. */
+  @keyframes shimmer-slide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+    background: var(--muted);
+  }
+  .shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--foreground) 12%, transparent), transparent);
+    animation: shimmer-slide 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  /* Dot pattern backdrop. */
+  .dot-pattern {
+    background-image: radial-gradient(color-mix(in oklch, var(--muted-foreground) 45%, transparent) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  /* Corner brackets for selected canvas pieces — landing-page motif. */
+  .corner-brackets {
+    position: relative;
+  }
+  .corner-brackets::before,
+  .corner-brackets::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    z-index: 20;
+  }
+  .corner-brackets::before {
+    top: -2px;
+    left: -2px;
+    border-top: 2px solid var(--primary);
+    border-left: 2px solid var(--primary);
+    border-top-left-radius: 4px;
+  }
+  .corner-brackets::after {
+    bottom: -2px;
+    right: -2px;
+    border-bottom: 2px solid var(--primary);
+    border-right: 2px solid var(--primary);
+    border-bottom-right-radius: 4px;
   }
   .md {
     @apply text-sm break-words;

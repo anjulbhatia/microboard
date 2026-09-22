@@ -16,7 +16,17 @@ export function ShowcasePage() {
   const toggleSave = useMutation(api.boards.toggleSave);
 
   if (feed === undefined) {
-    return <p className="p-8 font-mono text-xs text-muted-foreground">Loading showcase…</p>;
+    return (
+      <div className="mx-auto w-full max-w-4xl px-4 pt-24 pb-12" aria-label="Loading showcase">
+        <div className="shimmer h-8 w-48 rounded-lg" />
+        <div className="shimmer mt-2 h-4 w-72 rounded-md" />
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="shimmer h-36 rounded-2xl" />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (feed.length === 0) {

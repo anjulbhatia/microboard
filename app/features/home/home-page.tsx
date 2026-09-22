@@ -38,7 +38,7 @@ export function HomePage() {
       <MobileSectionTabs section={section} onSection={setSection} />
       <div
         key={section}
-        className="min-w-0 flex-1 overflow-y-auto rounded-2xl border bg-card p-4 shadow-sm animate-in fade-in duration-200 md:p-6"
+        className="min-w-0 flex-1 overflow-y-auto rounded-2xl border bg-card p-4 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-200 md:p-6"
       >
         {section === "home" && <LibraryPanel />}
         {section === "data" && <DataPanel />}

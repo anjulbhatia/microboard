@@ -27,7 +27,12 @@ export function ShareDetailPage() {
   }, [id, recordView]);
 
   if (detail === undefined) {
-    return <p className="p-8 font-mono text-xs text-muted-foreground">Loading shared board…</p>;
+    return (
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-4 pt-24 pb-12" aria-label="Loading shared board">
+        <div className="shimmer h-48 rounded-2xl" />
+        <div className="shimmer h-40 rounded-2xl" />
+      </div>
+    );
   }
   if (detail === null) {
     return (
