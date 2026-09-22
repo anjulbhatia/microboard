@@ -67,8 +67,15 @@ lands with email OTP.
 ## 3. Auth: password live, demo fallback, OTP next
 
 - **Backend live (local).** `npx convex dev` serves `127.0.0.1:3210`
-  (URL in gitignored `.env.local`). Auth keys generated once and set via
-  `convex env set`. Hosted deploy needs `npx convex login` (browser) + push.
+  (URL in gitignored `.env.local`). Hosted deploy needs `npx convex login`
+  (browser) + push.
+- **Key format (gotcha).** The auth component runs
+  `atob(AUTH_PRIVATE_KEY)` into `importPKCS8`, so the value must be
+  **base64-of-PEM**, not raw PEM. And set both vars with `--from-file` —
+  PowerShell strips quotes from inline args and corrupts the JWKS JSON.
+  Keypair backup lives in `~/.convex/microboard-keys/` (never in the repo).
+  Regenerate: RSA-2048 PKCS8 PEM + JWKS (`kid: microboard-1`, RS256),
+  then `convex env set` both from files.
 - **Password accounts live.** `ConvexLogin` (username + password, sign
   in/up tabs) via `useSignInWithPassword` / `useSignUpWithPassword`;
   `linkRemote` marks the local session `demo:false` (`remote-<name>` id).
