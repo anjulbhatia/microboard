@@ -4,18 +4,17 @@ import {
   Analytics01Icon,
   Database02Icon,
   HistoryIcon,
-  LibraryIcon,
+  Home01Icon,
   Mail01Icon,
   PlusSignIcon,
-  SparklesIcon,
   UserIcon,
 } from "@hugeicons/core-free-icons";
 import { HOME_SECTIONS, NEW_PATH, profilePath, type HomeSection } from "@/lib/routes";
 import { useSession } from "@/store/session";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 
-export const SECTION_ICONS: Record<HomeSection, typeof LibraryIcon> = {
-  library: LibraryIcon,
+export const SECTION_ICONS: Record<HomeSection, typeof Home01Icon> = {
+  home: Home01Icon,
   data: Database02Icon,
   mailing: Mail01Icon,
   history: HistoryIcon,
@@ -45,8 +44,7 @@ export function HomeSidebar({ section, onSection }: HomeSidebarProps) {
         aria-label="Microboard home"
         className="flex items-center gap-2 px-4 pt-4 pb-3"
       >
-        <HugeiconsIcon icon={SparklesIcon} size={20} strokeWidth={1.5} className="text-primary" />
-        <span className="font-display text-sm tracking-[0.2em]">MICROBOARD</span>
+        <span className="font-display text-center w-full text-sm tracking-[0.2em]">MICROBOARD</span>
       </Link>
 
       <div className="px-3">
@@ -84,7 +82,7 @@ export function HomeSidebar({ section, onSection }: HomeSidebarProps) {
       </nav>
 
       <div className="flex items-center justify-between rounded-xl bg-muted/60 px-3 py-1.5 mx-3 mb-2">
-        <span className="text-xs font-medium text-muted-foreground">Theme</span>
+        <span className="text-xs font-medium text-muted-foreground">Change Theme</span>
         <ThemeToggle />
       </div>
 

@@ -1,149 +1,406 @@
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useBoard } from "@/store/board";
 import { NEW_PATH } from "@/lib/routes";
+import { Card, Empty, SectionHead } from "@/features/home/section";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
 import {
   REFRESH_OPTIONS,
   SOURCE_REGISTRY,
+  fetchApiRecords,
   refreshLabel,
 } from "@/features/data/sources";
 import { useSourceRefresh } from "@/features/data/use-source-refresh";
+import { applySteps, inferColumns } from "@/features/data/lib/data-utils";
+import { csvRecords } from "@/features/data/providers/csv";
+import { clipboardFromText } from "@/features/data/providers/clipboard";
+import { excelFromFile } from "@/features/data/providers/excel";
+import { sheetFromUrl } from "@/features/data/providers/sheet";
+import { toRecords } from "@/features/data/providers/types";
+import { SAMPLE_CSV } from "@/features/data/lib/data-utils";
+import { providerForFile } from "@/features/data/providers";
+import type { DataSource } from "@/features/board/types";
+
+type UploadKind = "file" | "paste" | "sheet" | "api" | "sample";
 
 /**
- * Data Sources — registry cards, API endpoint config with auto-refresh,
- * and the transform pipeline (steps with remove/clear). Editor does the
- * heavy editing; this is the overview + controls surface.
+ * Data Sources — clean header with Upload on the right, data listing
+ * below, pipeline timeline, API refresh card. Uploads open in a modal.
  */
 export function DataPanel() {
   const board = useBoard((s) => s.board);
-  const setSourceConfig = useBoard((s) => s.setSourceConfig);
   const removeStep = useBoard((s) => s.removeStep);
   const clearSteps = useBoard((s) => s.clearSteps);
-  const { refreshing, error, refreshNow } = useSourceRefresh();
-  const [url, setUrl] = useState(board.data.sourceUrl ?? "");
-  const [minutes, setMinutes] = useState(board.data.refreshMinutes ?? 0);
+  const [uploadOpen, setUploadOpen] = useState(false);
 
-  const cols = board.data.columns.map((c) => c.name);
-  const current = board.data.source;
-
-  const saveApi = () => {
-    setSourceConfig(url.trim(), minutes);
-  };
+  const cleaned = useMemo(
+    () => applySteps(board.data.raw, board.steps),
+    [board.data.raw, board.steps]
+  );
+  const cols = useMemo(() => inferColumns(cleaned).map((c) => c.name), [cleaned]);
+  const showCols = cols.slice(0, 6);
+  const showRows = cleaned.slice(0, 8);
 
   return (
-    <div className="flex max-w-3xl flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Data Sources</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Sources, integrations, and everything data on the current board.
-        </p>
-      </div>
+    <div className="flex max-w-3xl flex-col gap-5">
+      <SectionHead
+        eyebrow="Data Sources"
+        title="Everything data lives here"
+        blurb={
+          board.data.source
+            ? `${board.data.source} · ${board.data.raw.length} rows · ${cols.length} cols`
+            : "No source yet — upload to begin."
+        }
+        actions={
+          <button
+            type="button"
+            onClick={() => setUploadOpen(true)}
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Upload data
+          </button>
+        }
+      />
 
-      <ul className="grid gap-2 sm:grid-cols-2">
-        {SOURCE_REGISTRY.map((s) => {
-          const active = current === s.kind;
-          return (
-            <li
-              key={s.kind}
-              className={`rounded-lg border p-3 ${active ? "border-primary ring-1 ring-primary" : ""}`}
+      <UploadModal open={uploadOpen} onClose={() => setUploadOpen(false)} />
+
+      {cleaned.length === 0 ? (
+        <Empty
+          title="No rows yet"
+          body="Upload a file, paste rows, link a sheet, or pull an API — the listing lands here."
+          action={
+            <button
+              type="button"
+              onClick={() => setUploadOpen(true)}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
             >
-              <p className="text-sm font-semibold">
-                {s.label}
-                {active && <span className="ml-2 font-mono text-[10px] text-primary">CONNECTED</span>}
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">{s.blurb}</p>
-            </li>
-          );
-        })}
-      </ul>
-
-      <div className="rounded-lg border p-4">
-        <p className="text-sm font-semibold">API endpoint</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          JSON array endpoint. Rows swap in place; steps replay automatically.
-        </p>
-        <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-          <input
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://api.example.com/rows"
-            spellCheck={false}
-            className="min-w-0 flex-1 rounded-md border bg-background px-3 py-2 font-mono text-xs focus-visible:outline-none"
-          />
-          <select
-            value={minutes}
-            onChange={(e) => setMinutes(Number(e.target.value))}
-            aria-label="Auto-refresh interval"
-            className="rounded-md border bg-background px-2 py-2 text-xs"
-          >
-            {REFRESH_OPTIONS.map((m) => (
-              <option key={m} value={m}>{refreshLabel(m)}</option>
-            ))}
-          </select>
-        </div>
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={saveApi}
-            disabled={url.trim().length === 0}
-            className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50"
-          >
-            Connect
-          </button>
-          <button
-            type="button"
-            onClick={() => void refreshNow()}
-            disabled={refreshing || !board.data.sourceUrl}
-            className="rounded-md border px-4 py-1.5 text-xs disabled:opacity-50"
-          >
-            {refreshing ? "Refreshing…" : "Refresh now"}
-          </button>
-          {board.data.lastRefresh && (
-            <span className="font-mono text-[11px] text-muted-foreground">
-              Last: {new Date(board.data.lastRefresh).toLocaleString()}
-            </span>
+              Upload data
+            </button>
+          }
+        />
+      ) : (
+        <Card className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left font-mono text-xs">
+              <thead>
+                <tr className="border-b">
+                  {showCols.map((c) => (
+                    <th key={c} className="px-3 py-2 font-semibold whitespace-nowrap">{c}</th>
+                  ))}
+                  {cols.length > 6 && (
+                    <th className="px-3 py-2 text-muted-foreground">+{cols.length - 6}</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {showRows.map((r, i) => (
+                  <tr key={i} className="border-b last:border-0 hover:bg-muted/40">
+                    {showCols.map((c) => (
+                      <td key={c} className="max-w-32 truncate px-3 py-1.5">{String(r[c] ?? "")}</td>
+                    ))}
+                    {cols.length > 6 && <td className="px-3 py-1.5 text-muted-foreground">…</td>}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {cleaned.length > 8 && (
+            <p className="border-t px-3 py-2 font-mono text-[11px] text-muted-foreground">
+              Showing 8 of {cleaned.length} rows
+            </p>
           )}
-        </div>
-        {error && <p className="mt-2 font-mono text-xs text-destructive">{error}</p>}
-      </div>
+        </Card>
+      )}
 
-      <div className="rounded-lg border p-4">
+      <SourceCards />
+      <ApiCard />
+
+      <Card>
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold">Transforms · {board.steps.length}</p>
+          <p className="text-sm font-bold">
+            Pipeline · {board.steps.length} step{board.steps.length === 1 ? "" : "s"}
+          </p>
           {board.steps.length > 0 && (
-            <button type="button" onClick={clearSteps} className="text-xs text-destructive">
+            <button type="button" onClick={clearSteps} className="text-xs font-medium text-destructive hover:underline">
               Clear all
             </button>
           )}
         </div>
-        <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
-          COLUMNS · {cols.length > 0 ? cols.join(", ") : "—"}
-        </p>
         {board.steps.length > 0 ? (
-          <ul className="mt-2 flex flex-col gap-1.5">
+          <ol className="mt-3 flex flex-col">
             {board.steps.map((s, i) => (
-              <li key={s.id} className="flex items-center gap-2 rounded-md bg-muted/60 px-3 py-1.5 text-sm">
-                <span className="font-mono text-[11px] text-muted-foreground">{i + 1}</span>
-                <span className="min-w-0 flex-1 truncate">{s.description}</span>
-                <span className="font-mono text-[10px] text-muted-foreground">{s.type}</span>
-                <button
-                  type="button"
-                  onClick={() => removeStep(s.id)}
-                  aria-label={`Remove step ${i + 1}`}
-                  className="text-xs text-muted-foreground hover:text-destructive"
-                >
-                  Remove
-                </button>
+              <li key={s.id} className="relative flex gap-3 pb-3 pl-1 last:pb-0">
+                {i < board.steps.length - 1 && (
+                  <span aria-hidden className="absolute top-7 bottom-0 left-[15px] w-px bg-border" />
+                )}
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-bold text-primary">
+                  {i + 1}
+                </span>
+                <span className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-muted/60 px-3 py-1.5 text-sm">
+                  <span className="min-w-0 flex-1 truncate">{s.description}</span>
+                  <span className="shrink-0 font-mono text-[10px] text-muted-foreground">{s.type}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeStep(s.id)}
+                    aria-label={`Remove step ${i + 1}`}
+                    className="shrink-0 text-xs text-muted-foreground hover:text-destructive"
+                  >
+                    Remove
+                  </button>
+                </span>
               </li>
             ))}
-          </ul>
+          </ol>
         ) : (
-          <p className="mt-2 text-sm text-muted-foreground">No transforms yet.</p>
+          <p className="mt-2 text-sm text-muted-foreground">No transforms yet — the recipe starts empty.</p>
         )}
-        <Link to={NEW_PATH} className="mt-3 inline-block rounded-md border px-4 py-1.5 text-xs">
+        <Link to={NEW_PATH} className="mt-3 inline-block rounded-lg border px-4 py-1.5 text-xs font-medium transition-colors hover:bg-muted">
           Edit transforms in canvas
         </Link>
-      </div>
+      </Card>
     </div>
+  );
+}
+
+function SourceCards() {
+  const source = useBoard((s) => s.board.data.source);
+  return (
+    <ul className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+      {SOURCE_REGISTRY.map((s) => {
+        const active = source === s.kind;
+        return (
+          <li
+            key={s.kind}
+            title={s.blurb}
+            className={`rounded-xl border bg-background px-2.5 py-2 text-center ${
+              active ? "border-primary/60 ring-1 ring-primary/40" : ""
+            }`}
+          >
+            <p className="text-xs font-bold">{s.label}</p>
+            <p className={`mt-0.5 font-mono text-[10px] uppercase ${active ? "text-primary" : "text-muted-foreground"}`}>
+              {active ? "Live" : "—"}
+            </p>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function ApiCard() {
+  const board = useBoard((s) => s.board);
+  const setSourceConfig = useBoard((s) => s.setSourceConfig);
+  const { refreshing, error, refreshNow } = useSourceRefresh();
+  const [url, setUrl] = useState(board.data.sourceUrl ?? "");
+  const [minutes, setMinutes] = useState(board.data.refreshMinutes ?? 0);
+
+  return (
+    <Card>
+      <p className="text-sm font-bold">API auto-refresh</p>
+      <p className="mt-0.5 text-xs text-muted-foreground">
+        Rows swap in place; steps replay automatically.
+      </p>
+      <div className="mt-2.5 flex flex-col gap-2 sm:flex-row">
+        <input
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="https://api.example.com/rows"
+          spellCheck={false}
+          aria-label="API endpoint URL"
+          className="min-w-0 flex-1 rounded-lg border bg-background px-3 py-2 font-mono text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        />
+        <select
+          value={minutes}
+          onChange={(e) => setMinutes(Number(e.target.value))}
+          aria-label="Auto-refresh interval"
+          className="rounded-lg border bg-background px-2 py-2 text-xs"
+        >
+          {REFRESH_OPTIONS.map((m) => (
+            <option key={m} value={m}>{refreshLabel(m)}</option>
+          ))}
+        </select>
+      </div>
+      <div className="mt-2.5 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setSourceConfig(url.trim(), minutes)}
+          disabled={url.trim().length === 0}
+          className="rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50"
+        >
+          Connect
+        </button>
+        <button
+          type="button"
+          onClick={() => void refreshNow()}
+          disabled={refreshing || !board.data.sourceUrl}
+          className="rounded-lg border px-4 py-1.5 text-xs font-medium transition-colors hover:bg-muted disabled:opacity-50"
+        >
+          {refreshing ? "Refreshing…" : "Refresh now"}
+        </button>
+        {board.data.lastRefresh && (
+          <span className="font-mono text-[11px] text-muted-foreground">
+            Last: {new Date(board.data.lastRefresh).toLocaleString()}
+          </span>
+        )}
+      </div>
+      {error && <p className="mt-2 font-mono text-xs text-destructive">{error}</p>}
+    </Card>
+  );
+}
+
+function UploadModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const loadData = useBoard((s) => s.loadData);
+  const [kind, setKind] = useState<UploadKind>("file");
+  const [text, setText] = useState("");
+  const [url, setUrl] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const done = () => {
+    setError("");
+    setText("");
+    setUrl("");
+    onClose();
+  };
+
+  const load = (source: DataSource, rows: Record<string, string>[]) => {
+    if (rows.length === 0) throw new Error("No rows found.");
+    loadData(source, rows);
+    done();
+  };
+
+  const submit = async () => {
+    setError("");
+    setBusy(true);
+    try {
+      if (kind === "sample") {
+        load("sample", csvRecords(SAMPLE_CSV));
+      } else if (kind === "paste") {
+        if (!text.trim()) throw new Error("Paste some rows first.");
+        load("inline", toRecords(clipboardFromText(text)));
+      } else if (kind === "sheet") {
+        if (!url.trim()) throw new Error("Paste a public sheet link.");
+        load("sheet", toRecords(await sheetFromUrl(url.trim())));
+      } else if (kind === "api") {
+        if (!url.trim()) throw new Error("Paste a JSON endpoint.");
+        const rows = await fetchApiRecords(url.trim());
+        loadData("api", rows);
+        useBoard.getState().setSourceConfig(url.trim(), 0);
+        done();
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Upload failed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onFile = async (files: FileList | null) => {
+    const file = files?.[0];
+    if (!file) return;
+    setError("");
+    setBusy(true);
+    try {
+      if (providerForFile(file.name) === "excel") {
+        load("file", toRecords(await excelFromFile(file)));
+      } else {
+        load("file", csvRecords(await file.text()));
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Upload failed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Upload data</DialogTitle>
+          <DialogDescription>Pick a source. Rows land on the current board.</DialogDescription>
+        </DialogHeader>
+        <div className="flex gap-1.5" role="tablist" aria-label="Source type">
+          {(["file", "paste", "sheet", "api", "sample"] as const).map((k) => (
+            <button
+              key={k}
+              type="button"
+              role="tab"
+              aria-selected={kind === k}
+              onClick={() => setKind(k)}
+              className={`flex-1 rounded-lg px-1 py-1.5 text-xs font-medium capitalize transition-colors ${
+                kind === k ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted/60"
+              }`}
+            >
+              {k}
+            </button>
+          ))}
+        </div>
+
+        {kind === "file" && (
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={busy}
+            className="rounded-xl border border-dashed px-4 py-8 text-center text-sm text-muted-foreground transition-colors hover:border-primary hover:text-foreground disabled:opacity-50"
+          >
+            {busy ? "Reading…" : "Choose a .csv or .xlsx file"}
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".csv,.xlsx"
+              className="hidden"
+              onChange={(e) => void onFile(e.target.files)}
+            />
+          </button>
+        )}
+        {kind === "paste" && (
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={"month,visitors\nJan,1860"}
+            rows={6}
+            spellCheck={false}
+            aria-label="Pasted rows"
+            className="w-full rounded-lg border bg-background px-3 py-2 font-mono text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          />
+        )}
+        {(kind === "sheet" || kind === "api") && (
+          <input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder={kind === "sheet" ? "https://docs.google.com/spreadsheets/d/…" : "https://api.example.com/rows"}
+            spellCheck={false}
+            aria-label="Source URL"
+            className="w-full rounded-lg border bg-background px-3 py-2 font-mono text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          />
+        )}
+        {kind === "sample" && (
+          <p className="rounded-lg bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
+            12-row demo set. One click, straight to transforms.
+          </p>
+        )}
+
+        {error && <p className="font-mono text-xs text-destructive">{error}</p>}
+
+        {kind !== "file" && (
+          <button
+            type="button"
+            onClick={() => void submit()}
+            disabled={busy}
+            className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          >
+            {busy ? "Loading…" : "Load into board"}
+          </button>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

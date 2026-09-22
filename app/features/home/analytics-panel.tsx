@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useBoard } from "@/store/board";
+import { Card, SectionHead, Stat } from "@/features/home/section";
 import { loadStats, totals } from "@/features/analytics";
 
 /**
@@ -17,32 +18,48 @@ export function AnalyticsPanel() {
   });
   const t = totals(map);
   const mine = map[board.id];
+  const rows = Object.entries(map).sort((a, b) => b[1].views + b[1].shares - (a[1].views + a[1].shares));
 
   return (
-    <div className="flex max-w-2xl flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Views and shares across your boards.</p>
-      </div>
+    <div className="flex max-w-3xl flex-col gap-5">
+      <SectionHead
+        eyebrow="Analytics"
+        title="How boards travel"
+        blurb="Views and shares across every board you touch."
+      />
+
       <div className="grid grid-cols-3 gap-2">
-        {[
-          { label: "Boards", value: t.boards },
-          { label: "Views", value: t.views },
-          { label: "Shares", value: t.shares },
-        ].map((s) => (
-          <div key={s.label} className="rounded-lg border p-4 text-center">
-            <p className="text-2xl font-bold">{s.value}</p>
-            <p className="font-mono text-[11px] text-muted-foreground uppercase">{s.label}</p>
-          </div>
-        ))}
+        <Stat value={t.boards} label="Boards" />
+        <Stat value={t.views} label="Views" />
+        <Stat value={t.shares} label="Shares" />
       </div>
-      <div className="rounded-lg border p-4 text-sm">
-        <p className="font-mono text-xs text-muted-foreground">CURRENT BOARD</p>
-        <p className="mt-1 font-medium">{board.title}</p>
+
+      <Card>
+        <p className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
+          Current board
+        </p>
+        <p className="mt-1 truncate text-base font-bold">{board.title}</p>
         <p className="mt-1 text-sm text-muted-foreground">
           {mine ? `${mine.views} views · ${mine.shares} shares` : "No events yet — open and share to count."}
         </p>
-      </div>
+      </Card>
+
+      {rows.length > 0 && (
+        <Card className="p-2">
+          <ul className="flex flex-col divide-y divide-border">
+            {rows.slice(0, 8).map(([id, s]) => (
+              <li key={id} className="flex items-center gap-3 px-3 py-2 text-sm">
+                <span className="min-w-0 flex-1 truncate font-mono text-xs">
+                  {id === board.id ? board.title : id.slice(0, 18)}
+                </span>
+                <span className="font-mono text-[11px] text-muted-foreground">
+                  {s.views} views · {s.shares} shares
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
     </div>
   );
 }

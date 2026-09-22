@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useBoard } from "@/store/board";
 import { parseBoard } from "@/features/library";
+import { Card, Empty, SectionHead } from "@/features/home/section";
 import {
   HISTORY_KEY,
   loadHistory,
@@ -9,8 +10,8 @@ import {
 } from "@/features/history";
 
 /**
- * History — version snapshots of boards. Snapshot now, restore any entry
- * (restores into the editor via loadBoard). Cap 10, local-first.
+ * History — version snapshots as a timeline. Snapshot now,
+ * restore any entry into the editor via loadBoard.
  */
 export function HistoryPanel() {
   const board = useBoard((s) => s.board);
@@ -33,46 +34,58 @@ export function HistoryPanel() {
   };
 
   return (
-    <div className="flex max-w-2xl flex-col gap-4">
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">History</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {entries.length} snapshots · restores open in the editor.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => persist(pushHistory(entries, takeSnapshot(board)))}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-        >
-          Snapshot now
-        </button>
-      </div>
+    <div className="flex max-w-2xl flex-col gap-5">
+      <SectionHead
+        eyebrow="History"
+        title="Board timeline"
+        blurb={`${entries.length} snapshot${entries.length === 1 ? "" : "s"} · restores open in the editor.`}
+        actions={
+          <button
+            type="button"
+            onClick={() => persist(pushHistory(entries, takeSnapshot(board)))}
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Snapshot now
+          </button>
+        }
+      />
+
       {entries.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">
-          No snapshots yet. Snapshot the current board to start its timeline.
-        </div>
+        <Empty
+          title="No history yet"
+          body="Snapshot the current board to start its timeline — every restore point lands here."
+        />
       ) : (
-        <ul className="flex flex-col gap-1.5">
-          {entries.map((e) => (
-            <li key={e.id} className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
-              <span className="min-w-0 flex-1 truncate">
-                <span className="font-medium">{e.title}</span>{" "}
-                <span className="font-mono text-[11px] text-muted-foreground">
-                  v{e.version} · {new Date(e.createdAt).toLocaleString()}
+        <Card>
+          <ol className="flex flex-col">
+            {entries.map((e, i) => (
+              <li key={e.id} className="relative flex gap-3 pb-4 pl-1 last:pb-0">
+                {i < entries.length - 1 && (
+                  <span aria-hidden className="absolute top-7 bottom-0 left-[15px] w-px bg-border" />
+                )}
+                <span
+                  aria-hidden
+                  className={`mt-1 size-2.5 shrink-0 rounded-full ${i === 0 ? "bg-primary" : "bg-border"}`}
+                />
+                <span className="flex min-w-0 flex-1 items-center gap-2">
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-bold">{e.title}</span>
+                    <span className="block font-mono text-[11px] text-muted-foreground">
+                      v{e.version} · {new Date(e.createdAt).toLocaleString()}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => loadBoard(parseBoard(e.snapshot))}
+                    className="shrink-0 rounded-lg border px-3 py-1 text-xs font-medium transition-colors hover:bg-muted"
+                  >
+                    Restore
+                  </button>
                 </span>
-              </span>
-              <button
-                type="button"
-                onClick={() => loadBoard(parseBoard(e.snapshot))}
-                className="rounded-md border px-3 py-1 text-xs"
-              >
-                Restore
-              </button>
-            </li>
-          ))}
-        </ul>
+              </li>
+            ))}
+          </ol>
+        </Card>
       )}
     </div>
   );

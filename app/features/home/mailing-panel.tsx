@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Card, Empty, SectionHead } from "@/features/home/section";
 import {
   MAILING_KEY,
   addSubscriber,
@@ -7,8 +8,8 @@ import {
 } from "@/features/mailing";
 
 /**
- * Mailing List — local subscribers today (localStorage), Convex
- * subscribers table mirrors the same shape for AgentMail send later.
+ * Mailing List — subscribers as a table. Local today (localStorage),
+ * Convex subscribers table mirrors the same shape for AgentMail send.
  */
 export function MailingPanel() {
   const [list, setList] = useState(() => {
@@ -43,53 +44,78 @@ export function MailingPanel() {
   };
 
   return (
-    <div className="flex max-w-2xl flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Mailing List</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {count} subscriber{count === 1 ? "" : "s"} · board drops send here after AgentMail.
-        </p>
-      </div>
-      <div className="flex gap-2">
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") add();
-          }}
-          placeholder="ada@example.com"
-          inputMode="email"
-          aria-label="Subscriber email"
-          className="min-w-0 flex-1 rounded-md border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none"
-        />
-        <button
-          type="button"
-          onClick={add}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-        >
-          Add
-        </button>
-      </div>
-      {error && <p className="font-mono text-xs text-destructive">{error}</p>}
-      {list.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">
-          No subscribers yet. Add the first email above.
+    <div className="flex max-w-3xl flex-col gap-5">
+      <SectionHead
+        eyebrow="Mailing List"
+        title={`${count} subscriber${count === 1 ? "" : "s"}`}
+        blurb="Board drops send here once AgentMail is keyed."
+      />
+
+      <Card>
+        <label className="text-xs font-bold" htmlFor="mailing-email">
+          Add a subscriber
+        </label>
+        <div className="mt-2 flex gap-2">
+          <input
+            id="mailing-email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") add();
+            }}
+            placeholder="ada@example.com"
+            inputMode="email"
+            className="min-w-0 flex-1 rounded-lg border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          />
+          <button
+            type="button"
+            onClick={add}
+            className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Add
+          </button>
         </div>
+        {error && <p className="mt-2 font-mono text-xs text-destructive">{error}</p>}
+      </Card>
+
+      {list.length === 0 ? (
+        <Empty
+          title="The list is empty"
+          body="Add the first email above — every board drop starts with one subscriber."
+        />
       ) : (
-        <ul className="flex flex-col gap-1.5">
-          {list.map((s) => (
-            <li key={s.email} className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
-              <span className="min-w-0 flex-1 truncate font-mono text-xs">{s.email}</span>
-              <button
-                type="button"
-                onClick={() => persist(removeSubscriber(list, s.email))}
-                className="text-xs text-muted-foreground hover:text-destructive"
-              >
-                Remove
-              </button>
-            </li>
-          ))}
-        </ul>
+        <Card className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase">
+                  <th className="px-4 py-2.5 font-medium">Email</th>
+                  <th className="px-4 py-2.5 font-medium whitespace-nowrap">Joined</th>
+                  <th className="w-20 px-4 py-2.5"><span className="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {list.map((s) => (
+                  <tr key={s.email} className="border-b last:border-0 hover:bg-muted/40">
+                    <td className="max-w-48 truncate px-4 py-2.5 font-mono text-xs">{s.email}</td>
+                    <td className="px-4 py-2.5 font-mono text-[11px] text-muted-foreground whitespace-nowrap">
+                      {new Date(s.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-2.5 text-right">
+                      <button
+                        type="button"
+                        onClick={() => persist(removeSubscriber(list, s.email))}
+                        className="text-xs text-muted-foreground hover:text-destructive"
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       )}
     </div>
   );

@@ -10,6 +10,14 @@ import { DataPanel } from "@/features/home/data-panel";
 import { MailingPanel } from "@/features/home/mailing-panel";
 import { HistoryPanel } from "@/features/home/history-panel";
 import { AnalyticsPanel } from "@/features/home/analytics-panel";
+import { Card, SectionHead } from "@/features/home/section";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 
 /**
@@ -21,22 +29,22 @@ import { ThemeToggle } from "@/shared/components/theme-toggle";
  * bar (brand, new, theme, avatar) plus a bottom island tab bar.
  */
 export function HomePage() {
-  const [section, setSection] = useState<HomeSection>("library");
+  const [section, setSection] = useState<HomeSection>("home");
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 bg-muted/40 p-3 md:flex-row">
-      <MobileTopBar onHome={() => setSection("library")} />
+      <MobileTopBar onHome={() => setSection("home")} />
       <HomeSidebar section={section} onSection={setSection} />
       <MobileSectionTabs section={section} onSection={setSection} />
       <div className="min-w-0 flex-1 overflow-y-auto rounded-2xl border bg-card p-4 shadow-sm md:p-6">
-        {section === "library" && <LibraryPanel />}
+        {section === "home" && <LibraryPanel />}
         {section === "data" && <DataPanel />}
         {section === "mailing" && <MailingPanel />}
         {section === "history" && <HistoryPanel />}
         {section === "analytics" && <AnalyticsPanel />}
         {section === "profile" && <ProfilePanel />}
       </div>
-      <MobileTabBar onHome={() => setSection("library")} onProfile={() => setSection("profile")} />
+      <MobileTabBar onHome={() => setSection("home")} onProfile={() => setSection("profile")} />
     </div>
   );
 }
@@ -143,48 +151,82 @@ function ProfilePanel() {
   const rename = useSession((s) => s.rename);
   const signOut = useSession((s) => s.signOut);
   const [name, setName] = useState(user?.username ?? "");
+  const [open, setOpen] = useState(false);
   if (!user) return null;
   const preview = profilePath(name || user.username);
   return (
-    <div className="flex max-w-2xl flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Profile</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Your internal config and public page.</p>
-      </div>
-      <div className="rounded-lg border p-5 text-sm">
-        <p><span className="font-mono text-xs text-muted-foreground">ID · </span><span className="font-mono text-xs">{user.id}</span></p>
-        <label className="mt-3 block text-xs font-medium text-muted-foreground" htmlFor="profile-username">
-          Username — public page {preview}
-        </label>
-        <div className="mt-1 flex gap-2">
-          <input
-            id="profile-username"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="min-w-0 flex-1 rounded-md border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none"
-          />
+    <div className="flex max-w-2xl flex-col gap-5">
+      <SectionHead
+        eyebrow="Profile"
+        title={user.username}
+        blurb={user.demo ? "Demo creator · link a real account anytime." : "Verified account."}
+      />
+      <Card>
+        <div className="flex items-center gap-4">
+          <span
+            aria-hidden
+            className="flex size-14 shrink-0 items-center justify-center rounded-2xl text-xl font-bold text-white"
+            style={{ backgroundColor: `hsl(${user.hue} 55% 42%)` }}
+          >
+            {user.username.charAt(0).toUpperCase()}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-lg font-bold tracking-tight">{user.username}</p>
+            <p className="truncate font-mono text-[11px] text-muted-foreground">{preview}</p>
+          </div>
           <button
             type="button"
-            onClick={() => rename(name)}
-            disabled={name.trim().length === 0}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+            onClick={() => setOpen(true)}
+            className="shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
           >
-            Save
+            Manage
           </button>
         </div>
-        <div className="mt-3 flex gap-2">
-          <Link to={profilePath(user.username)} className="rounded-md border px-4 py-2 text-sm">
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link to={profilePath(user.username)} className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted">
             View public profile
           </Link>
           <button
             type="button"
             onClick={signOut}
-            className="rounded-md border border-destructive/40 px-4 py-2 text-sm text-destructive"
+            className="rounded-lg border border-destructive/40 px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
           >
             Sign out
           </button>
         </div>
-      </div>
+      </Card>
+
+      <Dialog open={open} onOpenChange={(v) => { if (!v) setOpen(false); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit profile</DialogTitle>
+            <DialogDescription>Your handle is your public page.</DialogDescription>
+          </DialogHeader>
+          <label className="block text-xs font-bold" htmlFor="profile-username">
+            Username · {preview}
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="profile-username"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="min-w-0 flex-1 rounded-lg border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                rename(name);
+                setOpen(false);
+              }}
+              disabled={name.trim().length === 0}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+            >
+              Save
+            </button>
+          </div>
+          <p className="font-mono text-[11px] text-muted-foreground">ID · {user.id}</p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

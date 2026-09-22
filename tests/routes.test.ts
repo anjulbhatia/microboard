@@ -28,7 +28,7 @@ describe("routes", () => {
 
   test("home sidebar covers the six sections", () => {
     expect(HOME_SECTIONS.map((s) => s.id)).toEqual([
-      "library",
+      "home",
       "data",
       "mailing",
       "history",

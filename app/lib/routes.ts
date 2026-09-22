@@ -9,7 +9,7 @@ export const HOME_PATH = "/home";
 export const SHOWCASE_PATH = "/showcase";
 
 export type HomeSection =
-  | "library"
+  | "home"
   | "data"
   | "mailing"
   | "history"
@@ -17,7 +17,7 @@ export type HomeSection =
   | "profile";
 
 export const HOME_SECTIONS: { id: HomeSection; label: string; short: string; blurb: string }[] = [
-  { id: "library", label: "My Library", short: "Library", blurb: "Boards you created" },
+  { id: "home", label: "Home", short: "Home", blurb: "Boards you created" },
   { id: "data", label: "Data Sources", short: "Data", blurb: "Sources, integrations — everything data lives here" },
   { id: "mailing", label: "Mailing List", short: "Mail", blurb: "Subscribers for board drops" },
   { id: "history", label: "History", short: "History", blurb: "Versions and restores" },
