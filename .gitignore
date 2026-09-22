@@ -20,8 +20,11 @@ dist-ssr
 convex/_generated/
 convex/tsconfig.json
 
-# Agent skills (local tooling, never commit)
-.agents/
+# Agent skills (local tooling, never commit — except the hackathon skill)
+.agents/*
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/convex-hackathon-skill/
 .claude/
 skills-lock.json
 

@@ -12,7 +12,7 @@
 - **Auth:** Convex Auth
 - **AI models:** none
 - **Started:** 2026-09-03T22:20:34Z
-- **Last updated:** 2026-09-22T00:00:00Z
+- **Last updated:** 2026-09-22T15:00:00Z
 
 ## Log
 
@@ -45,3 +45,6 @@ Flattened `app/app` to `app`, then built the route map: canonical `/share/:id` w
 
 ### 2026-09-22 - board schema and features
 Schema-first widget grid: `col`/`row` position plus `dataX`/`dataY` bindings with legacy `x`/`y` compat, flow placement, 16-column clamp, 160-cell capacity. Then vertical slices, each tested: library cards with local persistence and cloud slot (`loadBoard`); data-source registry with API endpoint, JSON coercion, auto-refresh polling that swaps rows in place; `/new` template picker (blank 16:10, blank 3:4, sample data); mailing list with validation and a Convex `subscribers` mirror; history snapshots (cap 10) with restore; analytics views/shares counters. Convex additions: `boards.ownerId` with `by_owner`, `users.by_name` plus `getByUsername`, board save/get/list/showcase functions. 40 bun tests green (`bun test tests/`), `tsc -b` clean. Full detail in `docs/convex.md`.
+
+### 2026-09-22 - backend live, engagement, agent, charts
+Local Convex backend live (`127.0.0.1:3210`) with generated auth keys; app wired through a lazy offline-safe shell. Fixed auth key format (base64-of-PEM, `--from-file` for JWKS) and verified signup/sign-in live. Schema uplift: counters, likes/saves/comments tables, mail inboxes. Functions for showcase feed, board detail, like/save toggles, comments, owner delete — all exercised via CLI. UI: live showcase with engagement, share detail with comments, AgentMail board drops (`@agentmail/convex`), WebMCP manifest plus canvas chat. Charts: 25 micro widgets column-bound (X/Y/Y2 + labels), StatusDot abstract, dither line and pie kinds. Home rebuilt per tab with previews, modals, tables; december-grade theme pass. Canvas simplified to one fluid 8×5 grid, no pickers or gates; board and session persist across reloads. 75 bun tests green. Convex features: schema, tables, indexes, queries, mutations, actions, auth, components.
