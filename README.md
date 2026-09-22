@@ -19,7 +19,7 @@
 <hr>
 
 <p align="center">
-  <img src="./platform.jpg" alt="Microboard — a live data-storyboard canvas shared by a human and an AI agent" width="100%">
+  <img src="./platform.png" alt="Microboard — a live data-storyboard canvas shared by a human and an AI agent" width="100%">
 </p>
 
 <hr>
