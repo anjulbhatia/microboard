@@ -82,6 +82,8 @@ export const WIDGET_TYPES: { value: WidgetType; label: string }[] = [
   { value: "table", label: "Table" },
   { value: "dither-area", label: "Dither area" },
   { value: "dither-bar", label: "Dither bar" },
+  { value: "dither-line", label: "Dither line" },
+  { value: "dither-pie", label: "Dither pie" },
 ];
 
 /** Normalize + clamp a board (rehydration, old snapshots, cloud docs). */

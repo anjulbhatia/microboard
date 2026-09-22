@@ -33,7 +33,9 @@ export type WidgetType =
   | "micro"
   | "table"
   | "dither-area"
-  | "dither-bar";
+  | "dither-bar"
+  | "dither-line"
+  | "dither-pie";
 
 /** Chart engine tag — micro/mono engines plug in here later. */
 export type ChartEngine = "micro" | "mono" | "dither" | "none";
@@ -53,6 +55,8 @@ export interface Widget {
   y?: string;
   dataX?: string;
   dataY?: string;
+  /** Second value column for paired charts (duals, slope, dumbbell...). */
+  dataY2?: string;
   /** Grid position in cell units. 0-based, col in [0, cols). */
   col: number;
   row: number;
@@ -116,6 +120,11 @@ export function widgetDataX(w: Pick<Widget, "x" | "dataX">): string {
 
 export function widgetDataY(w: Pick<Widget, "y" | "dataY">): string {
   return w.dataY ?? w.y ?? "";
+}
+
+/** Second value column for paired charts. dataY2 wins, props.y2 (editor) falls back. */
+export function widgetDataY2(w: Pick<Widget, "dataY2"> & { props?: Record<string, string | number> }): string {
+  return w.dataY2 ?? (typeof w.props?.y2 === "string" ? w.props.y2 : "") ?? "";
 }
 
 /** Fill missing position/bindings on load so old snapshots parse. */

@@ -29,18 +29,19 @@ the store commits once on pointer-up (single version bump).
 
 | Kind | W range | H range | Notes |
 | ---- | ------- | ------- | ----- |
-| textbox | 2–16 | 2–8 | free |
-| heading | 2–16 | locked | height = padding + line-height + font size (content-driven) |
-| shape | 2–16 | 2–8 | free |
-| icon | 1–6 | 1–6 | **square only** — SE handle drives both axes |
-| image | 2–16 | 2–10 | free |
-| board | 4–16 | 4–12 | nested dotted canvas |
-| card | 2–16 | 2–8 | free |
-| kpi (micro) | 2–8 | 2–4 | **micro max height: 4** |
-| spark (micro) | 2–16 | 1–4 | **micro max height: 4** |
-| table | 4–16 | 2–10 | free |
-| dither-area / dither-bar | 4–16 | 5–12 | **dither min height: 5** |
-| mono-* (future) | 4–16 | 5–12 | **mono min height: 5** (same rule when engine lands) |
+| textbox | 2–6 | 1–3 | free |
+| heading | 2–8 | locked | height = padding + line-height + font size (content-driven) |
+| shape | 2–6 | 1–3 | free |
+| icon | 1–4 | 1–4 | **square only** — SE handle drives both axes |
+| image | 2–8 | 2–4 | free |
+| board | 4–8 | 2–5 | nested dotted canvas, fixed 8:5 |
+| card | 2–6 | 1–3 | free |
+| kpi (micro) | 2–4 | 1–2 | gauges stay small |
+| spark (micro) | 2–8 | 1–2 | word-sized |
+| micro | 2–8 | 1–3 | chart select + X/Y/Y2 bindings + labels |
+| table | 4–8 | 2–4 | free |
+| dither-area / dither-bar / dither-line / dither-pie | 4–8 | 2–4 | axes charts need room to breathe |
+| mono-* (future) | 4–8 | 2–4 | **mono min height: 2** (same rule when engine lands) |
 
 Headings show only the E handle. Icons show E (square) + SE.
 
@@ -60,13 +61,14 @@ Headings show only the E handle. Icons show E (square) + SE.
 
 | Kind | Engine | Status |
 | ---- | ------ | ------ |
-| kpi, spark | micro | live (hand-rolled) |
+| kpi, spark, micro (34 abstracts) | micro | live (hand-rolled, column-bound) |
 | table | none | live |
-| dither-area, dither-bar | dither | live (Dither Kit) |
+| dither-area, dither-bar, dither-line, dither-pie | dither | live (Dither Kit composites + pie) |
 | mono-* | mono | **slot reserved** — plug in where told |
 
 New engines register here and in `WIDGET_REGISTRY` (component + resize
-spec: mono follows the dither min-height rule).
+spec). Micro charts bind columns through
+`app/features/widgets/micro/columns.ts` (`deriveChartProps`).
 
 ## 5. Adding a kind
 

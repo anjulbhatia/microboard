@@ -1,4 +1,4 @@
-import { C1, C2, C3, DES, MUT } from "@/features/widgets/micro/types";
+import { C1, C2, C3, C4, DES, MUT } from "@/features/widgets/micro/types";
 import { fmt } from "@/features/widgets/micro/scale";
 
 export function MicroDonut({ parts = [] }: { parts?: { label: string; value: number }[] }) {
@@ -85,8 +85,7 @@ export function Progress({ value = 0 }: { value?: number }) {
   );
 }
 
-export function Bullet({ value = 0, target = 0, bands = [] }: { value?: number; target?: number; bands?: number[] }) {
-  const w = 160;
+export function Bullet({ value = 0, target = 0, bands = [] }: { value?: number; target?: number; bands?: number[] }) {  const w = 160;
   const h = 26;
   const max = Math.max(value, target, ...(bands.length ? bands : [0]), 0) || 1;
   const X = (v: number) => (v / max) * (w - 4) + 2;
@@ -120,5 +119,38 @@ export function LikertStrip({ name = "", counts = [] }: { name?: string; counts?
         ))}
       </div>
     </div>
+  );
+}
+
+export type StatusLevel = "ok" | "warn" | "bad" | "idle";
+
+const LEVEL_FILL: Record<StatusLevel, string> = {
+  ok: C2,
+  warn: C4,
+  bad: DES,
+  idle: MUT,
+};
+
+export function StatusDot({
+  level = "idle",
+  label = "",
+  value,
+}: {
+  level?: StatusLevel;
+  label?: string;
+  value?: string | number;
+}) {
+  const fill = LEVEL_FILL[level] ?? LEVEL_FILL.idle;
+  return (
+    <span className="inline-flex items-center gap-2" role="img" aria-label={`status ${level}`}>
+      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+        <circle cx="7" cy="7" r="5.5" fill={fill} opacity={level === "idle" ? 0.35 : 0.9} />
+        <circle cx="7" cy="7" r="5.5" fill="none" stroke={fill} strokeWidth="1" opacity="0.5" />
+      </svg>
+      {label && <span className="text-xs font-medium">{label}</span>}
+      {value !== undefined && value !== "" && (
+        <span className="font-mono text-xs text-muted-foreground">{String(value)}</span>
+      )}
+    </span>
   );
 }

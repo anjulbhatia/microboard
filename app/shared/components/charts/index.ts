@@ -1,5 +1,5 @@
-export { AreaChart } from "@/shared/components/charts/area-chart";
-export { Area } from "@/shared/components/charts/area";
+export { AreaChart, LineChart } from "@/shared/components/charts/area-chart";
+export { Area, Line } from "@/shared/components/charts/area";
 export { BarChart } from "@/shared/components/charts/bar-chart";
 export { Bar } from "@/shared/components/charts/bar";
 export { XAxis } from "@/shared/components/charts/x-axis";

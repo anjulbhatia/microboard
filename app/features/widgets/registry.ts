@@ -8,6 +8,7 @@ import { ImageWidget } from "@/features/widgets/components/image";
 import { BoardWidget } from "@/features/widgets/components/board";
 import { CardWidget } from "@/features/widgets/components/card";
 import { ChartWidget } from "@/features/widgets/components/chart-widget";
+import { DitherPie } from "@/features/widgets/components/dither-pie";
 import { MICRO_IDS, MICRO_REGISTRY } from "@/features/widgets/micro/registry";
 
 export type FieldType = "text" | "textarea" | "number" | "select" | "color" | "icon";
@@ -236,6 +237,10 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
         type: "select",
         options: MICRO_IDS.map((id) => ({ value: id, label: MICRO_REGISTRY[id].title })),
       },
+      { key: "y2", label: "Y2 column (paired charts)", type: "text" },
+      { key: "xLabel", label: "X label", type: "text" },
+      { key: "yLabel", label: "Y label", type: "text" },
+      { key: "legend", label: "Legend", type: "text" },
     ],
     render: ChartWidget,
   },
@@ -268,5 +273,25 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
     defaults: { title: "Dither bar", props: {} },
     fields: [],
     render: ChartWidget,
+  },
+  "dither-line": {
+    label: "Dither line",
+    group: "charts",
+    needsData: true,
+    defaultSpan: { w: 6, h: 3 },
+    resize: { minW: 4, maxW: 8, minH: 2, maxH: 4 },
+    defaults: { title: "Dither line", props: {} },
+    fields: [],
+    render: ChartWidget,
+  },
+  "dither-pie": {
+    label: "Dither pie",
+    group: "charts",
+    needsData: true,
+    defaultSpan: { w: 6, h: 3 },
+    resize: { minW: 4, maxW: 8, minH: 2, maxH: 4 },
+    defaults: { title: "Dither pie", props: {} },
+    fields: [],
+    render: DitherPie,
   },
 };

@@ -1,16 +1,42 @@
 # ChartMicro — micro chart abstracts (WebMCP guide)
 
-> 33 hand-rolled SVG abstracts in `app/features/widgets/micro/`.
+> 34 hand-rolled SVG abstracts in `app/features/widgets/micro/`.
 > Pure functions of data → SVG. No deps, no animation, theme-aware
 > (`var(--chart-*)`, `currentColor`). Every abstract doubles as a canvas
 > widget (`micro` kind) and an agent-renderable spec.
 
 ## How to specify a chart (agent + human)
 
-One JSON object. `chart` is the registry id, the rest is the chart's props:
+One JSON object. `chart` is the registry id; X/Y bind board columns;
+labels and legend ride in props:
 
 ```json
-{ "chart": "sparkline", "values": [4, 7, 5, 9, 8, 12] }
+{ "chart": "minibar", "x": "channel", "y": "signups", "xLabel": "Channel", "yLabel": "Signups", "legend": "Q1" }
+```
+
+Bindings (`app/features/widgets/micro/columns.ts`, `deriveChartProps`):
+
+| Binding | Meaning | Used by |
+| ------- | ------- | ------- |
+| X | label column | minibar, dotplot, waterfall, funnel, segmented, microdonut, pairedbars, slope, dumbbell |
+| Y | value column | every chart |
+| Y2 (`props.y2`) | second value column | dualsparkline, stackedarea, spreadband, slope, pairedbars, dumbbell (falls back to halving Y) |
+| X+Y pairs | scatter points | microscatter |
+
+`chartBindings(chart)` reports the contract per chart. Empty in, empty
+out — the layer never invents data; the widget shows the registry sample
+as a placeholder until columns bind.
+
+In-function:
+
+```ts
+import { MICRO_REGISTRY } from "@/features/widgets/micro/registry";
+import { deriveChartProps } from "@/features/widgets/micro/columns";
+
+const def = MICRO_REGISTRY["sparkline"];
+const props = def.derive([4, 7, 5, 9]); // bare series → full props
+const bound = deriveChartProps("minibar", rows, "channel", "signups"); // columns → props
+// <def.Component {...props} />
 ```
 
 In-function:
@@ -83,6 +109,7 @@ same JSON through `propose_widget`; humans pick from `/charts`.
 | `progress` | Progress | `value` 0–1 | completion with room for % |
 | `bullet` | Bullet | `value, target, bands?` | actual vs target with context |
 | `likertstripe` | Likert Stripe | `name?, counts[]` (disagree → agree) | sentiment splits |
+| `statusdot` | Status Dot | `level` ok\|warn\|bad\|idle, `label?, value?` | state at glyph size |
 
 ### Finance
 

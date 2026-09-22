@@ -2,7 +2,7 @@ import type { MicroDef } from "@/features/widgets/micro/types";
 import { Sparkline, SparkBar, DualSparkline, StackedArea, BumpStrip, TrendArrow, Delta } from "@/features/widgets/micro/trends";
 import { MiniBar, PairedBars, Dumbbell, Dotplot, Slope, Waterfall, Funnel } from "@/features/widgets/micro/compare";
 import { ActivityGrid, HeatCell, HeatStripe, CalendarStrip, PictogramRow, Segmented, MicroBox, HistogramStrip } from "@/features/widgets/micro/grids";
-import { MicroDonut, ProgressRing, Progress, Bullet, LikertStrip } from "@/features/widgets/micro/gauges";
+import { MicroDonut, ProgressRing, Progress, Bullet, LikertStrip, StatusDot } from "@/features/widgets/micro/gauges";
 import { MicroScatter, SpreadBand, ForecastCone, OHLC, NetFlow, RateVolume } from "@/features/widgets/micro/finance";
 
 const S = [4, 7, 5, 9, 8, 12, 10, 14, 13, 17, 15, 21];
@@ -246,6 +246,14 @@ export const MICRO_REGISTRY: Record<string, MicroDef> = {
     dataShape: "{ name?: string, counts: number[] } (disagree → agree)",
     Component: LikertStrip as MicroDef["Component"], sample: { name: "Satisfaction", counts: [8, 12, 20, 35, 25] },
     derive: (v) => ({ counts: v.slice(0, 5).map((x) => Math.abs(Math.round(x))) }),
+  },
+  statusdot: {
+    id: "statusdot", title: "Status Dot", family: "Gauges",
+    blurb: "A state at glyph size: ok, warn, bad, or idle, with a label.",
+    use: "Use beside KPIs and rows to carry state without words.",
+    dataShape: "{ level: ok|warn|bad|idle, label?: string, value?: string|number }",
+    Component: StatusDot as MicroDef["Component"], sample: { level: "ok", label: "API", value: "99.9%" },
+    derive: (v) => ({ level: "idle", value: v[v.length - 1] ?? "" }),
   },
   microscatter: {
     id: "microscatter", title: "Micro Scatter", family: "Finance",
