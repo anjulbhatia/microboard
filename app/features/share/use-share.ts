@@ -1,18 +1,18 @@
 import { useState } from 'react';
+import { useConvex } from 'convex/react';
 import { useBoard } from '@/store/board';
+import { useSession } from '@/store/session';
 import { isBackendConfigured } from '@/lib/backend';
 import { boardSnapshot, publicBoardUrl, type ShareResult, type ShareStatus } from '@/features/share/types';
 
 /**
- * Publish seam — local today, Convex when you wire it.
- *
- * Current behavior: resolves a `local` ShareResult (same link ShareMenu
- * already copies). When `VITE_CONVEX_URL` exists, dynamic-import
- * `convex/react` here and call the `boards.save` mutation with
- * `boardSnapshot(board)` — never statically import `convex/*`.
+ * Publish seam. Local link when offline; boards.save on Convex when
+ * configured (codegen import stays dynamic so offline clones build).
  */
 export function useShare() {
   const board = useBoard((s) => s.board);
+  const user = useSession((s) => s.user);
+  const convex = useConvexSafe();
   const [status, setStatus] = useState<ShareStatus>('idle');
   const [result, setResult] = useState<ShareResult | null>(null);
   const [error, setError] = useState('');
@@ -21,17 +21,25 @@ export function useShare() {
     setStatus('publishing');
     setError('');
     try {
-      if (isBackendConfigured()) {
-        // Slot: const { useMutation } = await import('convex/react');
-        // const save = useMutation(api.boards.save); ...
-        throw new Error('Convex URL set but client not wired yet — your step.');
+      if (convex) {
+        const { api } = await import('../../../convex/_generated/api');
+        await convex.mutation(api.boards.save, {
+          publicId: board.id,
+          ownerId: user?.id,
+          title: board.title,
+          snapshot: boardSnapshot(board),
+          version: board.version,
+        });
+        const res: ShareResult = { publicId: board.id, url: publicBoardUrl(board.id), backend: 'convex' };
+        setResult(res);
+        setStatus('done');
+        return res;
       }
       const res: ShareResult = {
         publicId: board.id,
         url: publicBoardUrl(board.id),
         backend: 'local',
       };
-      // Touch snapshot so the contract stays exercised while local.
       boardSnapshot(board);
       setResult(res);
       setStatus('done');
@@ -45,4 +53,11 @@ export function useShare() {
   };
 
   return { status, result, error, publish, backend: isBackendConfigured() ? 'convex' : 'local' as const };
+}
+
+/** useConvex only under the provider; null offline. */
+function useConvexSafe() {
+  if (!isBackendConfigured()) return null;
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  return useConvex();
 }
