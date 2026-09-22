@@ -8,13 +8,19 @@
 ## 1. Schema (`convex/schema.ts`)
 
 ```ts
-users:  { name?: string, createdAt?: string }
-boards: { publicId: string, ownerId?: string, title: string,
-          snapshot: string, version: number, showcase?: boolean,
-          createdAt: string, updatedAt: string }
-        indexes: by_publicId [publicId], by_owner [ownerId]
-links:  { slug: string, boardId: Id<boards>, createdAt: string }
-        index: by_slug [slug]
+users:  { name?, username?, image?, createdAt? }
+        indexes: by_name, by_username
+boards: { publicId, ownerId?, title, snapshot, version, showcase?,
+          likeCount?, saveCount?, commentCount?, viewCount?,
+          createdAt, updatedAt }
+        indexes: by_publicId, by_owner
+links:  { slug, boardId, createdAt } index: by_slug
+subscribers: { ownerId, email, createdAt } index: by_owner
+boardLikes / boardSaves: { boardId, userKey, createdAt }
+        indexes: by_board, by_user_board
+boardComments: { boardId, userKey, username?, text, createdAt }
+        index: by_board
+mailInboxes: { ownerId, inboxId, createdAt } index: by_owner
 ```
 
 Decisions:
@@ -34,32 +40,46 @@ Decisions:
 
 ## 2. Board functions (`convex/boards.ts`)
 
-| Function | Kind | Args | Notes |
-| -------- | ---- | ---- | ----- |
-| `save` | mutation | `publicId, ownerId?, title, snapshot, version, showcase?` | Upsert on `by_publicId`. Patches `updatedAt`. Throws `"Not your board."` when the stored row has an `ownerId` that differs from the caller. Preserves existing `ownerId`/`showcase` when the caller omits them. |
-| `getByPublicId` | query | `publicId` | Public read for `/share/:id`. No owner check — shared links are public by design. |
-| `listByOwner` | query | `ownerId` | Powers `/home` (user's boards) via `by_owner`. |
-| `listShowcase` | query | — | Filters `showcase === true` in code. Add a `by_showcase` index when the table grows. |
+| Function | Kind | Notes |
+| -------- | ---- | ----- |
+| `save` | mutation | Upsert on `by_publicId`. Patches `updatedAt`. Throws `"Not your board."` when the stored row has an `ownerId` that differs from the caller. Preserves existing `ownerId`/`showcase` when the caller omits them. |
+| `getByPublicId` | query | Public read for `/share/:id`. No owner check — shared links are public by design. |
+| `listByOwner` | query | Powers `/home` (user's boards) via `by_owner`. |
+| `listShowcase` | query | Flags `showcase === true` in code. Add a `by_showcase` index when the table grows. |
+| `toggleShowcase` | mutation | Owner flips the flag. Returns the new value. |
+| `removeBoard` | mutation | Owner delete with likes/saves/comments/links cleanup. |
+| `recordView` | mutation | Public view ping, no auth. |
+| `toggleLike` / `toggleSave` | mutation | Returns `{ liked, likeCount }` / `{ saved, saveCount }`. |
+| `savedBoards` | query | Boards a user saved, newest first. |
+| `addComment` / `listComments` / `removeComment` | mutation/query/mutation | 500-char cap; own or board-owner delete with counter fix. |
+| `showcase.feed` | query | Public feed newest-first with author + counts + viewer flags. |
+| `showcase.boardDetail` | query | Board + comments + liked/saved flags for `/share/:id`. |
+| `users.setUsername` | mutation | Unique handle claim. |
+| `users.getByUsername` / `users.profileBoards` | query | Public lookup for `u/[username]`. |
+| `subscribers.subscribe/unsubscribe/listByOwner` | mutation/mutation/query | Mailing list per owner. |
+| `mailing.sendBoardLink` | action | Mails the board link to every subscriber via the owner's AgentMail inbox. Needs `AGENTMAIL_API_KEY`. |
 
 Security posture today: ownership is enforced by comparing the passed
 `ownerId` string. This is a demo-grade trust boundary — the client tells
 the truth. Real enforcement (`ctx.auth.getUserIdentity()` + row check)
 lands with email OTP.
 
-## 3. Auth: demo now, email OTP next
+## 3. Auth: password live, demo fallback, OTP next
 
-- **Today — demo session (frontend).** `app/store/session.ts` provisions a
-  stable id (`demo-<uuid>`, persisted in `localStorage` under
-  `microboard.demoId`). That id is passed as `ownerId` so boards already
-  scope to a user before real auth exists.
-- **Today — password core (backend).** `convex/auth.ts` wires
-  `@convex-dev/auth` core + username/password provider; `convex/users.ts`
-  `createUser` stores `{ name, createdAt }` on first login.
-- **Next — email OTP via AgentMail.** Same `users` row: OTP identity
-  attaches to the existing row, demo `ownerId`s migrate by matching the
-  demo id stored at sign-up. No schema change needed.
-- **Later — Google SSO.** Another provider on the same core; again no
-  schema change.
+- **Backend live (local).** `npx convex dev` serves `127.0.0.1:3210`
+  (URL in gitignored `.env.local`). Auth keys generated once and set via
+  `convex env set`. Hosted deploy needs `npx convex login` (browser) + push.
+- **Password accounts live.** `ConvexLogin` (username + password, sign
+  in/up tabs) via `useSignInWithPassword` / `useSignUpWithPassword`;
+  `linkRemote` marks the local session `demo:false` (`remote-<name>` id).
+  `AuthGate` passes on Convex session or demo session.
+- **Demo fallback.** No `VITE_CONVEX_URL` → fully offline; username-only
+  modal with stable `demo-<uuid>` id.
+- **Identity convention.** Functions key people by userKey = auth subject
+  when signed in, demo id otherwise (`convex/helpers.ts userKey`). Harden
+  with `ctx.auth` checks once OTP lands.
+- **Next — email OTP via AgentMail.** Same `users` row; no schema change.
+- **Later — Google SSO.** Another provider on the same core.
 
 ## 4. Routes (`app/App.tsx`)
 
