@@ -15,19 +15,11 @@ import {
 import {
   REFRESH_OPTIONS,
   SOURCE_REGISTRY,
-  fetchApiRecords,
   refreshLabel,
 } from "@/features/data/sources";
 import { useSourceRefresh } from "@/features/data/use-source-refresh";
+import { useDataLoader } from "@/features/data/use-data-loader";
 import { applySteps, inferColumns } from "@/features/data/lib/data-utils";
-import { csvRecords } from "@/features/data/providers/csv";
-import { clipboardFromText } from "@/features/data/providers/clipboard";
-import { excelFromFile } from "@/features/data/providers/excel";
-import { sheetFromUrl } from "@/features/data/providers/sheet";
-import { toRecords } from "@/features/data/providers/types";
-import { SAMPLE_CSV } from "@/features/data/lib/data-utils";
-import { providerForFile } from "@/features/data/providers";
-import type { DataSource } from "@/features/board/types";
 
 type UploadKind = "file" | "paste" | "sheet" | "api" | "sample";
 
@@ -257,69 +249,32 @@ function ApiCard() {
 }
 
 function UploadModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const loadData = useBoard((s) => s.loadData);
   const [kind, setKind] = useState<UploadKind>("file");
   const [text, setText] = useState("");
   const [url, setUrl] = useState("");
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const { busy, error, loadFile, loadPaste, loadSheet, loadApi, loadSample } = useDataLoader();
 
   const done = () => {
-    setError("");
     setText("");
     setUrl("");
     onClose();
   };
 
-  const load = (source: DataSource, rows: Record<string, string>[]) => {
-    if (rows.length === 0) throw new Error("No rows found.");
-    loadData(source, rows);
-    done();
-  };
-
   const submit = async () => {
-    setError("");
-    setBusy(true);
-    try {
-      if (kind === "sample") {
-        load("sample", csvRecords(SAMPLE_CSV));
-      } else if (kind === "paste") {
-        if (!text.trim()) throw new Error("Paste some rows first.");
-        load("inline", toRecords(clipboardFromText(text)));
-      } else if (kind === "sheet") {
-        if (!url.trim()) throw new Error("Paste a public sheet link.");
-        load("sheet", toRecords(await sheetFromUrl(url.trim())));
-      } else if (kind === "api") {
-        if (!url.trim()) throw new Error("Paste a JSON endpoint.");
-        const rows = await fetchApiRecords(url.trim());
-        loadData("api", rows);
-        useBoard.getState().setSourceConfig(url.trim(), 0);
-        done();
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Upload failed.");
-    } finally {
-      setBusy(false);
-    }
+    const ok =
+      kind === "sample"
+        ? loadSample()
+        : kind === "paste"
+          ? loadPaste(text)
+          : kind === "sheet"
+            ? await loadSheet(url)
+            : await loadApi(url);
+    if (ok) done();
   };
 
   const onFile = async (files: FileList | null) => {
-    const file = files?.[0];
-    if (!file) return;
-    setError("");
-    setBusy(true);
-    try {
-      if (providerForFile(file.name) === "excel") {
-        load("file", toRecords(await excelFromFile(file)));
-      } else {
-        load("file", csvRecords(await file.text()));
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Upload failed.");
-    } finally {
-      setBusy(false);
-    }
+    if (await loadFile(files)) done();
   };
 
   return (

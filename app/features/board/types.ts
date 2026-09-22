@@ -189,7 +189,8 @@ export function clampWidgetToGrid(
   };
 }
 
-export type DockTab = "visualize" | "transform";
+/** Right-dock tabs: transform pipeline and agent chat. */
+export type RightTab = "transform" | "chat";
 
 export interface Upload {
   id: string;
@@ -200,8 +201,6 @@ export interface Upload {
 export interface CreateLayoutProps {
   title: string;
   onTitle: (title: string) => void;
-  tab: DockTab;
-  onTab: (tab: DockTab) => void;
   panelOpen: boolean;
   onPanelToggle: () => void;
   toolbar?: import("react").ReactNode;
@@ -224,29 +223,9 @@ export interface StepFormProps {
   columns: string[];
 }
 
-export interface WidgetBuilderProps {
-  columns: string[];
-  hasData: boolean;
-  chartOnly: boolean;
-  gridCols: number;
-}
-
-export interface VisualsPanelProps {
-  columns: string[];
-  hasData: boolean;
-  uploads: Upload[];
-  onAddUploads: (files: FileList | null) => void;
-  gridCols: number;
-}
-
 export interface TransformPanelProps {
   rawCols: string[];
   hasData: boolean;
-}
-
-export interface AgentPanelProps {
-  goal: string;
-  onGoal: (goal: string) => void;
 }
 
 export interface PageStripProps {

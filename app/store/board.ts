@@ -1,6 +1,6 @@
 import { create, type StateCreator } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { Board, DataSource, Page, StepType, Widget, WidgetType } from "@/features/board/types";
+import type { Board, DataSource, Page, StepType, Widget } from "@/features/board/types";
 import { activePage, BOARD_GRID, clampWidgetToGrid, freshPage, nextPosition, normalizeWidget } from "@/features/board/types";
 import { inferColumns } from "@/features/data/lib/data-utils";
 
@@ -60,31 +60,6 @@ interface BoardStore {
   loadBoard: (board: Board) => void;
   reset: () => void;
 }
-
-export const WIDGET_PRESETS: { label: string; w: number; h: number }[] = [
-  { label: "S · 2×2", w: 2, h: 2 },
-  { label: "M · 4×3", w: 4, h: 3 },
-  { label: "L · 6×4", w: 6, h: 4 },
-  { label: "Full · 8×4", w: 8, h: 4 },
-];
-
-export const WIDGET_TYPES: { value: WidgetType; label: string }[] = [
-  { value: "textbox", label: "Textbox" },
-  { value: "heading", label: "Heading" },
-  { value: "shape", label: "Shape" },
-  { value: "icon", label: "Icon" },
-  { value: "image", label: "Image" },
-  { value: "board", label: "Board" },
-  { value: "card", label: "Card" },
-  { value: "kpi", label: "KPI" },
-  { value: "spark", label: "Sparkline" },
-  { value: "micro", label: "Micro chart" },
-  { value: "table", label: "Table" },
-  { value: "dither-area", label: "Dither area" },
-  { value: "dither-bar", label: "Dither bar" },
-  { value: "dither-line", label: "Dither line" },
-  { value: "dither-pie", label: "Dither pie" },
-];
 
 /** Normalize + clamp a board (rehydration, old snapshots, cloud docs). */
 function sanitizeBoard(board: Board): Board {

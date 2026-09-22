@@ -14,14 +14,9 @@ const ShareMenu = lazy(() =>
   import("@/features/board/components/share-menu").then((m) => ({ default: m.ShareMenu }))
 );
 
-import type { CreateLayoutProps, DockTab } from "@/features/board/types";
+import type { CreateLayoutProps } from "@/features/board/types";
 
-const TABS: { id: DockTab; label: string }[] = [
-  { id: "visualize", label: "Visualize" },
-  { id: "transform", label: "Transform" },
-];
-
-export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, onPanelToggle, panel, agentPanel, toolbar, children }: CreateLayoutProps) {
+export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, agentPanel, toolbar, children }: CreateLayoutProps) {
   const nameRef = useRef<HTMLInputElement>(null);
   const [agentOpen, setAgentOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -130,25 +125,7 @@ export function CreateLayout({ title, onTitle, tab, onTab, panelOpen, onPanelTog
             className="h-full overflow-hidden"
             aria-label="Tool sidebar"
           >
-            <div className="slim-scroll flex h-full w-72 flex-col gap-3 overflow-y-auto rounded-xl border bg-card p-3 shadow-md">
-              <div className="grid shrink-0 grid-cols-2 gap-1 rounded-lg bg-muted p-1" role="tablist" aria-label="Tool pane">
-                {TABS.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === t.id}
-                    onClick={() => onTab(t.id)}
-                    className={`rounded-md px-2 py-1.5 text-xs font-medium transition-all ${
-                      tab === t.id
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
+            <div className="slim-scroll flex h-full w-72 flex-col overflow-y-auto rounded-xl border bg-card shadow-md">
               {panel}
             </div>
           </motion.aside>

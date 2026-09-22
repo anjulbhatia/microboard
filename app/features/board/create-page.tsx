@@ -1,21 +1,26 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { CreateLayout } from "@/features/board/components/create-layout";
+import { ToolboxSidebar } from "@/features/board/components/toolbox";
 import { Stage } from "@/features/board/components/stage";
 import { WidgetCard } from "@/features/board/components/widget-card";
-import { TransformPanel, VisualsPanel } from "@/features/board/components/panels";
+import { TransformPanel } from "@/features/board/components/panels";
 import { ChatPanel } from "@/features/agent";
 import { PageStrip } from "@/features/board/components/page-strip";
 import { QuickAddBar } from "@/features/board/components/quick-add-bar";
 import { useBoard } from "@/store/board";
 import { useBoardDerived } from "@/hooks/use-board-derived";
-import { useUploads } from "@/hooks/use-uploads";
-import type { DockTab } from "@/features/board/types";
+import type { RightTab } from "@/features/board/types";
 import type { StageBackdrop } from "@/features/board/components/stage";
 
+const RIGHT_TABS: { id: RightTab; label: string }[] = [
+  { id: "chat", label: "Chat" },
+  { id: "transform", label: "Transform" },
+];
+
 /**
- * Canvas. Create lands straight here — no picker, no import gate.
- * Data arrives later via Data Sources; transforms live in the dock.
+ * Canvas. Create lands straight here — tools live in the left toolbox
+ * (Elements, Charts, Uploads), Transform and Chat share the right dock.
  */
 export function CreatePage() {
   const board = useBoard((s) => s.board);
@@ -24,20 +29,14 @@ export function CreatePage() {
     setTitle,
   } = useBoard();
 
-  const [tab, setTab] = useState<DockTab>("visualize");
   const [panelOpen, setPanelOpen] = useState(false);
+  const [rightTab, setRightTab] = useState<RightTab>("chat");
   const [backdrop, setBackdrop] = useState<StageBackdrop>("dotted");
   const [dragId, setDragId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { order, widgets, cleanedCols, rawCols, hasData, dims, usedCells, capacity, cleaned } =
     useBoardDerived(board);
-  const { uploads, addUploads } = useUploads();
-
-  const toggleTab = (t: DockTab) => {
-    setTab(t);
-    setPanelOpen(true);
-  };
 
   const dropWidget = (targetId: string) => {
     if (dragId) {
@@ -46,40 +45,59 @@ export function CreatePage() {
     }
   };
 
-  const panelContent =
-    tab === "visualize" ? (
-      <VisualsPanel
-        columns={cleanedCols}
-        hasData={hasData}
-        uploads={uploads}
-        onAddUploads={addUploads}
-        gridCols={dims.cols}
-      />
-    ) : (
-      <TransformPanel rawCols={rawCols} hasData={hasData} />
-    );
-
-  const panel = (
-    <motion.div
-      key={tab}
-      initial={{ opacity: 0, x: 12 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.22, ease: "easeOut" }}
-    >
-      {panelContent}
-    </motion.div>
+  const agentPanel = (
+    <div className="flex min-h-0 flex-1 flex-col gap-2">
+      <div className="grid shrink-0 grid-cols-2 gap-1 rounded-lg bg-muted p-1" role="tablist" aria-label="Right dock">
+        {RIGHT_TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={rightTab === t.id}
+            onClick={() => setRightTab(t.id)}
+            className={`rounded-md px-2 py-1.5 text-xs font-medium transition-all ${
+              rightTab === t.id
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={rightTab}
+          initial={{ opacity: 0, x: 12 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -8 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="flex min-h-0 flex-1 flex-col"
+        >
+          {rightTab === "chat" ? (
+            <ChatPanel />
+          ) : (
+            <TransformPanel rawCols={rawCols} hasData={hasData} />
+          )}
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 
   return (
     <CreateLayout
       title={board.title}
       onTitle={setTitle}
-      tab={tab}
-      onTab={toggleTab}
       panelOpen={panelOpen}
       onPanelToggle={() => setPanelOpen((v) => !v)}
-      panel={panel}
-      agentPanel={<ChatPanel />}
+      panel={
+        <ToolboxSidebar
+          columns={cleanedCols}
+          hasData={hasData}
+          gridCols={dims.cols}
+        />
+      }
+      agentPanel={agentPanel}
       toolbar={<QuickAddBar />}
     >
       <div className="relative flex min-h-0 flex-1 flex-col px-1 pt-1">
@@ -111,7 +129,7 @@ export function CreatePage() {
               >
                 <p className="text-lg font-semibold">Canvas is empty</p>
                 <p className="max-w-sm text-sm text-muted-foreground">
-                  Add widgets or charts from the Visualize pane.
+                  Add elements or charts from the toolbox.
                 </p>
               </div>
             ) : (
