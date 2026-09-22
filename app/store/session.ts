@@ -14,6 +14,8 @@ export interface SessionUser {
 interface SessionStore {
   user: SessionUser | null;
   signIn: (username?: string) => void;
+  /** Link a Convex Auth identity (demo:false, remote namespace). */
+  linkRemote: (username: string) => void;
   rename: (username: string) => void;
   signOut: () => void;
 }
@@ -46,6 +48,16 @@ export const useSession = create<SessionStore>()((set) => ({
       },
     }),
   signOut: () => set({ user: null }),
+  linkRemote: (username) =>
+    set({
+      user: {
+        id: `remote-${normalizeUsername(username)}`,
+        username: normalizeUsername(username),
+        name: normalizeUsername(username),
+        hue: Math.floor(Math.random() * 360),
+        demo: false,
+      },
+    }),
   rename: (username) =>
     set((s) => {
       if (!s.user) return s;

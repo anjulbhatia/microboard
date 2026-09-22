@@ -1,7 +1,13 @@
-import { useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSession } from "@/store/session";
 import { HOME_PATH, isUsernameValid, normalizeUsername } from "@/lib/routes";
+import { isBackendConfigured } from "@/lib/backend";
+
+// Codegen-backed form — lazy so offline clones still build.
+const ConvexLogin = lazy(() =>
+  import("@/features/auth/convex-login").then((m) => ({ default: m.ConvexLogin }))
+);
 
 interface LoginModalProps {
   /** Where to go after sign-in. Defaults to /home. */
@@ -39,9 +45,31 @@ export function LoginModal({ next = HOME_PATH, onDone }: LoginModalProps) {
     >
       <div className="w-full max-w-sm rounded-xl border bg-card p-5 shadow-xl">
         <h2 className="text-lg font-bold tracking-tight">Log in / Sign up</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Demo login for the hackathon. Email OTP arrives with AgentMail.
-        </p>
+        {isBackendConfigured() ? (
+          <>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Real accounts live on Convex. Or skip with a demo.
+            </p>
+            <div className="mt-3">
+              <Suspense
+                fallback={
+                  <p className="font-mono text-xs text-muted-foreground">Loading account form…</p>
+                }
+              >
+                <ConvexLogin next={next} onDone={onDone} />
+              </Suspense>
+            </div>
+            <div className="my-3 flex items-center gap-2" aria-hidden>
+              <span className="h-px flex-1 bg-border" />
+              <span className="font-mono text-[10px] text-muted-foreground">OR</span>
+              <span className="h-px flex-1 bg-border" />
+            </div>
+          </>
+        ) : (
+          <p className="mt-1 text-sm text-muted-foreground">
+            Demo login for the hackathon. Email OTP arrives with AgentMail.
+          </p>
+        )}
         <label className="mt-4 block text-xs font-medium text-muted-foreground" htmlFor="login-username">
           Username — your public page will be /u/{preview}
         </label>
