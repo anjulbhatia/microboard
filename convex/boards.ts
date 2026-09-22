@@ -91,10 +91,12 @@ export const listShowcase = query({
 export const removeBoard = mutation({
   args: { publicId: v.string(), ownerId: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const key = await userKey(ctx, args.ownerId);
     const board = await boardOrThrow(ctx, args.publicId);
-    if (board.ownerId !== undefined && board.ownerId !== key) {
-      throw new Error("Not your board.");
+    // Boards saved without an owner stay manageable by anyone holding
+    // the link; owned boards need the matching key.
+    if (board.ownerId !== undefined) {
+      const key = await userKey(ctx, args.ownerId);
+      if (board.ownerId !== key) throw new Error("Not your board.");
     }
     const tables = ["boardLikes", "boardSaves", "boardComments"] as const;
     for (const t of tables) {
@@ -118,10 +120,10 @@ export const removeBoard = mutation({
 export const toggleShowcase = mutation({
   args: { publicId: v.string(), ownerId: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const key = await userKey(ctx, args.ownerId);
     const board = await boardOrThrow(ctx, args.publicId);
-    if (board.ownerId !== undefined && board.ownerId !== key) {
-      throw new Error("Not your board.");
+    if (board.ownerId !== undefined) {
+      const key = await userKey(ctx, args.ownerId);
+      if (board.ownerId !== key) throw new Error("Not your board.");
     }
     const next = !(board.showcase === true);
     await ctx.db.patch(board._id, { showcase: next, updatedAt: now() });
