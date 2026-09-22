@@ -18,6 +18,12 @@ dist-ssr
 # Convex
 .convex/
 convex/_generated/
+convex/tsconfig.json
+
+# Agent skills (local tooling, never commit)
+.agents/
+.claude/
+skills-lock.json
 
 # Vercel / Vite
 .vercel
