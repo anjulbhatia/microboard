@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "bun test tests/",
-    "agentmail:build": "bun agentmail/build.ts",
+    "local": "bun scripts/local.ts",
+    "agentmail:build": "bun app/features/agentmail/build.ts",
     "preview": "vite preview"
   },
   "dependencies": {

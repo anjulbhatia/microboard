@@ -2,7 +2,7 @@ import { action, internalMutation, query } from "./_generated/server";
 import { api, components, internal } from "./_generated/api";
 import { v } from "convex/values";
 import { AgentMail } from "@agentmail/convex";
-import { shareBoardTemplate } from "../agentmail/templates";
+import { shareBoardTemplate } from "../app/features/agentmail/templates";
 import { now, userKey } from "./helpers";
 
 /**

@@ -6,8 +6,8 @@ import {
   magicLinkTemplate,
   render,
   shareBoardTemplate,
-} from "../agentmail/templates";
-import { CUSTOM_HTML, MAGIC_LINK_HTML, SHARE_BOARD_HTML } from "../agentmail/compiled";
+} from "../app/features/agentmail/templates";
+import { CUSTOM_HTML, MAGIC_LINK_HTML, SHARE_BOARD_HTML } from "../app/features/agentmail/compiled";
 
 describe("agentmail templates", () => {
   test("compiled matches the html sources (run bun run agentmail:build)", async () => {
@@ -17,7 +17,7 @@ describe("agentmail templates", () => {
       "custom.html": CUSTOM_HTML,
     } as const;
     for (const [f, compiled] of Object.entries(files)) {
-      const source = await Bun.file(new URL(`../agentmail/${f}`, import.meta.url)).text();
+      const source = await Bun.file(new URL(`../app/features/agentmail/${f}`, import.meta.url)).text();
       expect(compiled).toBe(source);
     }
   });
