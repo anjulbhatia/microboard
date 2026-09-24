@@ -66,7 +66,12 @@ export function ShareMenu({ onClose }: { onClose: () => void }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const shareUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/share/${board.id}`;
+  // Published URL when available — the local /share/:id only resolves
+  // after publish (offline: preview only, not a live link).
+  const shareUrl =
+    publishStatus === "done" && publishResult
+      ? publishResult.url
+      : `${typeof window !== "undefined" ? window.location.origin : ""}/share/${board.id}`;
 
   return (
     <div className="w-72 rounded-xl border bg-popover p-2 shadow-xl ring-1 ring-border animate-in fade-in zoom-in-95 duration-100">
@@ -94,14 +99,18 @@ export function ShareMenu({ onClose }: { onClose: () => void }) {
       <p className="px-2 font-mono text-[10px] tracking-wider text-muted-foreground uppercase">Share via link</p>
       <button
         type="button"
-        onClick={() => void copyLink(`${window.location.origin}/share/${board.id}`).catch(() => setError("Could not copy link."))}
+        onClick={() => void copyLink(shareUrl).catch(() => setError("Could not copy link."))}
         className="group mt-0.5 flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-muted"
       >
         <HugeiconsIcon icon={copied ? CheckmarkBadge01Icon : Link01Icon} size={20} strokeWidth={1.5} className="shrink-0 text-muted-foreground" />
         <span className="min-w-0 flex-1">
           <span className="block truncate font-mono text-xs">{shareUrl}</span>
           <span className="block text-[11px] text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
-            {copied ? "Copied!" : "Click to copy url"}
+            {copied
+              ? "Copied!"
+              : publishStatus === "done"
+                ? "Live link — click to copy"
+                : "Publish below to make this link live — click to copy"}
           </span>
         </span>
         {!copied && <HugeiconsIcon icon={Copy01Icon} size={16} strokeWidth={1.5} className="shrink-0 text-muted-foreground" />}

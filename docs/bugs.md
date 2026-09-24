@@ -17,6 +17,7 @@ radius without breaking offline/demo flows.
 | B6 | Important | Email subject header injection + unbounded `sendBoardLink` blast |
 | B7 | Important | App: unsafe snapshot parse + unbounded ingest payloads (DoS) |
 | B8 | Important | `addComment`: username impersonation + stored-XSS hardening |
+| B9 | Critical (UX) | Board download renders black; share link copies dead URL |
 
 ---
 
@@ -132,3 +133,24 @@ radius without breaking offline/demo flows.
   unverified in demo mode by design — OTP (see `docs/convex.md` §3) should
   bind handles to the auth subject.
 - **Commit:** `fix(convex): sanitize comment handle + text controls`
+
+## B9 — Board download renders black; share link copies dead URL (Critical UX)
+
+- **Where:** `app/features/board/lib/export-board.ts`,
+  `app/features/board/components/share-menu.tsx`.
+- **Bug:** the export wrapper took `backgroundColor` from computed style,
+  which is transparent (stage paints via `background-image` gradients) and
+  `oklch()`-encoded (theme tokens). The rasterizer (SVG foreignObject →
+  canvas) cannot parse `oklch()`/`color-mix()` and JPEG has no alpha, so
+  downloads came out black — worst on JPG/PDF. SVG-element fills/strokes
+  were also skipped (`instanceof HTMLElement` gate). Separately, "Share
+  via link" always copied `/share/:id` even before publish, i.e. a dead
+  URL, with no hint.
+- **Fix:** resolve every inlined color through the canvas parser to
+  raster-safe `rgb()` (balanced-paren pass for shadow shorthands too),
+  force opaque theme surfaces (dark-aware fallbacks), flatten the
+  color-mix backdrop gradient to a solid, style SVG nodes as well, and
+  append the download anchor (Firefox). Share row now copies the live
+  published URL when available and labels unpublished links as
+  "publish to make live".
+- **Commit:** `fix(export): opaque rgb raster clone, live share link`
