@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowRight01Icon, Copy01Icon, Delete02Icon, EyeIcon, GridIcon, HistoryIcon } from "@hugeicons/core-free-icons";
+import { Copy01Icon, Delete02Icon, EyeIcon, GridIcon, HistoryIcon } from "@hugeicons/core-free-icons";
 import { useBoard } from "@/store/board";
 import { NEW_PATH } from "@/lib/routes";
 import { useShare } from "@/features/share";
@@ -75,7 +74,7 @@ export function BoardPreview({ snapshot }: { snapshot: string }) {
   }, [snapshot]);
 
   return (
-    <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted/60">
+    <div className="relative aspect-[8/5] w-full overflow-hidden rounded-md bg-muted/50">
       {blocks?.map((b) => (
         <span
           key={b.id}
@@ -86,7 +85,7 @@ export function BoardPreview({ snapshot }: { snapshot: string }) {
             width: `calc(${b.wPct}% - 3px)`,
             height: `calc(${b.hPct}% - 3px)`,
           }}
-          className={`absolute m-[1.5px] rounded-[3px] ${PREVIEW_TINT[b.tint] ?? "bg-primary/40"}`}
+          className={`absolute m-[1.5px] rounded-[2px] ${PREVIEW_TINT[b.tint] ?? "bg-primary/40"}`}
         />
       ))}
       {(!blocks || blocks.length === 0) && (
@@ -148,7 +147,7 @@ export function LibraryPanel() {
   };
 
   return (
-    <div className="flex max-w-3xl flex-col gap-5">
+    <div className="flex max-w-3xl flex-col gap-4">
       <SectionHead
         eyebrow="Home"
         title="Your boards"
@@ -161,14 +160,14 @@ export function LibraryPanel() {
                 reset();
                 setNotice("New board started — open it in the editor.");
               }}
-              className="rounded-lg border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+              className="rounded-md px-3 py-1.5 text-[13px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               New board
             </button>
             <button
               type="button"
               onClick={saveCurrent}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+              className="rounded-md bg-primary px-3 py-1.5 text-[13px] font-medium text-primary-foreground hover:opacity-90"
             >
               Save current
             </button>
@@ -178,29 +177,29 @@ export function LibraryPanel() {
 
       {notice && <p role="status" className="font-mono text-xs text-muted-foreground">{notice}</p>}
 
-      <Card className="border-primary/30 bg-gradient-to-br from-primary/[0.07] to-transparent">
-        <p className="font-mono text-[11px] tracking-[0.14em] text-primary uppercase">
+      <Card className="p-4">
+        <p className="font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase">
           Open in editor · v{board.version}
         </p>
-        <p className="mt-1 truncate text-xl font-bold tracking-tight">{board.title}</p>
+        <p className="mt-1 truncate text-lg font-semibold tracking-tight">{board.title}</p>
         <div className="mt-3 grid grid-cols-3 gap-2">
           <Stat value={widgets} label="Widgets" icon={GridIcon} />
           <Stat value={board.steps.length} label="Steps" icon={HistoryIcon} />
           <Stat value={board.pages.length} label="Pages" icon={EyeIcon} />
         </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Link to={NEW_PATH} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90">
+        <div className="mt-3 flex flex-wrap gap-2 border-t border-border/60 pt-3">
+          <Link to={NEW_PATH} className="rounded-md bg-primary px-3 py-1.5 text-[13px] font-medium text-primary-foreground hover:opacity-90">
             Open in editor
           </Link>
           <button
             type="button"
             onClick={() => void saveToCloud()}
             disabled={status === "publishing"}
-            className="rounded-lg border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50"
+            className="rounded-md px-3 py-1.5 text-[13px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
           >
             {status === "publishing" ? "Publishing…" : "Save to cloud"}
           </button>
-          <Link to="/showcase" className="rounded-lg border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted">
+          <Link to="/showcase" className="rounded-md px-3 py-1.5 text-[13px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
             Showcase
           </Link>
         </div>
@@ -212,37 +211,34 @@ export function LibraryPanel() {
           body="Pin the board above with Save current — it lands here as a square card you can reopen, duplicate, or delete."
         />
       ) : (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {saved.map((s) => (
             <li
               key={s.id}
-              className="group relative flex aspect-square flex-col overflow-hidden rounded-xl border bg-background transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+              className="group flex flex-col overflow-hidden rounded-lg border border-border/60 bg-card"
             >
               <button
                 type="button"
                 onClick={() => open(s)}
                 aria-label={`Open ${s.title}`}
-                className="block flex-1 p-2 pb-0"
+                className="block p-2 pb-0"
               >
-                <span className="block transition-transform duration-200 group-hover:scale-[1.02]">
+                <span className="block">
                   <BoardPreview snapshot={s.snapshot} />
                 </span>
               </button>
-              <div className="flex items-center gap-1 p-2.5 pt-1.5">
+              <div className="flex items-center gap-1 border-t border-border/60 p-2">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-bold">{s.title}</p>
+                  <p className="truncate text-xs font-medium">{s.title}</p>
                   <p className="font-mono text-[10px] text-muted-foreground">
                     v{s.version} · {s.widgets}w · {s.steps}s
                   </p>
                 </div>
-                <span className="flex gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                <span className="flex gap-0.5">
                   <IconBtn label={`Duplicate ${s.title}`} onClick={() => duplicate(s)} icon={Copy01Icon} />
                   <IconBtn label={`Delete ${s.title}`} onClick={() => store(removeSaved(saved, s.id))} icon={Delete02Icon} danger />
                 </span>
               </div>
-              <span className="absolute top-3.5 left-3.5 hidden rounded-md bg-background/90 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground opacity-0 shadow-sm transition-opacity group-hover:flex group-hover:opacity-100">
-                Open <HugeiconsIcon icon={ArrowRight01Icon} size={11} strokeWidth={2} />
-              </span>
             </li>
           ))}
         </ul>

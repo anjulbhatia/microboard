@@ -33,18 +33,18 @@ export function HomePage() {
   const [section, setSection] = useState<HomeSection>("home");
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 bg-muted/40 p-3 md:flex-row">
+    <div className="flex h-full min-h-0 flex-col bg-background md:flex-row">
       <MobileTopBar onHome={() => setSection("home")} />
       <HomeSidebar section={section} onSection={setSection} />
       <MobileSectionTabs section={section} onSection={setSection} />
-      <div className="min-w-0 flex-1 overflow-y-auto rounded-2xl border bg-card p-4 shadow-sm md:p-6">
+      <div className="min-w-0 flex-1 overflow-y-auto border-l bg-background px-4 py-5 md:px-6">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={section}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
           >
             {section === "home" && <LibraryPanel />}
             {section === "data" && <DataPanel />}

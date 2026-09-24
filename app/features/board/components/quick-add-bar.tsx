@@ -19,6 +19,10 @@ function useMenu() {
   };
 }
 
+/**
+ * Canvas insert strip — Canva-style modules:
+ * Insert | Shapes | Media | Card. Flat, grouped, divider-separated.
+ */
 export function QuickAddBar() {
   const addWidget = useBoard((s) => s.addWidget);
   const menu = useMenu();
@@ -46,12 +50,14 @@ export function QuickAddBar() {
   };
 
   const btn =
-    "flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground";
+    "flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground";
   const item =
-    "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted";
+    "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-muted";
+  const groupLabel = "font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase";
 
   return (
-    <div className="flex shrink-0 items-center gap-0.5 border-b bg-card px-2 py-1">
+    <div className="flex shrink-0 items-center gap-1 border-b bg-background px-2 py-1">
+      <span className={groupLabel}>Insert</span>
       <div className="relative">
         <button type="button" onClick={() => menu.toggle("widget")} className={btn} aria-label="Add widget">
           <HugeiconsIcon icon={PlusSignIcon} size={15} strokeWidth={1.5} />
@@ -60,7 +66,7 @@ export function QuickAddBar() {
         {menu.open === "widget" && (
           <>
             <span className="fixed inset-0 z-10" onClick={menu.close} aria-hidden />
-            <span className="absolute top-full left-0 z-20 mt-1 w-40 rounded-lg border bg-popover p-1 shadow-xl">
+            <span className="absolute top-full left-0 z-20 mt-1 w-40 rounded-lg border bg-popover p-1">
               <button type="button" onClick={() => add("heading")} className={item}>Heading</button>
               <button type="button" onClick={() => add("textbox")} className={item}>Rich text</button>
               <button type="button" onClick={() => add("card")} className={item}>Card</button>
@@ -70,15 +76,17 @@ export function QuickAddBar() {
         )}
       </div>
 
+      <span aria-hidden className="h-4 w-px bg-border" />
+      <span className={groupLabel}>Shapes</span>
       <div className="relative">
         <button type="button" onClick={() => menu.toggle("shapes")} className={btn} aria-label="Add shape">
           <HugeiconsIcon icon={ShapesIcon} size={15} strokeWidth={1.5} />
-          Shapes
+          Shape
         </button>
         {menu.open === "shapes" && (
           <>
             <span className="fixed inset-0 z-10" onClick={menu.close} aria-hidden />
-            <span className="absolute top-full left-0 z-20 mt-1 w-40 rounded-lg border bg-popover p-1 shadow-xl">
+            <span className="absolute top-full left-0 z-20 mt-1 w-40 rounded-lg border bg-popover p-1">
               {["square", "circle", "rounded rect", "rect", "arrow", "ellipse", "line"].map((s) => (
                 <button key={s} type="button" onClick={() => add("shape", "Shape", { shape: s })} className={`${item} capitalize`}>
                   {s}
@@ -89,6 +97,8 @@ export function QuickAddBar() {
         )}
       </div>
 
+      <span aria-hidden className="h-4 w-px bg-border" />
+      <span className={groupLabel}>Media</span>
       <button type="button" onClick={() => imgRef.current?.click()} className={btn} aria-label="Upload image">
         <HugeiconsIcon icon={ImageUpload01Icon} size={15} strokeWidth={1.5} />
         Image
@@ -105,6 +115,7 @@ export function QuickAddBar() {
         }}
       />
 
+      <span aria-hidden className="h-4 w-px bg-border" />
       <button
         type="button"
         onClick={() => add("card")}

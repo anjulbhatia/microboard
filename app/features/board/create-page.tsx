@@ -47,7 +47,7 @@ export function CreatePage() {
 
   const agentPanel = (
     <div className="flex min-h-0 flex-1 flex-col gap-2">
-      <div className="grid shrink-0 grid-cols-2 gap-1 rounded-lg bg-muted p-1" role="tablist" aria-label="Right dock">
+      <div className="grid shrink-0 grid-cols-2 gap-0.5 rounded-md bg-muted/50 p-0.5" role="tablist" aria-label="Right dock">
         {RIGHT_TABS.map((t) => (
           <button
             key={t.id}
@@ -55,9 +55,9 @@ export function CreatePage() {
             role="tab"
             aria-selected={rightTab === t.id}
             onClick={() => setRightTab(t.id)}
-            className={`rounded-md px-2 py-1.5 text-xs font-medium transition-all ${
+            className={`rounded px-2 py-1 text-xs font-medium ${
               rightTab === t.id
-                ? "bg-background text-foreground shadow-sm"
+                ? "bg-background text-foreground"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -100,17 +100,17 @@ export function CreatePage() {
       agentPanel={agentPanel}
       toolbar={<QuickAddBar />}
     >
-      <div className="relative flex min-h-0 flex-1 flex-col px-1 pt-1">
+      <div className="relative flex min-h-0 flex-1 flex-col">
           {selectedId === null && order.length > 0 && (
-            <div className="absolute top-2.5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-lg border bg-popover px-2 py-1 shadow-xl ring-1 ring-border">
+            <div className="absolute top-2 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-md border border-border/60 bg-background px-2 py-1">
               <span className="px-1 font-mono text-[11px] text-muted-foreground">Board · 8×5</span>
               {(["dotted", "grid", "plain"] as const).map((b) => (
                 <button
                   key={b}
                   type="button"
                   onClick={() => setBackdrop(b)}
-                  className={`rounded-md px-2 py-0.5 text-[11px] capitalize transition-colors ${
-                    backdrop === b ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  className={`rounded px-2 py-0.5 text-[11px] capitalize ${
+                    backdrop === b ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {b}
@@ -127,8 +127,8 @@ export function CreatePage() {
                 onClick={() => setSelectedId(null)}
                 className="flex h-full flex-col items-center justify-center gap-2 text-center"
               >
-                <p className="text-lg font-semibold">Canvas is empty</p>
-                <p className="max-w-sm text-sm text-muted-foreground">
+                <p className="text-base font-medium">Canvas is empty</p>
+                <p className="max-w-sm text-[13px] text-muted-foreground">
                   Add elements or charts from the toolbox.
                 </p>
               </div>
@@ -137,7 +137,7 @@ export function CreatePage() {
                 layout
                 onClick={() => setSelectedId(null)}
                 style={{ gridTemplateColumns: `repeat(${dims.cols}, minmax(0, 1fr))` }}
-                className="grid gap-3"
+                className="grid gap-2"
               >
                 <AnimatePresence initial={false}>
                   {order.map((id) => {

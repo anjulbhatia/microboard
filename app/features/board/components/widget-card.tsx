@@ -62,7 +62,7 @@ export function WidgetCard({ widget, selected, onSelect, onRemove, onDuplicate, 
     window.addEventListener("pointerup", up);
   };
 
-  const handleCls = "absolute z-10 rounded-full border-2 border-background bg-primary shadow touch-none";
+  const handleCls = "absolute z-10 rounded-full border border-border/60 bg-muted touch-none";
 
   return (
     <motion.div
@@ -75,7 +75,7 @@ export function WidgetCard({ widget, selected, onSelect, onRemove, onDuplicate, 
       className={`relative ${selected ? "corner-brackets" : ""}`}
     >
       {selected && (
-        <div className="absolute top-2 left-1/2 z-20 flex -translate-x-1/2 items-center gap-0.5 rounded-full border bg-popover/95 py-1 pr-1.5 pl-2.5 shadow-xl ring-1 ring-border backdrop-blur animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute top-2 left-1/2 z-20 flex -translate-x-1/2 items-center gap-0.5 rounded-md border border-border/60 bg-background py-1 pr-1.5 pl-2.5">
           <span className="pr-1 font-mono text-[10px] tracking-wide text-muted-foreground">{meta.label}</span>
           <span aria-hidden className="h-4 w-px bg-border" />
           <span
@@ -133,14 +133,14 @@ export function WidgetCard({ widget, selected, onSelect, onRemove, onDuplicate, 
           onDrop(widget.id);
         }}
         style={{ height }}
-        className={`overflow-hidden rounded-md transition-shadow ${
-          selected ? "shadow-lg ring-1 ring-primary" : "hover:shadow-sm"
+        className={`overflow-hidden rounded-md border ${
+          selected ? "border-foreground/30" : "border-border/60"
         }`}
       >
         <Body widget={widget} />
       </div>
       {selected && editing && meta.fields.length > 0 && (
-        <div className="slim-scroll absolute top-12 left-1/2 z-20 max-h-64 w-60 -translate-x-1/2 overflow-y-auto rounded-lg border bg-popover p-2 shadow-xl ring-1 ring-border">
+        <div className="slim-scroll absolute top-12 left-1/2 z-20 max-h-64 w-60 -translate-x-1/2 overflow-y-auto rounded-md border border-border/60 bg-background p-2">
           <PropsEditor widget={widget} onChange={(props) => updateWidget(widget.id, { props })} />
         </div>
       )}

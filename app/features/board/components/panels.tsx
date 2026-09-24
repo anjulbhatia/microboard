@@ -14,7 +14,7 @@ import { DisplayTableModal } from "@/features/board/components/transform-modals"
 import type { TransformPanelProps } from "@/features/board/types";
 
 const sectionTitle =
-  "border-l-2 border-primary pl-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground";
+  "font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground";
 
 const FUNCTIONS = [
   { fn: "+", hint: "add" },
@@ -58,8 +58,8 @@ export function TransformPanel({ rawCols, hasData }: TransformPanelProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <section className="space-y-1.5">
+    <div className="divide-y divide-border/60">
+      <section className="space-y-1.5 py-3 first:pt-0">
         <h2 className={sectionTitle}>Schema</h2>
         {schema.length === 0 ? (
           <p className="text-xs text-muted-foreground">Load data to inspect.</p>
@@ -67,7 +67,7 @@ export function TransformPanel({ rawCols, hasData }: TransformPanelProps) {
           <>
             <p className="font-mono text-[10px] text-muted-foreground">dimensions · {dims.length}</p>
             {dims.map((c) => (
-              <div key={c.name} className="flex items-center gap-2 rounded-md border bg-card px-2 py-1 text-xs">
+              <div key={c.name} className="flex items-center gap-2 rounded-md bg-muted/50 px-2 py-1 text-xs">
                 <HugeiconsIcon icon={Table01Icon} size={13} strokeWidth={1.5} className="shrink-0 text-muted-foreground" />
                 <span className="flex-1 truncate font-mono">{c.name}</span>
                 {c.nulls > 0 && <span className="font-mono text-[10px] text-muted-foreground">{c.nulls}∅</span>}
@@ -75,11 +75,11 @@ export function TransformPanel({ rawCols, hasData }: TransformPanelProps) {
             ))}
             <p className="pt-1 font-mono text-[10px] text-muted-foreground">measures · {measures.length}</p>
             {measures.map((c) => (
-              <div key={c.name} className="flex items-center gap-2 rounded-md border bg-card px-2 py-1 text-xs">
-                <HugeiconsIcon icon={ChartColumnIcon} size={13} strokeWidth={1.5} className="shrink-0 text-primary" />
+              <div key={c.name} className="flex items-center gap-2 rounded-md bg-muted/50 px-2 py-1 text-xs">
+                <HugeiconsIcon icon={ChartColumnIcon} size={13} strokeWidth={1.5} className="shrink-0 text-muted-foreground" />
                 <span className="flex-1 truncate font-mono">{c.name}</span>
                 {derived.some((d) => d.name === c.name) && (
-                  <span className="rounded bg-primary/10 px-1 font-mono text-[10px] text-primary">fx</span>
+                  <span className="rounded bg-muted px-1 font-mono text-[10px] text-muted-foreground">fx</span>
                 )}
               </div>
             ))}
@@ -87,7 +87,7 @@ export function TransformPanel({ rawCols, hasData }: TransformPanelProps) {
         )}
       </section>
 
-      <section className="space-y-2">
+      <section className="space-y-2 py-3">
         <h2 className={sectionTitle}>New measure</h2>
         <input
           value={mName}
@@ -134,7 +134,7 @@ export function TransformPanel({ rawCols, hasData }: TransformPanelProps) {
           type="button"
           onClick={addMeasure}
           disabled={!mCol}
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors hover:bg-muted disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-1.5 rounded-md bg-muted px-2 py-1.5 text-xs font-medium hover:bg-muted/70 disabled:opacity-50"
         >
           <HugeiconsIcon icon={FunctionIcon} size={14} strokeWidth={1.5} />
           Add measure
@@ -148,20 +148,20 @@ export function TransformPanel({ rawCols, hasData }: TransformPanelProps) {
         </div>
       </section>
 
-      <section className="space-y-2">
+      <section className="space-y-2 py-3">
         <h2 className={sectionTitle}>Table</h2>
         <button
           type="button"
           onClick={() => setShowTable(true)}
           disabled={!hasData}
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors hover:bg-muted disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-1.5 rounded-md bg-muted px-2 py-1.5 text-xs font-medium hover:bg-muted/70 disabled:opacity-50"
         >
           <HugeiconsIcon icon={Table01Icon} size={14} strokeWidth={1.5} />
           Display table
         </button>
       </section>
 
-      <section className="space-y-2">
+      <section className="space-y-2 py-3">
         <h2 className={sectionTitle}>Steps · {board.steps.length}</h2>
         {hasData ? (
           <>
@@ -176,10 +176,10 @@ export function TransformPanel({ rawCols, hasData }: TransformPanelProps) {
             </div>
             <ol className="space-y-1.5">
               {board.steps.map((s, i) => (
-                <li key={s.id} className="flex items-start gap-2 rounded-md border bg-card px-2 py-1.5 text-xs">
+                <li key={s.id} className="flex items-start gap-2 rounded-md bg-muted/50 px-2 py-1.5 text-xs">
                   <span className="font-mono text-muted-foreground">{i + 1}.</span>
                   <span className="flex-1">
-                    <span className="font-mono text-primary">{s.type}</span> — {s.description}
+                    <span className="font-mono">{s.type}</span> — {s.description}
                   </span>
                   <button
                     type="button"
@@ -198,7 +198,7 @@ export function TransformPanel({ rawCols, hasData }: TransformPanelProps) {
         )}
       </section>
 
-      <section className="space-y-2">
+      <section className="space-y-2 py-3">
         <h2 className={sectionTitle}>Board</h2>
         <p className="font-mono text-xs text-muted-foreground">version {board.version}</p>
         <div className="flex gap-1.5">

@@ -14,7 +14,7 @@ export function PageStrip({ cleanedCount, usedCells, capacity }: PageStripProps)
   const cols = BOARD_GRID.cols;
 
   return (
-    <div className="shrink-0">
+    <div className="shrink-0 border-t bg-background">
       <AnimatePresence initial={false}>
         {expanded && (
           <motion.div
@@ -24,7 +24,7 @@ export function PageStrip({ cleanedCount, usedCells, capacity }: PageStripProps)
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
             className="overflow-hidden"
           >
-            <div className="mb-1 flex items-stretch justify-center gap-2 overflow-x-auto rounded-xl border bg-card/60 p-2">
+            <div className="mb-1 flex items-stretch justify-center gap-2 overflow-x-auto border-y bg-background p-2">
               {board.pages.map((p, i) => {
                 const active = p.id === board.activePageId;
                 const ids = p.order.filter((id) => p.widgets[id]);
@@ -86,7 +86,7 @@ export function PageStrip({ cleanedCount, usedCells, capacity }: PageStripProps)
         )}
       </AnimatePresence>
 
-      <div className="flex shrink-0 items-center gap-1 pt-1">
+      <div className="flex shrink-0 items-center gap-1 px-2 py-1.5">
       <div className="flex w-28 shrink-0 items-center gap-1">
         <SaveStatus version={board.version} />
       </div>

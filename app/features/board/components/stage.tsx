@@ -63,11 +63,11 @@ export function Stage({
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2">
       {toolbar}
-      <div ref={wrapRef} className="flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-xl border bg-muted/40 p-3">
+      <div ref={wrapRef} className="flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-muted/30 p-3">
         {scale > 0 && (
           <div
             id="board-stage"
-            className="slim-scroll my-2 overflow-y-auto rounded-lg border bg-background shadow-xl transition-[width,height] duration-300 ease-out"
+            className="slim-scroll my-2 overflow-y-auto rounded-lg border border-border/60 bg-background"
             style={{ width: Math.floor(cols * scale), height: Math.floor(rows * scale), ...BACKDROPS[backdrop] }}
           >
             <StageContext.Provider value={{ unit, cols }}>

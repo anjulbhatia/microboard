@@ -25,7 +25,7 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
-      <header className="flex h-11 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 bg-card px-2">
+      <header className="flex h-12 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b px-3">
         <Link
           to="/"
           aria-label="Microboard home"
@@ -61,8 +61,8 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
             onClick={() => setAgentOpen((v) => !v)}
             aria-label="Toggle agent panel"
             title="Agent inputs"
-            className={`rounded-[9px] border px-2.5 py-1 font-mono text-[11px] font-semibold tracking-wider transition-all hover:bg-muted hover:text-foreground active:scale-[0.97] ${
-              agentOpen ? "border-primary text-foreground" : "text-muted-foreground"
+            className={`rounded-md border px-2.5 py-1 font-mono text-[11px] font-semibold tracking-wider transition-colors hover:bg-muted hover:text-foreground ${
+              agentOpen ? "border-foreground/30 text-foreground" : "border-transparent text-muted-foreground"
             }`}
           >
             WEBMCP
@@ -73,7 +73,7 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
               onClick={() => setShareOpen((v) => !v)}
               aria-label="Share"
               aria-expanded={shareOpen}
-              className="flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-1.5 text-[13px] font-medium text-primary-foreground transition-all hover:opacity-90 active:scale-[0.97]"
+              className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[13px] font-medium text-primary-foreground hover:opacity-90"
             >
               <HugeiconsIcon icon={Share01Icon} size={16} strokeWidth={1.5} />
               Share
@@ -95,7 +95,7 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
           {user ? (
             <Link
               to="/home"
-              className="rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-all hover:bg-muted active:scale-[0.97]"
+              className="rounded-md px-3 py-1.5 text-[13px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               Home
             </Link>
@@ -103,7 +103,7 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
             <button
               type="button"
               onClick={() => setLoginOpen(true)}
-              className="rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-all hover:bg-muted active:scale-[0.97]"
+              className="rounded-md px-3 py-1.5 text-[13px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               Log in / Sign up
             </button>
@@ -116,16 +116,16 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
 
       {toolbar}
 
-      <div className="flex min-h-0 flex-1 gap-2 p-2">
+      <div className="flex min-h-0 flex-1">
         <div className="relative shrink-0">
           <motion.aside
             initial={false}
-            animate={panelOpen ? { width: 288, opacity: 1 } : { width: 0, opacity: 0 }}
+            animate={panelOpen ? { width: 264, opacity: 1 } : { width: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 320, damping: 34 }}
             className="h-full overflow-hidden"
             aria-label="Tool sidebar"
           >
-            <div className="slim-scroll flex h-full w-72 flex-col overflow-y-auto rounded-xl border bg-card shadow-md">
+            <div className="slim-scroll flex h-full w-66 flex-col overflow-y-auto border-r bg-background">
               {panel}
             </div>
           </motion.aside>
@@ -135,7 +135,7 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
             aria-label={panelOpen ? "Collapse sidebar" : "Expand sidebar"}
             aria-expanded={panelOpen}
             title={panelOpen ? "Collapse sidebar" : "Expand sidebar"}
-            className="absolute top-16 -right-3 z-10 flex size-6 items-center justify-center rounded-full border bg-card text-muted-foreground shadow-md transition-colors hover:text-foreground"
+            className="absolute top-16 -right-3 z-10 flex size-6 items-center justify-center rounded-md border bg-background text-muted-foreground hover:text-foreground"
           >
             <HugeiconsIcon icon={panelOpen ? ChevronLeftIcon : ChevronRightIcon} size={14} strokeWidth={2} />
           </button>
@@ -144,7 +144,7 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
         <div className="flex min-w-0 flex-1 flex-col">{children}</div>
 
         {agentOpen && (
-          <aside className="slim-scroll flex w-64 shrink-0 flex-col gap-3 overflow-y-auto rounded-xl border bg-card p-3 shadow-sm">
+          <aside className="slim-scroll flex w-64 shrink-0 flex-col gap-3 overflow-y-auto border-l bg-background p-3">
             {agentPanel}
           </aside>
         )}

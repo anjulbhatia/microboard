@@ -83,7 +83,7 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section aria-label={title} className="border-b last:border-0">
+    <section aria-label={title} className="border-b border-border/60 last:border-0">
       <button
         type="button"
         onClick={onToggle}
@@ -91,7 +91,7 @@ function Section({
         aria-controls={`toolbox-${id}`}
         className="flex w-full items-center justify-between px-3 py-2 text-left"
       >
-        <span className="font-mono text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+        <span className="font-mono text-[10px] font-medium tracking-[0.12em] text-muted-foreground uppercase">
           {title}
         </span>
         <span className={`font-mono text-xs text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}>
@@ -137,14 +137,14 @@ function Tile({
       onClick={onClick}
       disabled={disabled}
       title={title ?? label}
-      className={`flex flex-col items-center gap-1.5 rounded-xl border px-1 py-2.5 transition-all hover:scale-[1.03] active:scale-[0.97] disabled:opacity-40 ${
+      className={`flex flex-col items-center gap-1 rounded-md px-1 py-2 transition-colors disabled:opacity-40 ${
         active
-          ? "border-primary/60 bg-primary/5 text-foreground"
-          : "bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground"
+          ? "bg-muted text-foreground"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground"
       }`}
     >
-      <HugeiconsIcon icon={icon} size={20} strokeWidth={1.5} />
-      <span className="max-w-full truncate text-[10.5px] font-medium">{label}</span>
+      <HugeiconsIcon icon={icon} size={18} strokeWidth={1.5} />
+      <span className="max-w-full truncate text-[11px]">{label}</span>
     </button>
   );
 }
@@ -200,7 +200,7 @@ export function ToolboxSidebar({ columns, hasData, gridCols }: ToolboxProps) {
 
       <Section id="charts" title="Charts" open={open.charts} onToggle={() => toggle("charts")}>
         {!hasData ? (
-          <p className="rounded-lg bg-muted/60 px-2.5 py-2 text-[11px] text-muted-foreground">
+          <p className="rounded-md bg-muted/50 px-2 py-2 text-[11px] text-muted-foreground">
             Upload data to chart — pick a source below.
           </p>
         ) : (
@@ -244,7 +244,7 @@ export function ToolboxSidebar({ columns, hasData, gridCols }: ToolboxProps) {
                     type="button"
                     onClick={() => addChart("micro", id)}
                     title={MICRO_REGISTRY[id].blurb}
-                    className="truncate rounded-lg border bg-background px-2 py-1.5 text-left text-[11px] font-medium transition-all hover:border-primary/50 hover:text-foreground active:scale-[0.97]"
+                    className="truncate rounded-md px-2 py-1.5 text-left text-[11px] text-muted-foreground hover:bg-muted hover:text-foreground"
                   >
                     {MICRO_REGISTRY[id].title}
                   </button>
