@@ -26,6 +26,8 @@ import {
   Table01Icon,
 } from "@hugeicons/core-free-icons";
 import { useBoard } from "@/store/board";
+import { useSession } from "@/store/session";
+import { LoginModal } from "@/features/auth";
 import { BOARD_GRID, type WidgetType } from "@/features/board/types";
 import { WIDGET_REGISTRY, clampSpan } from "@/features/widgets/registry";
 import { MICRO_IDS, MICRO_REGISTRY } from "@/features/widgets/micro/registry";
@@ -182,9 +184,11 @@ const CHARTS: { type: WidgetType; icon: typeof SparklesIcon }[] = [
 
 const SHAPES = ["square", "circle", "rounded rect", "rect", "arrow", "ellipse", "line"];
 
-export function Ribbon({ onPanelToggle }: { onPanelToggle: () => void }) {
+export function Ribbon({ onPanelToggle, bare }: { onPanelToggle: () => void; bare?: boolean }) {
   const [tab, setTab] = useState<TabId>("home");
   const board = useBoard((s) => s.board);
+  const user = useSession((s) => s.user);
+  const [loginOpen, setLoginOpen] = useState(false);
   const { addPage, reset } = useBoard();
   const { busy, loadFile, loadPaste, loadSheet, loadApi, loadSample } = useDataLoader();
   const { status: publishStatus, publish } = useShare();
@@ -219,7 +223,7 @@ export function Ribbon({ onPanelToggle }: { onPanelToggle: () => void }) {
   };
 
   return (
-    <div className="shrink-0 rounded-2xl border bg-card px-3 pt-1.5 pb-2 shadow-sm">
+    <div className={bare ? "shrink-0 border-b bg-card px-3 pt-1.5 pb-2" : "shrink-0 rounded-2xl border bg-card px-3 pt-1.5 pb-2 shadow-sm"}>
       <div role="tablist" aria-label="Ribbon tabs" className="flex items-center gap-0.5 border-b border-border/60 pb-1">
         {TABS.map((t) => (
           <button
@@ -418,12 +422,15 @@ export function Ribbon({ onPanelToggle }: { onPanelToggle: () => void }) {
               ))}
             </Group>
             <Group label="Link">
+              {!user && (
+                <RibbonBtn label="Sign in" tip="Sign in to publish" icon={Link01Icon} onClick={() => setLoginOpen(true)} />
+              )}
               <RibbonBtn label="Copy" tip="Copy share link" icon={Link01Icon} onClick={() => void copyLink()} />
               <RibbonBtn
                 label={publishStatus === "publishing" ? "…" : "Publish"}
-                tip="Publish board to a live link"
+                tip={user ? "Publish board to a live link" : "Sign in to publish"}
                 icon={PlusSignIcon}
-                disabled={publishStatus === "publishing"}
+                disabled={publishStatus === "publishing" || !user}
                 onClick={() => void publish().catch(() => {})}
               />
             </Group>
@@ -431,6 +438,9 @@ export function Ribbon({ onPanelToggle }: { onPanelToggle: () => void }) {
           </>
         )}
       </div>
+      {loginOpen && !user && (
+        <LoginModal next="/new" onDone={() => setLoginOpen(false)} onClose={() => setLoginOpen(false)} />
+      )}
     </div>
   );
 }

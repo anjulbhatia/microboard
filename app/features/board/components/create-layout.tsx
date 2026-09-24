@@ -17,6 +17,9 @@ const ShareMenu = lazy(() =>
 
 import type { CreateLayoutProps } from "@/features/board/types";
 
+/** EXPERIMENTAL: hide header + sidebar for a full-bleed ribbon canvas. Flip to false to restore. */
+const HIDE_CHROME = true;
+
 /**
  * Canvas shell — three islands only:
  * 1. header (board name, agent toggle, share, home)
@@ -33,8 +36,9 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
   const { user } = useSession();
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 bg-muted/40 p-3">
-      {/* 1 · header island */}
+    <div className={HIDE_CHROME ? "flex h-full min-h-0 flex-col bg-background" : "flex h-full min-h-0 flex-col gap-3 bg-muted/40 p-3"}>
+      {/* 1 · header island (hidden while ribbon experiment runs) */}
+      {!HIDE_CHROME && (
       <header className="flex h-12 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border bg-card px-3 shadow-sm">
         <Link
           to="/"
@@ -121,15 +125,17 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
           )}
         </div>
       </header>
+      )}
       {loginOpen && !user && (
         <LoginModal next="/new" onDone={() => setLoginOpen(false)} onClose={() => setLoginOpen(false)} />
       )}
 
       {/* EXPERIMENTAL ribbon — delete this block + import to roll back. */}
-      <Ribbon onPanelToggle={onPanelToggle} />
+      <Ribbon onPanelToggle={onPanelToggle} bare={HIDE_CHROME} />
 
-      <div className="flex min-h-0 flex-1 gap-3">
-        {/* 2 · components sidebar island */}
+      <div className={HIDE_CHROME ? "flex min-h-0 flex-1" : "flex min-h-0 flex-1 gap-3"}>
+        {/* 2 · components sidebar island (hidden while ribbon experiment runs) */}
+        {!HIDE_CHROME && (
         <motion.aside
           initial={false}
           animate={panelOpen ? { width: 264, opacity: 1 } : { width: 44, opacity: 1 }}
@@ -170,10 +176,11 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
             </div>
           )}
         </motion.aside>
+        )}
 
-        {/* 3 · canvas island — docks float over it only while in use */}
-        <div className="relative min-w-0 flex-1 rounded-2xl border bg-card shadow-sm">
-          <div className="flex h-full min-h-0 flex-col p-3">{children}</div>
+        {/* 3 · canvas — island chrome, full-bleed while ribbon experiment runs */}
+        <div className={HIDE_CHROME ? "relative min-w-0 flex-1" : "relative min-w-0 flex-1 rounded-2xl border bg-card shadow-sm"}>
+          <div className={HIDE_CHROME ? "flex h-full min-h-0 flex-col" : "flex h-full min-h-0 flex-col p-3"}>{children}</div>
           <AnimatePresence initial={false}>
             {agentOpen && (
               <motion.aside
