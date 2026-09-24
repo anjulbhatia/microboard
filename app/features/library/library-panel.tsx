@@ -85,7 +85,7 @@ export function BoardPreview({ snapshot }: { snapshot: string }) {
             width: `calc(${b.wPct}% - 3px)`,
             height: `calc(${b.hPct}% - 3px)`,
           }}
-          className={`absolute m-[1.5px] rounded-[2px] ${PREVIEW_TINT[b.tint] ?? "bg-primary/40"}`}
+          className={`absolute m-[1.5px] rounded-[2px] ${PREVIEW_TINT[b.tint] ?? "bg-foreground/30"}`}
         />
       ))}
       {(!blocks || blocks.length === 0) && (

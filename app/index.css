@@ -229,33 +229,6 @@
     background-image: radial-gradient(color-mix(in oklch, var(--muted-foreground) 45%, transparent) 1px, transparent 1px);
     background-size: 22px 22px;
   }
-  /* Corner brackets for selected canvas pieces — landing-page motif. */
-  .corner-brackets {
-    position: relative;
-  }
-  .corner-brackets::before,
-  .corner-brackets::after {
-    content: "";
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    pointer-events: none;
-    z-index: 20;
-  }
-  .corner-brackets::before {
-    top: -2px;
-    left: -2px;
-    border-top: 2px solid var(--primary);
-    border-left: 2px solid var(--primary);
-    border-top-left-radius: 4px;
-  }
-  .corner-brackets::after {
-    bottom: -2px;
-    right: -2px;
-    border-bottom: 2px solid var(--primary);
-    border-right: 2px solid var(--primary);
-    border-bottom-right-radius: 4px;
-  }
   .md {
     @apply text-sm break-words;
   }

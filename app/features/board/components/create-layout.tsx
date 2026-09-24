@@ -51,7 +51,7 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
             onFocus={(e) => e.target.select()}
             aria-label="Visualisation name"
             placeholder="Untitled Board"
-            className="w-full truncate rounded-md bg-transparent py-1 pr-12 pl-1.5 text-left text-[13px] font-medium tracking-tight text-primary focus-visible:bg-muted focus-visible:outline-none"
+            className="w-full truncate rounded-md bg-transparent py-1 pr-12 pl-1.5 text-left text-[13px] font-medium tracking-tight text-foreground focus-visible:bg-muted focus-visible:outline-none"
           />
           <button
             type="button"

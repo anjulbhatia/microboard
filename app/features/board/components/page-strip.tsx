@@ -78,7 +78,7 @@ export function PageStrip({ cleanedCount, usedCells, capacity, backdrop, onBackd
                   title={`${p.name} · ${count} widgets`}
                   className={`flex size-7 items-center justify-center rounded-md font-mono text-[11px] transition-colors ${
                     active
-                      ? "border border-primary bg-primary text-primary-foreground"
+                      ? "bg-foreground text-background"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
@@ -156,7 +156,7 @@ function PageCard({
       onClick={onSelect}
       title={`${name} · ${widgetCount} widgets`}
       className={`flex w-32 shrink-0 flex-col gap-1 rounded-lg border p-1.5 text-left transition-colors ${
-        active ? "border-primary bg-primary/5" : "hover:border-primary/50"
+        active ? "border-foreground/40" : "hover:border-foreground/25"
       }`}
     >
       <span className="font-mono text-[10px] text-muted-foreground">
@@ -181,7 +181,7 @@ function PageCard({
           {widgets.map(({ id, w }) => (
             <span
               key={id}
-              className="h-1.5 rounded-[2px] bg-primary/50"
+              className="h-1.5 rounded-[2px] bg-foreground/30"
               style={{ width: `${Math.max(8, (w / cols) * 100)}%` }}
             />
           ))}
