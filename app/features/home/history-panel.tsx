@@ -38,7 +38,6 @@ export function HistoryPanel() {
   return (
     <div className="flex max-w-2xl flex-col gap-5">
       <SectionHead
-        eyebrow="History"
         title="Board timeline"
         blurb={`${entries.length} snapshot${entries.length === 1 ? "" : "s"} · restores open in the editor.`}
         actions={

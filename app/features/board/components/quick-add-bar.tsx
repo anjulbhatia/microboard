@@ -53,11 +53,9 @@ export function QuickAddBar() {
     "flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground";
   const item =
     "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-muted";
-  const groupLabel = "font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase";
 
   return (
     <div className="flex shrink-0 items-center gap-1 border-b bg-background px-2 py-1">
-      <span className={groupLabel}>Insert</span>
       <div className="relative">
         <button type="button" onClick={() => menu.toggle("widget")} className={btn} aria-label="Add widget">
           <HugeiconsIcon icon={PlusSignIcon} size={15} strokeWidth={1.5} />
@@ -77,7 +75,6 @@ export function QuickAddBar() {
       </div>
 
       <span aria-hidden className="h-4 w-px bg-border" />
-      <span className={groupLabel}>Shapes</span>
       <div className="relative">
         <button type="button" onClick={() => menu.toggle("shapes")} className={btn} aria-label="Add shape">
           <HugeiconsIcon icon={ShapesIcon} size={15} strokeWidth={1.5} />
@@ -98,7 +95,6 @@ export function QuickAddBar() {
       </div>
 
       <span aria-hidden className="h-4 w-px bg-border" />
-      <span className={groupLabel}>Media</span>
       <button type="button" onClick={() => imgRef.current?.click()} className={btn} aria-label="Upload image">
         <HugeiconsIcon icon={ImageUpload01Icon} size={15} strokeWidth={1.5} />
         Image

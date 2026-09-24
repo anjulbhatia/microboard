@@ -24,7 +24,6 @@ export function AnalyticsPanel() {
   return (
     <div className="flex max-w-3xl flex-col gap-5">
       <SectionHead
-        eyebrow="Analytics"
         title="How boards travel"
         blurb="Views and shares across every board you touch."
       />

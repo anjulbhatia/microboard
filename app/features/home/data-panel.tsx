@@ -44,7 +44,6 @@ export function DataPanel() {
   return (
     <div className="flex max-w-3xl flex-col gap-5">
       <SectionHead
-        eyebrow="Data Sources"
         title="Everything data lives here"
         blurb={
           board.data.source

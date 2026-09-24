@@ -88,7 +88,7 @@ export function TransformPanel({ rawCols, hasData }: TransformPanelProps) {
       </section>
 
       <section className="space-y-2 py-3">
-        <h2 className={sectionTitle}>New measure</h2>
+        <h2 className={sectionTitle}>Measure</h2>
         <input
           value={mName}
           onChange={(e) => setMName(e.target.value)}
@@ -134,10 +134,11 @@ export function TransformPanel({ rawCols, hasData }: TransformPanelProps) {
           type="button"
           onClick={addMeasure}
           disabled={!mCol}
+          aria-label="Add measure"
           className="flex w-full items-center justify-center gap-1.5 rounded-md bg-muted px-2 py-1.5 text-xs font-medium hover:bg-muted/70 disabled:opacity-50"
         >
           <HugeiconsIcon icon={FunctionIcon} size={14} strokeWidth={1.5} />
-          Add measure
+          Add
         </button>
         <div className="flex flex-wrap gap-1">
           {FUNCTIONS.map((f) => (
@@ -148,12 +149,12 @@ export function TransformPanel({ rawCols, hasData }: TransformPanelProps) {
         </div>
       </section>
 
-      <section className="space-y-2 py-3">
-        <h2 className={sectionTitle}>Table</h2>
+      <section className="py-3">
         <button
           type="button"
           onClick={() => setShowTable(true)}
           disabled={!hasData}
+          aria-label="Display data table"
           className="flex w-full items-center justify-center gap-1.5 rounded-md bg-muted px-2 py-1.5 text-xs font-medium hover:bg-muted/70 disabled:opacity-50"
         >
           <HugeiconsIcon icon={Table01Icon} size={14} strokeWidth={1.5} />
@@ -167,7 +168,7 @@ export function TransformPanel({ rawCols, hasData }: TransformPanelProps) {
           <>
             <StepForm columns={rawCols} />
             <div className="flex items-center justify-between pt-1">
-              <span className="font-mono text-xs text-muted-foreground">{board.steps.length} steps · {cleaned.length} rows</span>
+              <span className="font-mono text-xs text-muted-foreground">{cleaned.length} rows</span>
               {board.steps.length > 0 && (
                 <button type="button" onClick={clearSteps} className="font-mono text-xs text-muted-foreground hover:text-foreground">
                   clear

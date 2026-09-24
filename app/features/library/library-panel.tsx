@@ -153,7 +153,6 @@ export function LibraryPanel() {
   return (
     <div className="flex max-w-3xl flex-col gap-4">
       <SectionHead
-        eyebrow="Home"
         title="Your boards"
         blurb={`${saved.length} saved · pick up where you left off.`}
         actions={

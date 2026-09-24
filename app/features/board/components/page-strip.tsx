@@ -154,7 +154,7 @@ export function PageStrip({ cleanedCount, usedCells, capacity }: PageStripProps)
             </span>
           </div>
           <span className="flex h-7 items-center gap-1 rounded-md border px-1.5 font-mono text-[11px] text-muted-foreground">
-            8×5 · {capacity}
+            8×5
           </span>
         </div>
         <span className="w-28 shrink-0 text-right font-mono text-[10px] text-muted-foreground">

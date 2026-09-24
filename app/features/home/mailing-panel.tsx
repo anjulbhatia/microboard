@@ -48,7 +48,6 @@ export function MailingPanel() {
   return (
     <div className="flex max-w-3xl flex-col gap-5">
       <SectionHead
-        eyebrow="Mailing List"
         title={`${count} subscriber${count === 1 ? "" : "s"}`}
         blurb="Board drops send here once AgentMail is keyed."
       />

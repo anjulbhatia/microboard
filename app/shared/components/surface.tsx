@@ -23,7 +23,7 @@ export function ModuleHead({
   blurb,
   actions,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   blurb?: string;
   actions?: ReactNode;
@@ -31,7 +31,9 @@ export function ModuleHead({
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <p className="font-mono text-[11px] tracking-[0.16em] text-muted-foreground uppercase">{eyebrow}</p>
+        {eyebrow && (
+          <p className="font-mono text-[11px] tracking-[0.16em] text-muted-foreground uppercase">{eyebrow}</p>
+        )}
         <h1 className="mt-0.5 text-xl font-semibold tracking-tight">{title}</h1>
         {blurb && <p className="mt-0.5 text-[13px] text-muted-foreground">{blurb}</p>}
       </div>

@@ -168,7 +168,6 @@ function ProfilePanel() {
   return (
     <div className="flex max-w-2xl flex-col gap-5">
       <SectionHead
-        eyebrow="Profile"
         title={user.username}
         blurb={user.demo ? "Demo creator · link a real account anytime." : "Verified account."}
       />

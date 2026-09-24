@@ -74,30 +74,41 @@ function Section({
   title,
   open,
   onToggle,
+  fixed,
   children,
 }: {
   id: string;
   title: string;
   open: boolean;
   onToggle: () => void;
+  /** Fixed sections render a plain header — no dead chevron. */
+  fixed?: boolean;
   children: ReactNode;
 }) {
   return (
     <section aria-label={title} className="border-b border-border/60 last:border-0">
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={open}
-        aria-controls={`toolbox-${id}`}
-        className="flex w-full items-center justify-between px-3 py-2 text-left"
-      >
-        <span className="font-mono text-[10px] font-medium tracking-[0.12em] text-muted-foreground uppercase">
-          {title}
-        </span>
-        <span className={`font-mono text-xs text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}>
-          ⌄
-        </span>
-      </button>
+      {fixed ? (
+        <div className="px-3 pt-3 pb-1">
+          <span className="font-mono text-[10px] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+            {title}
+          </span>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={open}
+          aria-controls={`toolbox-${id}`}
+          className="flex w-full items-center justify-between px-3 py-2.5 text-left"
+        >
+          <span className="font-mono text-[10px] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+            {title}
+          </span>
+          <span className={`font-mono text-xs text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}>
+            ⌄
+          </span>
+        </button>
+      )}
       <AnimatePresence initial={false}>
         {open && (
           <motion.div
@@ -108,7 +119,7 @@ function Section({
             transition={{ type: "spring", stiffness: 380, damping: 36 }}
             className="overflow-hidden"
           >
-            <div className="px-3 pb-3">{children}</div>
+            <div className="px-3 pt-1 pb-4">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -186,7 +197,7 @@ export function ToolboxSidebar({ columns, hasData, gridCols }: ToolboxProps) {
   return (
     <div className="flex h-full flex-col">
       <Section id="elements" title="Elements" open={open.elements} onToggle={() => toggle("elements")}>
-        <div className="grid grid-cols-3 gap-1.5">
+        <div className="grid grid-cols-3 gap-2">
           {ELEMENTS.map(({ type, icon }) => (
             <Tile
               key={type}
@@ -204,7 +215,7 @@ export function ToolboxSidebar({ columns, hasData, gridCols }: ToolboxProps) {
             Upload data to chart — pick a source below.
           </p>
         ) : (
-          <div className="grid grid-cols-3 gap-1.5">
+          <div className="grid grid-cols-3 gap-2">
             {CHARTS.map(({ type, icon }) =>
               type === "micro" ? (
                 <Tile
@@ -234,8 +245,8 @@ export function ToolboxSidebar({ columns, hasData, gridCols }: ToolboxProps) {
               transition={{ type: "spring", stiffness: 380, damping: 36 }}
               className="overflow-hidden"
             >
-              <p className="pt-2 font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
-                Micro · {columns.length} cols
+              <p className="pt-2.5 font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
+                Pick one · {columns.length} cols
               </p>
               <div className="grid grid-cols-2 gap-1 pt-1.5">
                 {MICRO_IDS.map((id) => (
@@ -295,8 +306,8 @@ function UploadsSection() {
   };
 
   return (
-    <Section id="uploads" title="Uploads" open={true} onToggle={() => {}}>
-      <div className="grid grid-cols-3 gap-1.5">
+    <Section id="uploads" title="Uploads" open={true} onToggle={() => {}} fixed>
+      <div className="grid grid-cols-3 gap-2">
         {UPLOAD_TILES.slice(0, 3).map(({ kind: k, label, icon }) => (
           <Tile key={k} label={label} icon={icon} onClick={() => pick(k)} active={kind === k} />
         ))}
@@ -397,7 +408,7 @@ function UploadsSection() {
       {error && <p className="mt-1.5 font-mono text-[11px] text-destructive">{error}</p>}
 
       {uploads.length > 0 && (
-        <div className="grid grid-cols-3 gap-1.5 pt-2">
+        <div className="grid grid-cols-3 gap-2 pt-2">
           {uploads.map((u: Upload) => (
             <button
               key={u.id}

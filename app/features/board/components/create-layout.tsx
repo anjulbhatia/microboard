@@ -117,29 +117,46 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
       {toolbar}
 
       <div className="flex min-h-0 flex-1">
-        <div className="relative shrink-0">
-          <motion.aside
-            initial={false}
-            animate={panelOpen ? { width: 264, opacity: 1 } : { width: 0, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 320, damping: 34 }}
-            className="h-full overflow-hidden"
-            aria-label="Tool sidebar"
-          >
-            <div className="slim-scroll flex h-full w-66 flex-col overflow-y-auto border-r bg-background">
-              {panel}
+        <motion.aside
+          initial={false}
+          animate={panelOpen ? { width: 264, opacity: 1 } : { width: 44, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 320, damping: 34 }}
+          className="h-full shrink-0 overflow-hidden border-r bg-background"
+          aria-label="Tool sidebar"
+        >
+          {panelOpen ? (
+            <div className="slim-scroll flex h-full w-66 flex-col overflow-y-auto">
+              <div className="flex h-10 shrink-0 items-center justify-between border-b border-border/60 pl-3 pr-1.5">
+                <span className="font-mono text-[10px] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                  Toolbox
+                </span>
+                <button
+                  type="button"
+                  onClick={onPanelToggle}
+                  aria-label="Collapse sidebar"
+                  title="Collapse sidebar"
+                  className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                  <HugeiconsIcon icon={ChevronLeftIcon} size={14} strokeWidth={2} />
+                </button>
+              </div>
+              <div className="min-h-0 flex-1">{panel}</div>
             </div>
-          </motion.aside>
-          <button
-            type="button"
-            onClick={onPanelToggle}
-            aria-label={panelOpen ? "Collapse sidebar" : "Expand sidebar"}
-            aria-expanded={panelOpen}
-            title={panelOpen ? "Collapse sidebar" : "Expand sidebar"}
-            className="absolute top-16 -right-3 z-10 flex size-6 items-center justify-center rounded-md border bg-background text-muted-foreground hover:text-foreground"
-          >
-            <HugeiconsIcon icon={panelOpen ? ChevronLeftIcon : ChevronRightIcon} size={14} strokeWidth={2} />
-          </button>
-        </div>
+          ) : (
+            <div className="flex h-full w-11 flex-col items-center pt-2">
+              <button
+                type="button"
+                onClick={onPanelToggle}
+                aria-label="Expand sidebar"
+                aria-expanded={false}
+                title="Expand toolbox"
+                className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <HugeiconsIcon icon={ChevronRightIcon} size={14} strokeWidth={2} />
+              </button>
+            </div>
+          )}
+        </motion.aside>
 
         <div className="flex min-w-0 flex-1 flex-col">{children}</div>
 
