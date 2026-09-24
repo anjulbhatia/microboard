@@ -73,3 +73,13 @@ radius without breaking offline/demo flows.
   `listShowcase` projects lightweight card fields (no `snapshot`, no
   `ownerId`) and declares a `returns` validator.
 - **Commit:** `fix(convex): index + bound showcase reads, project card fields`
+
+## B5 — `health.ping`: wall-clock in query breaks reactivity (Important)
+
+- **Where:** `convex/health.ts` → `ping`.
+- **Exploit/perf:** `new Date().toISOString()` inside a query handler makes
+  the result non-deterministic — Convex re-executes the query on every
+  read, so pollers/load-balancer checks churn instead of caching.
+- **Fix:** return a static `{ ok: true }` with a `returns` validator.
+  Callers that need timing stamp on receipt.
+- **Commit:** `fix(convex): static health ping, no clock in query`
