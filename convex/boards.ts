@@ -90,9 +90,13 @@ export const getByPublicId = query({
 export const listByOwner = query({
   args: { ownerId: v.string() },
   handler: async (ctx, args) => {
+    // Boards are private except showcase/share links — a caller may only
+    // list their own. Resolved key wins over the raw arg when signed in.
+    const key = await userKey(ctx, args.ownerId);
+    if (args.ownerId !== key) throw new Error("Not your boards.");
     return await ctx.db
       .query("boards")
-      .withIndex("by_owner", (q) => q.eq("ownerId", args.ownerId))
+      .withIndex("by_owner", (q) => q.eq("ownerId", key))
       .collect();
   },
 });

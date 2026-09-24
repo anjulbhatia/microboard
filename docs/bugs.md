@@ -35,3 +35,13 @@ radius without breaking offline/demo flows.
   validate title (1–120 chars), version (int ≥ 0), snapshot (non-empty,
   ≤ 900KB). Added `returns: v.id("boards")`.
 - **Commit:** `fix(convex): harden boards.save ownership, showcase gate, size caps`
+
+## B2 — `boards.listByOwner`: any caller enumerates anyone's private boards (Critical)
+
+- **Where:** `convex/boards.ts` → `listByOwner`.
+- **Exploit:** query took any `ownerId` and returned that owner's full rows
+  (including non-showcase snapshots). Attacker paginates `ownerId`s and
+  harvests private board JSON.
+- **Fix:** resolve the caller key server-side and throw unless the requested
+  `ownerId` equals it. Signed-in users can only list their own boards.
+- **Commit:** `fix(convex): scope listByOwner to caller key`
