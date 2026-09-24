@@ -19,6 +19,10 @@ radius without breaking offline/demo flows.
 | B8 | Important | `addComment`: username impersonation + stored-XSS hardening |
 | B9 | Critical (UX) | Board download renders black; share link copies dead URL |
 | B10 | Important (UX) | Minimap fakes layout with blocks; export still unreadable |
+| W1 | Important | WebMCP data ops round-tripped args through inline text (quoting breaks, datasets can't travel) |
+| W2 | Important | `board.add_step` stored arbitrary type strings (breaks deterministic replay) |
+| W3 | Important | `board.add_chart` accepted unknown kinds + empty columns |
+| W4 | Important | No board read tool — agents write blind (spec promises `get_board_state`) |
 
 ---
 
@@ -176,3 +180,22 @@ radius without breaking offline/demo flows.
   (same colors, restored after), caches per page+version; cards show the
   `<img>` with block fallback until first capture.
 - **Commit:** `fix(canvas): live raster minimap, shared rgb export core`
+
+## W1–W4 — WebMCP tool-layer bugs (Important)
+
+- **Where:** `app/features/agent/webmcp.ts`, `AgentBoardApi`
+  (`app/features/agent/chat-agent.ts`, `chat-panel.tsx`).
+- **W1:** data-op fallback built an inline string
+  (`--key JSON.stringify(v)`) — values with spaces/quotes shattered the
+  inline parser, and `dataset` args cannot travel as text at all.
+  Fix: call `runOp(name, args)` directly.
+- **W2:** `board.add_step` cast any string to `StepType`; the store appends
+  unchecked, so `"explode"` poisoned `steps` and broke replay.
+  Fix: whitelist the 13 step types, require object params (values coerced
+  to strings for the store).
+- **W3:** `board.add_chart` cast any kind and allowed empty x/y → broken
+  widgets. Fix: whitelist 6 chart kinds, require both columns.
+- **W4:** no read tool existed. Fix: `board.get_state` returns structured
+  `{title, version, steps, widgets, columns}` via a new
+  `AgentBoardApi.state()` (wired in `ChatPanel`, faked in tests).
+- **Commit:** `fix(webmcp): validate tool args, add get_state, run ops direct`

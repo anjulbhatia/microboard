@@ -10,6 +10,8 @@ export interface AgentBoardApi {
   addStep(type: StepType, params: Record<string, string>, description: string): void;
   addChart(kind: ChartKind, x: string, y: string): void;
   summary(): string;
+  /** Structured board snapshot for read tools (no raw rows — capped). */
+  state(): { title: string; version: number; steps: number; widgets: number; columns: string[] };
 }
 
 export interface ChatReply {

@@ -57,6 +57,14 @@ export function ChatPanel() {
       const cols = inferColumns(cleaned).map((c) => c.name);
       return `${cleaned.length} rows · ${cols.length} cols (${cols.join(", ")}) · ${b.steps.length} steps.`;
     },
+    state: () => {
+      const b = useBoard.getState().board;
+      const cleaned = applySteps(b.data.raw, b.steps);
+      const cols = inferColumns(cleaned).map((c) => c.name);
+      const page = b.pages.find((p) => p.id === b.activePageId) ?? b.pages[0];
+      const widgets = page ? Object.keys(page.widgets).length : 0;
+      return { title: b.title, version: b.version, steps: b.steps.length, widgets, columns: cols };
+    },
   };
 
   const send = async () => {

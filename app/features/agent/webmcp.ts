@@ -1,5 +1,6 @@
-import { opSpecs, runInline, type ParamDef } from "@/features/data/ops";
-import { handleChatMessage, type AgentBoardApi } from "@/features/agent/chat-agent";
+import { opSpecs, runInline, runOp, type ParamDef } from "@/features/data/ops";
+import { handleChatMessage, type AgentBoardApi, type ChartKind } from "@/features/agent/chat-agent";
+import type { StepType } from "@/features/board/types";
 
 export interface WebMCPTool {
   name: string;
@@ -14,7 +15,20 @@ export interface WebMCPManifest {
   tools: WebMCPTool[];
 }
 
+const STEPS: StepType[] = [
+  "filter", "groupBy", "select", "rename", "dropNulls", "sort",
+  "header", "dropDuplicates", "fill", "flashfill", "replace", "limit", "derive",
+];
+
+const CHARTS: ChartKind[] = ["micro", "spark", "kpi", "table", "dither-area", "dither-bar"];
+
 const BOARD_TOOLS: WebMCPTool[] = [
+  {
+    name: "board.get_state",
+    description: "Read the board: title, version, step/widget counts, column names. Call first.",
+    params: [],
+    scope: "board",
+  },
   {
     name: "board.chat",
     description: "Send a natural-language board request (load, clean, sort, filter, chart, summarize).",
@@ -75,6 +89,9 @@ export async function runWebmcpTool(
   api: AgentBoardApi
 ): Promise<ToolResult> {
   try {
+    if (name === "board.get_state") {
+      return { ok: true, reply: JSON.stringify(api.state()) };
+    }
     if (name === "board.chat") {
       const reply = handleChatMessage(String(args.text ?? ""), api);
       if (reply.text.startsWith("INLINE ")) {
@@ -89,25 +106,42 @@ export async function runWebmcpTool(
     }
     if (name === "board.add_step") {
       const type = String(args.type ?? "");
-      const params = (args.params ?? {}) as Record<string, string>;
+      if (!(STEPS as string[]).includes(type)) {
+        throw new Error(`Unknown step "${type}". One of: ${STEPS.join(", ")}.`);
+      }
+      const raw = args.params ?? {};
+      if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+        throw new Error("params must be an object.");
+      }
+      const params: Record<string, string> = {};
+      for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+        params[k] = typeof v === "string" ? v : JSON.stringify(v);
+      }
       api.addStep(
-        type as Parameters<AgentBoardApi["addStep"]>[0],
+        type as StepType,
         params,
         String(args.description ?? `${type} step`)
       );
       return { ok: true, reply: `Step added: ${type}.` };
     }
     if (name === "board.add_chart") {
+      const kind = String(args.kind ?? "dither-bar");
+      if (!(CHARTS as string[]).includes(kind)) {
+        throw new Error(`Unknown chart "${kind}". One of: ${CHARTS.join(", ")}.`);
+      }
+      const x = String(args.x ?? "").trim();
+      const y = String(args.y ?? "").trim();
+      if (!x || !y) throw new Error("x and y columns are both required.");
       api.addChart(
-        String(args.kind ?? "dither-bar") as Parameters<AgentBoardApi["addChart"]>[0],
-        String(args.x ?? ""),
-        String(args.y ?? "")
+        kind as ChartKind,
+        x,
+        y
       );
-      return { ok: true, reply: `Chart added: ${args.kind} ${args.y} by ${args.x}.` };
+      return { ok: true, reply: `Chart added: ${kind} ${y} by ${x}.` };
     }
-    const ds = await runInline(
-      `${name} ${Object.entries(args).map(([k, v]) => `--${k} ${JSON.stringify(v)}`).join(" ")}`
-    );
+    // Data ops run in-function — never round-trip args through inline text
+    // (quoting breaks on spaces; datasets cannot travel as text at all).
+    const ds = await runOp(name, args);
     return { ok: true, reply: `${name}: ${ds.columns.length} cols, ${ds.rows.length} rows.` };
   } catch (e) {
     return { ok: false, reply: e instanceof Error ? e.message : "Tool failed." };

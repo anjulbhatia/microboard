@@ -12,6 +12,7 @@ function fakeApi(over: Partial<AgentBoardApi> = {}): AgentBoardApi & { calls: st
     addStep: (t, p, d) => void calls.push(`step:${t}:${d}`),
     addChart: (k, x, y) => void calls.push(`chart:${k}:${x}:${y}`),
     summary: () => "3 rows · 3 cols.",
+    state: () => ({ title: "Test", version: 2, steps: 1, widgets: 2, columns: ["month", "visitors", "signups"] }),
   };
   return Object.assign(api, over);
 }
@@ -88,9 +89,57 @@ describe("webmcp", () => {
     expect(m.version).toBe(1);
     expect(m.scopes).toEqual(["data", "board"]);
     const names = m.tools.map((t) => t.name);
-    for (const n of ["get_data", "transform_data", "inspect_data", "board.chat", "board.load_sample", "board.add_step", "board.add_chart"]) {
+    for (const n of ["get_data", "transform_data", "inspect_data", "board.get_state", "board.chat", "board.load_sample", "board.add_step", "board.add_chart"]) {
       expect(names).toContain(n);
     }
+  });
+
+  test("get_state returns structured snapshot", async () => {
+    const r = await runWebmcpTool("board.get_state", {}, fakeApi());
+    expect(r.ok).toBe(true);
+    expect(JSON.parse(r.reply)).toEqual({
+      title: "Test", version: 2, steps: 1, widgets: 2, columns: ["month", "visitors", "signups"],
+    });
+  });
+
+  test("add_step rejects unknown types and bad params", async () => {
+    const api = fakeApi();
+    const bad = await runWebmcpTool("board.add_step", { type: "explode" }, api);
+    expect(bad.ok).toBe(false);
+    expect(api.calls).toEqual([]);
+    const badParams = await runWebmcpTool("board.add_step", { type: "sort", params: "nope" }, api);
+    expect(badParams.ok).toBe(false);
+    const good = await runWebmcpTool(
+      "board.add_step",
+      { type: "sort", params: { column: "visitors", dir: "desc" } },
+      api
+    );
+    expect(good.ok).toBe(true);
+    expect(api.calls).toEqual(["step:sort:sort step"]);
+  });
+
+  test("add_chart rejects unknown kinds and empty columns", async () => {
+    const api = fakeApi();
+    expect((await runWebmcpTool("board.add_chart", { kind: "hologram", x: "a", y: "b" }, api)).ok).toBe(false);
+    expect((await runWebmcpTool("board.add_chart", { kind: "kpi", x: "", y: "" }, api)).ok).toBe(false);
+    expect(api.calls).toEqual([]);
+    const good = await runWebmcpTool("board.add_chart", { kind: "kpi", x: "month", y: "signups" }, api);
+    expect(good.ok).toBe(true);
+    expect(api.calls).toEqual(["chart:kpi:month:signups"]);
+  });
+
+  test("data ops take args directly (spaces survive)", async () => {
+    const d0 = await runWebmcpTool("get_data", { type: "sample" }, fakeApi());
+    expect(d0.ok).toBe(true);
+    const { runOp } = await import("../app/features/data/ops");
+    const data = await runOp("get_data", { type: "sample" });
+    // Quoted multi-word value would shatter the old inline round-trip.
+    const f = await runWebmcpTool(
+      "transform_data",
+      { data, op: "filter", column: "channel", cond: "contains", value: "a b" },
+      fakeApi()
+    );
+    expect(f.ok).toBe(true);
   });
 
   test("board tools run through the agent", async () => {
