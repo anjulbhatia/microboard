@@ -59,3 +59,17 @@ radius without breaking offline/demo flows.
   their own address) but validate format (regex, ≤ 254 chars, normalized
   lowercase) and `subscribe` caps lists at 2000 rows.
 - **Commit:** `fix(convex): validate subscriber email, cap list, owner-only read`
+
+## B4 — `listShowcase` / `showcase.feed`: full-table scan + snapshot over-fetch (Important)
+
+- **Where:** `convex/boards.ts` → `listShowcase`, `convex/showcase.ts` →
+  `feed`, index in `convex/schema.ts`.
+- **Exploit/perf:** both read *every* board row then filtered in code —
+  full-table scan that also loads private snapshots into memory and (for
+  `listShowcase`) shipped them to the client. Table growth = slower
+  queries, bigger bills, wider data exposure.
+- **Fix:** new `by_showcase` composite index (`showcase`, `updatedAt`);
+  both queries now hit the index, order desc, `take(limit ≤ 100)`.
+  `listShowcase` projects lightweight card fields (no `snapshot`, no
+  `ownerId`) and declares a `returns` validator.
+- **Commit:** `fix(convex): index + bound showcase reads, project card fields`

@@ -36,7 +36,8 @@ export default defineSchema({
     updatedAt: v.string(),
   })
     .index("by_publicId", ["publicId"])
-    .index("by_owner", ["ownerId"]),
+    .index("by_owner", ["ownerId"])
+    .index("by_showcase", ["showcase", "updatedAt"]),
 
   links: defineTable({
     slug: v.string(),

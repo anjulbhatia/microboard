@@ -102,10 +102,37 @@ export const listByOwner = query({
 });
 
 export const listShowcase = query({
-  args: {},
-  handler: async (ctx) => {
-    const all = await ctx.db.query("boards").collect();
-    return all.filter((b) => b.showcase === true);
+  args: { limit: v.optional(v.number()) },
+  returns: v.array(
+    v.object({
+      publicId: v.string(),
+      title: v.string(),
+      version: v.number(),
+      updatedAt: v.string(),
+      likeCount: v.optional(v.number()),
+      saveCount: v.optional(v.number()),
+      commentCount: v.optional(v.number()),
+      viewCount: v.optional(v.number()),
+    })
+  ),
+  handler: async (ctx, args) => {
+    // Indexed + bounded: never scans private rows or ships snapshots.
+    const limit = Math.min(Math.max(args.limit ?? 24, 1), 100);
+    const rows = await ctx.db
+      .query("boards")
+      .withIndex("by_showcase", (q) => q.eq("showcase", true))
+      .order("desc")
+      .take(limit);
+    return rows.map((b) => ({
+      publicId: b.publicId,
+      title: b.title,
+      version: b.version,
+      updatedAt: b.updatedAt,
+      likeCount: b.likeCount,
+      saveCount: b.saveCount,
+      commentCount: b.commentCount,
+      viewCount: b.viewCount,
+    }));
   },
 });
 

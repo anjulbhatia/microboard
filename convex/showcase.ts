@@ -41,11 +41,12 @@ export const feed = query({
   args: { limit: v.optional(v.number()), userKey: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const key = args.userKey ?? (await userKey(ctx).catch(() => ""));
-    const all = await ctx.db.query("boards").collect();
-    const shown = all
-      .filter((b) => b.showcase === true)
-      .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1))
-      .slice(0, Math.min(args.limit ?? 24, 100));
+    const limit = Math.min(Math.max(args.limit ?? 24, 1), 100);
+    const shown = await ctx.db
+      .query("boards")
+      .withIndex("by_showcase", (q) => q.eq("showcase", true))
+      .order("desc")
+      .take(limit);
     const items: FeedItem[] = [];
     for (const b of shown) {
       const [like, save] = key
