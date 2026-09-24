@@ -231,4 +231,6 @@ export interface PageStripProps {
   cleanedCount: number;
   usedCells: number;
   capacity: number;
+  backdrop: "dotted" | "grid" | "plain";
+  onBackdrop: (b: "dotted" | "grid" | "plain") => void;
 }

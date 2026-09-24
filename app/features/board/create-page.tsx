@@ -99,26 +99,6 @@ export function CreatePage() {
       agentPanel={agentPanel}
     >
       <div className="relative flex min-h-0 flex-1 flex-col">
-          {selectedId === null && order.length > 0 && (
-            <div className="absolute top-2 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-md border border-border/60 bg-background px-2 py-1">
-              <span className="px-1 font-mono text-[11px] text-muted-foreground">Board · 8×5</span>
-              {(["dotted", "grid", "plain"] as const).map((b) => (
-                <button
-                  key={b}
-                  type="button"
-                  onClick={() => setBackdrop(b)}
-                  className={`rounded px-2 py-0.5 text-[11px] capitalize ${
-                    backdrop === b ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {b}
-                </button>
-              ))}
-              <span className="px-1 font-mono text-[11px] text-muted-foreground">
-                {usedCells}/{capacity}
-              </span>
-            </div>
-          )}
           <Stage backdrop={backdrop}>
             {order.length === 0 ? (
               <div
@@ -165,6 +145,8 @@ export function CreatePage() {
             cleanedCount={cleaned.length}
             usedCells={usedCells}
             capacity={capacity}
+            backdrop={backdrop}
+            onBackdrop={setBackdrop}
           />
         </div>
     </CreateLayout>

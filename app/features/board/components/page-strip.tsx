@@ -8,7 +8,9 @@ import { SaveStatus } from "@/features/board/components/controls";
 import { usePageThumb } from "@/features/board/lib/page-thumb";
 import type { PageStripProps } from "@/features/board/types";
 
-export function PageStrip({ cleanedCount, usedCells, capacity }: PageStripProps) {
+const BACKDROPS = ["dotted", "grid", "plain"] as const;
+
+export function PageStrip({ cleanedCount, usedCells, capacity, backdrop, onBackdrop }: PageStripProps) {
   const board = useBoard((s) => s.board);
   const { addPage, removePage, setActivePage } = useBoard();
   const [expanded, setExpanded] = useState(false);
@@ -47,27 +49,23 @@ export function PageStrip({ cleanedCount, usedCells, capacity }: PageStripProps)
         )}
       </AnimatePresence>
 
-      <div className="flex shrink-0 items-center gap-1 px-2 py-1.5">
+      <div className="flex shrink-0 items-center gap-1 px-2 py-1">
       <div className="flex w-28 shrink-0 items-center gap-1">
         <SaveStatus version={board.version} />
       </div>
         <div className="flex flex-1 items-center justify-center gap-1">
-          <div className="group relative">
-            <button
-              type="button"
-              onClick={() => setExpanded((v) => !v)}
-              aria-label={expanded ? "Collapse pages" : "Expand pages"}
-              aria-expanded={expanded}
-              className={`flex size-7 items-center justify-center rounded-md border transition-colors hover:bg-muted hover:text-foreground ${
-                expanded ? "border-primary text-foreground" : "text-muted-foreground"
-              }`}
-            >
-              <HugeiconsIcon icon={expanded ? ArrowDown01Icon : ArrowUp01Icon} size={13} strokeWidth={1.5} />
-            </button>
-            <span className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 hidden -translate-x-1/2 rounded-md border bg-popover px-2 py-1 font-mono text-[11px] whitespace-nowrap text-popover-foreground shadow group-hover:block">
-              Birdseye view
-            </span>
-          </div>
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            aria-label={expanded ? "Collapse pages" : "Expand pages"}
+            aria-expanded={expanded}
+            title="Pages"
+            className={`flex size-7 items-center justify-center rounded-md transition-colors hover:bg-muted hover:text-foreground ${
+              expanded ? "bg-muted text-foreground" : "text-muted-foreground"
+            }`}
+          >
+            <HugeiconsIcon icon={expanded ? ArrowDown01Icon : ArrowUp01Icon} size={13} strokeWidth={1.5} />
+          </button>
           {board.pages.map((p, i) => {
             const active = p.id === board.activePageId;
             const count = p.order.length;
@@ -76,18 +74,16 @@ export function PageStrip({ cleanedCount, usedCells, capacity }: PageStripProps)
                 <button
                   type="button"
                   onClick={() => setActivePage(p.id)}
-                  aria-label={`Page ${i + 1}`}
-                  className={`flex size-7 items-center justify-center rounded-md border font-mono text-[11px] transition-colors ${
+                  aria-label={`Page ${i + 1}: ${p.name}, ${count} widgets`}
+                  title={`${p.name} · ${count} widgets`}
+                  className={`flex size-7 items-center justify-center rounded-md font-mono text-[11px] transition-colors ${
                     active
-                      ? "border-primary bg-primary text-primary-foreground"
+                      ? "border border-primary bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
                   {i + 1}
                 </button>
-                <span className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 hidden -translate-x-1/2 rounded-md border bg-popover px-2 py-1 font-mono text-[11px] whitespace-nowrap text-popover-foreground shadow group-hover:block">
-                  {p.name} · {count} widgets
-                </span>
                 {active && board.pages.length > 1 && (
                   <button
                     type="button"
@@ -101,22 +97,24 @@ export function PageStrip({ cleanedCount, usedCells, capacity }: PageStripProps)
               </div>
             );
           })}
-          <div className="group relative">
-            <button
-              type="button"
-              onClick={addPage}
-              aria-label="Add page"
-              className="flex size-7 items-center justify-center rounded-md border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <HugeiconsIcon icon={PlusSignIcon} size={13} strokeWidth={1.5} />
-            </button>
-            <span className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 hidden -translate-x-1/2 rounded-md border bg-popover px-2 py-1 font-mono text-[11px] whitespace-nowrap text-popover-foreground shadow group-hover:block">
-              Add canvas
-            </span>
-          </div>
-          <span className="flex h-7 items-center gap-1 rounded-md border px-1.5 font-mono text-[11px] text-muted-foreground">
-            8×5
-          </span>
+          <button
+            type="button"
+            onClick={addPage}
+            aria-label="Add page"
+            title="Add canvas"
+            className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <HugeiconsIcon icon={PlusSignIcon} size={13} strokeWidth={1.5} />
+          </button>
+          <button
+            type="button"
+            onClick={() => onBackdrop(BACKDROPS[(BACKDROPS.indexOf(backdrop) + 1) % BACKDROPS.length])}
+            aria-label={`Backdrop: ${backdrop}. Activate to change.`}
+            title={`Backdrop: ${backdrop}`}
+            className="flex h-7 items-center rounded-md px-1.5 font-mono text-[11px] capitalize text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            {backdrop}
+          </button>
         </div>
         <span className="w-28 shrink-0 text-right font-mono text-[10px] text-muted-foreground">
           {cleanedCount}r · {usedCells}/{capacity}

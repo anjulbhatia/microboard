@@ -72,12 +72,14 @@ export function WidgetCard({ widget, selected, onSelect, onRemove, onDuplicate, 
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ type: "spring", stiffness: 320, damping: 28 }}
       style={{ gridColumn: `span ${w} / span ${w}` }}
-      className={`relative ${selected ? "corner-brackets" : ""}`}
+      className="relative"
     >
       {selected && (
-        <div className="absolute top-2 left-1/2 z-20 flex -translate-x-1/2 items-center gap-0.5 rounded-md border border-border/60 bg-background py-1 pr-1.5 pl-2.5">
-          <span className="pr-1 font-mono text-[10px] tracking-wide text-muted-foreground">{meta.label}</span>
-          <span aria-hidden className="h-4 w-px bg-border" />
+        <div
+          role="toolbar"
+          aria-label="Widget actions"
+          className="absolute -top-2 left-1/2 z-20 flex -translate-x-1/2 -translate-y-full items-center gap-0.5 rounded-md border border-border/60 bg-background/95 px-1 py-0.5 backdrop-blur"
+        >
           <span
             draggable
             onDragStart={(e) => {
@@ -85,9 +87,9 @@ export function WidgetCard({ widget, selected, onSelect, onRemove, onDuplicate, 
               onDragStart(widget.id);
             }}
             title="Drag to move"
-            className="cursor-grab rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground active:cursor-grabbing"
+            className="cursor-grab rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground active:cursor-grabbing"
           >
-            <HugeiconsIcon icon={Drag01Icon} size={14} strokeWidth={1.5} />
+            <HugeiconsIcon icon={Drag01Icon} size={13} strokeWidth={1.5} />
           </span>
           {meta.fields.length > 0 && (
             <button
@@ -95,11 +97,12 @@ export function WidgetCard({ widget, selected, onSelect, onRemove, onDuplicate, 
               onClick={() => setEditing((v) => !v)}
               title="Settings"
               aria-label="Widget settings"
-              className={`rounded-full p-1.5 transition-colors hover:bg-muted hover:text-foreground ${
+              aria-expanded={editing}
+              className={`rounded p-1 transition-colors hover:bg-muted hover:text-foreground ${
                 editing ? "bg-muted text-foreground" : "text-muted-foreground"
               }`}
             >
-              <HugeiconsIcon icon={Settings01Icon} size={14} strokeWidth={1.5} />
+              <HugeiconsIcon icon={Settings01Icon} size={13} strokeWidth={1.5} />
             </button>
           )}
           <button
@@ -107,18 +110,18 @@ export function WidgetCard({ widget, selected, onSelect, onRemove, onDuplicate, 
             onClick={onDuplicate}
             title="Duplicate"
             aria-label="Duplicate widget"
-            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            <HugeiconsIcon icon={Copy01Icon} size={14} strokeWidth={1.5} />
+            <HugeiconsIcon icon={Copy01Icon} size={13} strokeWidth={1.5} />
           </button>
           <button
             type="button"
             onClick={onRemove}
             title="Remove"
             aria-label="Remove widget"
-            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
           >
-            <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={1.5} />
+            <HugeiconsIcon icon={Cancel01Icon} size={13} strokeWidth={1.5} />
           </button>
         </div>
       )}
@@ -134,13 +137,13 @@ export function WidgetCard({ widget, selected, onSelect, onRemove, onDuplicate, 
         }}
         style={{ height }}
         className={`overflow-hidden rounded-md border ${
-          selected ? "border-foreground/30" : "border-border/60"
+          selected ? "border-foreground/40" : "border-border/60"
         }`}
       >
         <Body widget={widget} />
       </div>
       {selected && editing && meta.fields.length > 0 && (
-        <div className="slim-scroll absolute top-12 left-1/2 z-20 max-h-64 w-60 -translate-x-1/2 overflow-y-auto rounded-md border border-border/60 bg-background p-2">
+        <div className="slim-scroll absolute top-10 left-1/2 z-20 max-h-64 w-60 -translate-x-1/2 overflow-y-auto rounded-md border border-border/60 bg-background p-2">
           <PropsEditor widget={widget} onChange={(props) => updateWidget(widget.id, { props })} />
         </div>
       )}
@@ -148,21 +151,21 @@ export function WidgetCard({ widget, selected, onSelect, onRemove, onDuplicate, 
         <span
           onPointerDown={beginResize("s")}
           title="Resize height"
-          className={`${handleCls} bottom-0 left-1/2 h-2.5 w-8 -translate-x-1/2 translate-y-1/2 cursor-ns-resize`}
+          className={`${handleCls} bottom-0 left-1/2 h-1.5 w-10 -translate-x-1/2 translate-y-1/2 cursor-ns-resize`}
         />
       )}
       {selected && (
         <span
           onPointerDown={beginResize("e")}
           title={meta.resize.square ? "Resize (square)" : "Resize width"}
-          className={`${handleCls} top-1/2 right-0 h-8 w-2.5 translate-x-1/2 -translate-y-1/2 cursor-ew-resize`}
+          className={`${handleCls} top-1/2 right-0 h-10 w-1.5 translate-x-1/2 -translate-y-1/2 cursor-ew-resize`}
         />
       )}
       {selected && !meta.resize.fixedH && (
         <span
           onPointerDown={beginResize("se")}
           title="Resize both"
-          className={`${handleCls} right-0 bottom-0 size-3.5 translate-x-1/3 translate-y-1/3 cursor-nwse-resize`}
+          className={`${handleCls} right-0 bottom-0 size-3 translate-x-1/3 translate-y-1/3 cursor-nwse-resize`}
         />
       )}
     </motion.div>
