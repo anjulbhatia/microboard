@@ -123,8 +123,12 @@ export function LibraryPanel() {
   };
 
   const open = (s: SavedBoard) => {
-    loadBoard(parseBoard(s.snapshot));
-    setNotice(`Opened ${s.title} in the editor.`);
+    try {
+      loadBoard(parseBoard(s.snapshot));
+      setNotice(`Opened ${s.title} in the editor.`);
+    } catch {
+      setNotice(`Could not open ${s.title} — snapshot is corrupt.`);
+    }
   };
 
   const duplicate = (s: SavedBoard) => {

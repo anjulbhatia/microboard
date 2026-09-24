@@ -34,12 +34,35 @@ export function summarizeBoard(board: Board): SavedBoard {
   };
 }
 
-/** Parse a snapshot back; normalizes widgets so old docs load. */
+/** Parse a snapshot back; validates shape so corrupt/foreign JSON throws. */
 export function parseBoard(snapshot: string): Board {
-  const board = JSON.parse(snapshot) as Board;
+  if (typeof snapshot !== "string" || snapshot.length === 0 || snapshot.length > 2_000_000) {
+    throw new Error("Snapshot is empty or too large.");
+  }
+  let raw: unknown;
+  try {
+    raw = JSON.parse(snapshot);
+  } catch {
+    throw new Error("Snapshot is not valid JSON.");
+  }
+  const board = raw as Partial<Board>;
+  if (typeof board !== "object" || board === null || !Array.isArray(board.pages) || board.pages.length === 0) {
+    throw new Error("Snapshot is not a board (missing pages).");
+  }
+  if (board.pages.length > 50) throw new Error("Snapshot has too many pages.");
+  for (const p of board.pages) {
+    if (typeof p !== "object" || p === null || typeof (p as { id?: unknown }).id !== "string") {
+      throw new Error("Snapshot has a corrupt page.");
+    }
+    const widgets = (p as { widgets?: unknown }).widgets;
+    if (typeof widgets !== "object" || widgets === null || Object.keys(widgets).length > 500) {
+      throw new Error("Snapshot has a corrupt widget map.");
+    }
+  }
+  const full = board as Board;
   return {
-    ...board,
-    pages: board.pages.map((p) => ({
+    ...full,
+    pages: full.pages.map((p) => ({
       ...p,
       widgets: Object.fromEntries(
         Object.entries(p.widgets).map(([id, w]) => [id, normalizeWidget(w)])
@@ -54,7 +77,16 @@ export function loadLibrary(storage: BoardStorage | null): SavedBoard[] {
     const raw = storage.getItem(LIBRARY_KEY);
     if (!raw) return [];
     const list = JSON.parse(raw) as SavedBoard[];
-    return Array.isArray(list) ? list : [];
+    if (!Array.isArray(list)) return [];
+    // Drop corrupt/quota-junk entries instead of rendering them.
+    return list.filter(
+      (s) =>
+        typeof s === "object" &&
+        s !== null &&
+        typeof s.id === "string" &&
+        typeof s.snapshot === "string" &&
+        typeof s.title === "string"
+    );
   } catch {
     return [];
   }

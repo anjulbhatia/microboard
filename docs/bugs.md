@@ -97,3 +97,22 @@ radius without breaking offline/demo flows.
   sanitizes title, rejects empty lists and lists > 2000. `dispatchBatch`
   re-checks the batch bounds and declares `returns: v.null()`.
 - **Commit:** `fix(mail): sanitize board title subject, bound send blast`
+
+## B7 — App: unsafe snapshot parse + unbounded ingest payloads (Important)
+
+- **Where:** `app/features/library/library.ts` → `parseBoard` /
+  `loadLibrary`, `app/features/library/library-panel.tsx` → `open`,
+  `app/features/data/sources.ts` → `recordsFromJson` / `fetchApiRecords`,
+  `app/features/data/use-data-loader.ts` → `loadFile`.
+- **Exploit/DoS:** `parseBoard` trusted `JSON.parse` output — a corrupt or
+  foreign snapshot (localStorage tamper, bad share import) threw a raw
+  `TypeError` mid-render and broke the Home/Recent path. Ingest had no
+  ceilings: a hostile API/file/sheet could push millions of rows or giant
+  cells and freeze the tab; `fetch` followed any scheme (`file:`,
+  `javascript:`) into the loader.
+- **Fix:** `parseBoard` validates shape (pages array, page ids, widget-map
+  bounds, 2MB snapshot cap) with actionable errors; `loadLibrary` drops
+  junk entries; `open()` catches and reports instead of crashing. Ingest
+  ceilings: 20k rows, 200 cols/row, 10k chars/cell, 10MB bytes (file size
+  + content-length hint); `fetchApiRecords` requires http(s) URLs.
+- **Commit:** `fix(app): validate snapshots, bound ingest payloads`

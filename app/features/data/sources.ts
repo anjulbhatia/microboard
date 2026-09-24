@@ -26,34 +26,64 @@ export function refreshLabel(minutes: number): string {
   return `Every ${minutes / 60}h`;
 }
 
+/** Ingest ceilings: a pasted/fetched payload must stay renderable. */
+export const MAX_INGEST_ROWS = 20_000;
+export const MAX_INGEST_COLS = 200;
+export const MAX_INGEST_CELL = 10_000;
+export const MAX_INGEST_BYTES = 10_000_000;
+
 /** Coerce a JSON payload into string records. Expects an array of objects. */
 export function recordsFromJson(value: unknown): Record<string, string>[] {
   const rows = Array.isArray(value) ? value : (value as { rows?: unknown })?.rows;
   if (!Array.isArray(rows) || rows.length === 0) {
     throw new Error("API source needs a JSON array of objects (or { rows: [...] }).");
   }
+  if (rows.length > MAX_INGEST_ROWS) {
+    throw new Error(`Endpoint returned ${rows.length} rows (max ${MAX_INGEST_ROWS}).`);
+  }
   return rows.map((r) => {
     if (typeof r !== "object" || r === null || Array.isArray(r)) {
       throw new Error("API source needs a JSON array of objects.");
     }
+    const entries = Object.entries(r as Record<string, unknown>);
+    if (entries.length > MAX_INGEST_COLS) {
+      throw new Error(`A row has ${entries.length} columns (max ${MAX_INGEST_COLS}).`);
+    }
     const obj: Record<string, string> = {};
-    for (const [k, v] of Object.entries(r as Record<string, unknown>)) {
-      obj[k] = typeof v === "string" || typeof v === "number" || typeof v === "boolean" || v == null
-        ? cellToString(v as string | number | boolean | null)
-        : JSON.stringify(v);
+    for (const [k, v] of entries) {
+      const cell =
+        typeof v === "string" || typeof v === "number" || typeof v === "boolean" || v == null
+          ? cellToString(v as string | number | boolean | null)
+          : JSON.stringify(v);
+      if (cell.length > MAX_INGEST_CELL) {
+        throw new Error(`A cell exceeds ${MAX_INGEST_CELL} chars — trim the payload.`);
+      }
+      obj[k.slice(0, 128)] = cell;
     }
     return obj;
   });
 }
 
 export async function fetchApiRecords(url: string): Promise<Record<string, string>[]> {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error("That URL does not look valid.");
+  }
+  // No file:, javascript:, or intranet chasing from the loader.
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error("Only http(s) endpoints are supported.");
+  }
   let res: Response;
   try {
-    res = await fetch(url);
+    res = await fetch(parsed.toString());
   } catch {
     throw new Error("Could not reach that URL. Check CORS and connectivity.");
   }
   if (!res.ok) throw new Error(`Endpoint returned ${res.status}.`);
+  const hint = Number(res.headers.get("content-length") ?? 0);
+  if (hint > MAX_INGEST_BYTES) throw new Error("Endpoint payload is too large (>10MB).");
   let json: unknown;
   try {
     json = await res.json();

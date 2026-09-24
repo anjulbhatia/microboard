@@ -6,7 +6,7 @@ import { excelFromFile } from "@/features/data/providers/excel";
 import { sheetFromUrl } from "@/features/data/providers/sheet";
 import { toRecords } from "@/features/data/providers/types";
 import { SAMPLE_CSV } from "@/features/data/lib/data-utils";
-import { fetchApiRecords } from "@/features/data/sources";
+import { fetchApiRecords, MAX_INGEST_BYTES } from "@/features/data/sources";
 import { providerForFile } from "@/features/data/providers";
 import type { DataSource } from "@/features/board/types";
 
@@ -31,6 +31,11 @@ export function useDataLoader() {
     const file = files?.[0];
     if (!file) return false;
     setError("");
+    // Read-before-parse: reject huge files instead of freezing the tab.
+    if (file.size > MAX_INGEST_BYTES) {
+      setError("File is too large (>10MB). Trim it or load via API.");
+      return false;
+    }
     setBusy(true);
     try {
       if (providerForFile(file.name) === "excel") {
