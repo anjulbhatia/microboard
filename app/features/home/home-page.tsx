@@ -33,11 +33,11 @@ export function HomePage() {
   const [section, setSection] = useState<HomeSection>("home");
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background md:flex-row">
+    <div className="flex h-full min-h-0 flex-col gap-3 bg-muted/40 p-3 md:flex-row">
       <MobileTopBar onHome={() => setSection("home")} />
       <HomeSidebar section={section} onSection={setSection} />
       <MobileSectionTabs section={section} onSection={setSection} />
-      <div className="min-w-0 flex-1 overflow-y-auto border-l bg-background px-4 py-5 md:px-6">
+      <div className="min-w-0 flex-1 overflow-y-auto rounded-2xl border bg-card p-4 shadow-sm md:p-6">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={section}
