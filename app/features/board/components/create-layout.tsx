@@ -1,6 +1,6 @@
 import { lazy, Suspense, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ChevronLeftIcon,
@@ -16,7 +16,15 @@ const ShareMenu = lazy(() =>
 
 import type { CreateLayoutProps } from "@/features/board/types";
 
-export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, agentPanel, toolbar, children }: CreateLayoutProps) {
+/**
+ * Canvas shell — three islands only:
+ * 1. header (board name, agent toggle, share, home)
+ * 2. components sidebar (toolbox)
+ * 3. canvas area (stage + pages)
+ * Everything else (agent dock, props, palettes) floats dynamically over
+ * the canvas based on what is in use.
+ */
+export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, agentPanel, children }: CreateLayoutProps) {
   const nameRef = useRef<HTMLInputElement>(null);
   const [agentOpen, setAgentOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -24,8 +32,9 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
   const { user } = useSession();
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background">
-      <header className="flex h-12 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b px-3">
+    <div className="flex h-full min-h-0 flex-col gap-3 bg-muted/40 p-3">
+      {/* 1 · header island */}
+      <header className="flex h-12 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border bg-card px-3 shadow-sm">
         <Link
           to="/"
           aria-label="Microboard home"
@@ -60,6 +69,7 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
             type="button"
             onClick={() => setAgentOpen((v) => !v)}
             aria-label="Toggle agent panel"
+            aria-expanded={agentOpen}
             title="Agent inputs"
             className={`rounded-md border px-2.5 py-1 font-mono text-[11px] font-semibold tracking-wider transition-colors hover:bg-muted hover:text-foreground ${
               agentOpen ? "border-foreground/30 text-foreground" : "border-transparent text-muted-foreground"
@@ -114,21 +124,20 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
         <LoginModal next="/new" onDone={() => setLoginOpen(false)} onClose={() => setLoginOpen(false)} />
       )}
 
-      {toolbar}
-
-      <div className="flex min-h-0 flex-1">
+      <div className="flex min-h-0 flex-1 gap-3">
+        {/* 2 · components sidebar island */}
         <motion.aside
           initial={false}
           animate={panelOpen ? { width: 264, opacity: 1 } : { width: 44, opacity: 1 }}
           transition={{ type: "spring", stiffness: 320, damping: 34 }}
-          className="h-full shrink-0 overflow-hidden border-r bg-background"
-          aria-label="Tool sidebar"
+          className="h-full shrink-0 overflow-hidden rounded-2xl border bg-card shadow-sm"
+          aria-label="Components sidebar"
         >
           {panelOpen ? (
             <div className="slim-scroll flex h-full w-66 flex-col overflow-y-auto">
               <div className="flex h-10 shrink-0 items-center justify-between border-b border-border/60 pl-3 pr-1.5">
                 <span className="font-mono text-[10px] font-medium tracking-[0.12em] text-muted-foreground uppercase">
-                  Toolbox
+                  Components
                 </span>
                 <button
                   type="button"
@@ -149,7 +158,7 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
                 onClick={onPanelToggle}
                 aria-label="Expand sidebar"
                 aria-expanded={false}
-                title="Expand toolbox"
+                title="Expand components"
                 className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <HugeiconsIcon icon={ChevronRightIcon} size={14} strokeWidth={2} />
@@ -158,13 +167,24 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
           )}
         </motion.aside>
 
-        <div className="flex min-w-0 flex-1 flex-col">{children}</div>
-
-        {agentOpen && (
-          <aside className="slim-scroll flex w-64 shrink-0 flex-col gap-3 overflow-y-auto border-l bg-background p-3">
-            {agentPanel}
-          </aside>
-        )}
+        {/* 3 · canvas island — docks float over it only while in use */}
+        <div className="relative min-w-0 flex-1 rounded-2xl border bg-card shadow-sm">
+          <div className="flex h-full min-h-0 flex-col p-3">{children}</div>
+          <AnimatePresence initial={false}>
+            {agentOpen && (
+              <motion.aside
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 24 }}
+                transition={{ type: "spring", stiffness: 320, damping: 32 }}
+                aria-label="Agent dock"
+                className="slim-scroll absolute top-3 right-3 bottom-3 z-20 flex w-64 flex-col gap-3 overflow-y-auto rounded-xl border bg-card p-3 shadow-xl"
+              >
+                {agentPanel}
+              </motion.aside>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

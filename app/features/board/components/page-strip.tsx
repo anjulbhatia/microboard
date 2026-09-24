@@ -14,7 +14,7 @@ export function PageStrip({ cleanedCount, usedCells, capacity }: PageStripProps)
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="shrink-0 border-t bg-background">
+    <div className="shrink-0">
       <AnimatePresence initial={false}>
         {expanded && (
           <motion.div

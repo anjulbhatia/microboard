@@ -7,7 +7,6 @@ import { WidgetCard } from "@/features/board/components/widget-card";
 import { TransformPanel } from "@/features/board/components/panels";
 import { ChatPanel } from "@/features/agent";
 import { PageStrip } from "@/features/board/components/page-strip";
-import { QuickAddBar } from "@/features/board/components/quick-add-bar";
 import { useBoard } from "@/store/board";
 import { useBoardDerived } from "@/hooks/use-board-derived";
 import type { RightTab } from "@/features/board/types";
@@ -98,7 +97,6 @@ export function CreatePage() {
         />
       }
       agentPanel={agentPanel}
-      toolbar={<QuickAddBar />}
     >
       <div className="relative flex min-h-0 flex-1 flex-col">
           {selectedId === null && order.length > 0 && (

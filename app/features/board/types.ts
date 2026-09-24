@@ -203,7 +203,6 @@ export interface CreateLayoutProps {
   onTitle: (title: string) => void;
   panelOpen: boolean;
   onPanelToggle: () => void;
-  toolbar?: import("react").ReactNode;
   panel: import("react").ReactNode;
   agentPanel: import("react").ReactNode;
   children: import("react").ReactNode;

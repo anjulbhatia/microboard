@@ -63,7 +63,7 @@ export function Stage({
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2">
       {toolbar}
-      <div ref={wrapRef} className="flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-muted/30 p-3">
+      <div ref={wrapRef} className="flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-xl bg-muted/30 p-3">
         {scale > 0 && (
           <div
             id="board-stage"
