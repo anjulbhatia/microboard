@@ -9,7 +9,6 @@ import {
 } from "@hugeicons/core-free-icons";
 import { useSession } from "@/store/session";
 import { LoginModal } from "@/features/auth";
-import { Ribbon } from "@/features/board/components/ribbon";
 
 const ShareMenu = lazy(() =>
   import("@/features/board/components/share-menu").then((m) => ({ default: m.ShareMenu }))
@@ -124,9 +123,6 @@ export function CreateLayout({ title, onTitle, panelOpen, onPanelToggle, panel, 
       {loginOpen && !user && (
         <LoginModal next="/new" onDone={() => setLoginOpen(false)} onClose={() => setLoginOpen(false)} />
       )}
-
-      {/* EXPERIMENTAL ribbon — delete this block + import to roll back. */}
-      <Ribbon onPanelToggle={onPanelToggle} />
 
       <div className="flex min-h-0 flex-1 gap-3">
         {/* 2 · components sidebar island */}
