@@ -45,3 +45,17 @@ radius without breaking offline/demo flows.
 - **Fix:** resolve the caller key server-side and throw unless the requested
   `ownerId` equals it. Signed-in users can only list their own boards.
 - **Commit:** `fix(convex): scope listByOwner to caller key`
+
+## B3 — `subscribers.*`: PII leak + list poisoning, no email validation (Critical)
+
+- **Where:** `convex/subscribers.ts` → `subscribe` / `unsubscribe` /
+  `listByOwner`.
+- **Exploit:** `listByOwner` returned anyone's email list for any `ownerId`
+  (PII harvest). `subscribe` accepted any string as email with no cap —
+  attacker stuffs a victim's list with junk (poisoning) or grows it
+  unbounded to amplify `sendBoardLink` spam/cost.
+- **Fix:** `listByOwner` now requires the resolved caller key to equal the
+  requested `ownerId`. `subscribe`/`unsubscribe` stay public (visitors manage
+  their own address) but validate format (regex, ≤ 254 chars, normalized
+  lowercase) and `subscribe` caps lists at 2000 rows.
+- **Commit:** `fix(convex): validate subscriber email, cap list, owner-only read`
