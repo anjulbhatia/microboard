@@ -26,19 +26,37 @@ export const save = mutation({
     version: v.number(),
     showcase: v.optional(v.boolean()),
   },
+  returns: v.id("boards"),
   handler: async (ctx, args) => {
     const at = now();
+    // Act as the resolved caller — auth subject wins when signed in, so a
+    // spoofed ownerId arg cannot impersonate anyone with a real session.
+    const key = await userKey(ctx, args.ownerId);
+    const title = args.title.trim().slice(0, 120);
+    if (!title) throw new Error("Title is empty.");
+    if (!Number.isInteger(args.version) || args.version < 0) {
+      throw new Error("Version must be a non-negative integer.");
+    }
+    if (args.snapshot.length === 0 || args.snapshot.length > 900_000) {
+      throw new Error("Snapshot is empty or too large (max ~900KB).");
+    }
     const existing = await ctx.db
       .query("boards")
       .withIndex("by_publicId", (q) => q.eq("publicId", args.publicId))
       .unique();
+    // Flipping someone else's board into the public gallery is a write —
+    // require ownership for showcase: true.
+    if (args.showcase === true) {
+      const owner = existing?.ownerId ?? key;
+      if (owner !== key) throw new Error("Not your board.");
+    }
     if (existing) {
-      if (existing.ownerId !== undefined && existing.ownerId !== args.ownerId) {
+      if (existing.ownerId !== undefined && existing.ownerId !== key) {
         throw new Error("Not your board.");
       }
       await ctx.db.patch(existing._id, {
-        ownerId: args.ownerId ?? existing.ownerId,
-        title: args.title,
+        ownerId: key,
+        title,
         snapshot: args.snapshot,
         version: args.version,
         showcase: args.showcase ?? existing.showcase,
@@ -48,8 +66,8 @@ export const save = mutation({
     }
     return await ctx.db.insert("boards", {
       publicId: args.publicId,
-      ownerId: args.ownerId,
-      title: args.title,
+      ownerId: key,
+      title,
       snapshot: args.snapshot,
       version: args.version,
       showcase: args.showcase,
