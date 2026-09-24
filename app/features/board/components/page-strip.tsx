@@ -5,13 +5,13 @@ import { ArrowDown01Icon, ArrowUp01Icon, PlusSignIcon } from "@hugeicons/core-fr
 import { useBoard } from "@/store/board";
 import { BOARD_GRID } from "@/features/board/types";
 import { SaveStatus } from "@/features/board/components/controls";
+import { usePageThumb } from "@/features/board/lib/page-thumb";
 import type { PageStripProps } from "@/features/board/types";
 
 export function PageStrip({ cleanedCount, usedCells, capacity }: PageStripProps) {
   const board = useBoard((s) => s.board);
   const { addPage, removePage, setActivePage } = useBoard();
   const [expanded, setExpanded] = useState(false);
-  const cols = BOARD_GRID.cols;
 
   return (
     <div className="shrink-0 border-t bg-background">
@@ -25,62 +25,23 @@ export function PageStrip({ cleanedCount, usedCells, capacity }: PageStripProps)
             className="overflow-hidden"
           >
             <div className="mb-1 flex items-stretch justify-center gap-2 overflow-x-auto border-y bg-background p-2">
-              {board.pages.map((p, i) => {
-                const active = p.id === board.activePageId;
-                const ids = p.order.filter((id) => p.widgets[id]);
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setActivePage(p.id)}
-                    title={`${p.name} · ${ids.length} widgets`}
-                    className={`flex w-28 shrink-0 flex-col gap-1 rounded-lg border p-1.5 text-left transition-colors ${
-                      active ? "border-primary bg-primary/5" : "hover:border-primary/50"
-                    }`}
-                  >
-                    <span className="font-mono text-[10px] text-muted-foreground">
-                      {i + 1} · {p.name}
-                    </span>
-                    <span
-                      aria-hidden
-                      className="flex flex-wrap content-start gap-px rounded border bg-background p-1"
-                      style={{ aspectRatio: "8 / 5" }}
-                    >
-                      {ids.length === 0 && <span className="m-auto font-mono text-[9px] text-muted-foreground">empty</span>}
-                      {ids.map((id) => {
-                        const w = p.widgets[id];
-                        return (
-                          <span
-                            key={id}
-                            className="h-1.5 rounded-[2px] bg-primary/50"
-                            style={{ width: `${Math.max(8, (w.w / cols) * 100)}%` }}
-                          />
-                        );
-                      })}
-                    </span>
-                    {active && board.pages.length > 1 && (
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        aria-label={`Delete page ${i + 1}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removePage(p.id);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.stopPropagation();
-                            removePage(p.id);
-                          }
-                        }}
-                        className="font-mono text-[10px] text-muted-foreground hover:text-destructive"
-                      >
-                        delete
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+              {board.pages.map((p, i) => (
+                <PageCard
+                  key={p.id}
+                  pageId={p.id}
+                  index={i}
+                  name={p.name}
+                  active={p.id === board.activePageId}
+                  watch={p.id === board.activePageId ? board.version : null}
+                  widgetCount={p.order.filter((id) => p.widgets[id]).length}
+                  widgets={p.order
+                    .filter((id) => p.widgets[id])
+                    .map((id) => ({ id, w: p.widgets[id].w ?? 4 }))}
+                  canDelete={board.pages.length > 1}
+                  onSelect={() => setActivePage(p.id)}
+                  onDelete={() => removePage(p.id)}
+                />
+              ))}
             </div>
           </motion.div>
         )}
@@ -162,5 +123,92 @@ export function PageStrip({ cleanedCount, usedCells, capacity }: PageStripProps)
         </span>
       </div>
     </div>
+  );
+}
+
+/** Birdseye card: live raster when captured, block diagram fallback. */
+function PageCard({
+  pageId,
+  index,
+  name,
+  active,
+  watch,
+  widgetCount,
+  widgets,
+  canDelete,
+  onSelect,
+  onDelete,
+}: {
+  pageId: string;
+  index: number;
+  name: string;
+  active: boolean;
+  watch: number | null;
+  widgetCount: number;
+  widgets: { id: string; w: number }[];
+  canDelete: boolean;
+  onSelect: () => void;
+  onDelete: () => void;
+}) {
+  const thumb = usePageThumb(pageId, watch);
+  const cols = BOARD_GRID.cols;
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      title={`${name} · ${widgetCount} widgets`}
+      className={`flex w-32 shrink-0 flex-col gap-1 rounded-lg border p-1.5 text-left transition-colors ${
+        active ? "border-primary bg-primary/5" : "hover:border-primary/50"
+      }`}
+    >
+      <span className="font-mono text-[10px] text-muted-foreground">
+        {index + 1} · {name}
+      </span>
+      {thumb ? (
+        <img
+          src={thumb}
+          alt=""
+          aria-hidden
+          draggable={false}
+          className="rounded border bg-background"
+          style={{ aspectRatio: "8 / 5", objectFit: "cover" }}
+        />
+      ) : (
+        <span
+          aria-hidden
+          className="flex flex-wrap content-start gap-px rounded border bg-background p-1"
+          style={{ aspectRatio: "8 / 5" }}
+        >
+          {widgets.length === 0 && <span className="m-auto font-mono text-[9px] text-muted-foreground">empty</span>}
+          {widgets.map(({ id, w }) => (
+            <span
+              key={id}
+              className="h-1.5 rounded-[2px] bg-primary/50"
+              style={{ width: `${Math.max(8, (w / cols) * 100)}%` }}
+            />
+          ))}
+        </span>
+      )}
+      {active && canDelete && (
+        <span
+          role="button"
+          tabIndex={0}
+          aria-label={`Delete page ${index + 1}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.stopPropagation();
+              onDelete();
+            }
+          }}
+          className="font-mono text-[10px] text-muted-foreground hover:text-destructive"
+        >
+          delete
+        </span>
+      )}
+    </button>
   );
 }

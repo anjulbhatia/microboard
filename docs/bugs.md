@@ -18,6 +18,7 @@ radius without breaking offline/demo flows.
 | B7 | Important | App: unsafe snapshot parse + unbounded ingest payloads (DoS) |
 | B8 | Important | `addComment`: username impersonation + stored-XSS hardening |
 | B9 | Critical (UX) | Board download renders black; share link copies dead URL |
+| B10 | Important (UX) | Minimap fakes layout with blocks; export still unreadable |
 
 ---
 
@@ -154,3 +155,24 @@ radius without breaking offline/demo flows.
   published URL when available and labels unpublished links as
   "publish to make live".
 - **Commit:** `fix(export): opaque rgb raster clone, live share link`
+
+## B10 — Minimap fakes layout with blocks; export still unreadable (Important UX)
+
+- **Where:** `app/features/board/components/page-strip.tsx`,
+  `app/features/board/lib/export-board.ts` (new
+  `app/features/board/lib/page-thumb.ts`).
+- **Bug:** birdseye showed CSS block bars, not the board. Root cause shared
+  with B9: the rasterizer copies computed styles verbatim, so `oklch()` /
+  `lab()` theme tokens reach the SVG raster context unparseable — and this
+  installed html-to-image (1.11) has no `onClone` hook to intercept the
+  clone.
+- **Fix:** one raster core for both paths. `usedVarNames()` scrapes
+  same-origin stylesheets for custom props; each is probe-resolved through
+  the canvas parser to `rgb()` and set on the raster root (inheritance
+  covers descendants incl. SVG). Exports prep their owned detached clone
+  (`prepExportRoot` + opaque base + `backgroundColor` option). Minimap
+  (`page-thumb.ts`) debounces 700ms after edits, live-rasters the stage at
+  224px via `toCanvas` with vars temporarily applied to the live node
+  (same colors, restored after), caches per page+version; cards show the
+  `<img>` with block fallback until first capture.
+- **Commit:** `fix(canvas): live raster minimap, shared rgb export core`
