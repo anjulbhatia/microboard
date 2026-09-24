@@ -83,3 +83,17 @@ radius without breaking offline/demo flows.
 - **Fix:** return a static `{ ok: true }` with a `returns` validator.
   Callers that need timing stamp on receipt.
 - **Commit:** `fix(convex): static health ping, no clock in query`
+
+## B6 — Email subject header injection + unbounded `sendBoardLink` blast (Important)
+
+- **Where:** `app/features/agentmail/templates.ts` → `shareBoardTemplate`,
+  `convex/mailing.ts` → `sendBoardLink` / `dispatchBatch`.
+- **Exploit:** board titles flow into the mail `subject` raw — a title with
+  `\r\n` injects extra mail headers (Bcc, Subject rewrite) via AgentMail.
+  `sendBoardLink` accepted any `boardPublicId`/`boardTitle` and mailed the
+  whole list with no cap — one call = unbounded send cost/spam.
+- **Fix:** template strips CR/LF, trims, caps title at 120 chars (subject +
+  body). Action validates `boardPublicId` (`[A-Za-z0-9_-]{1,128}`),
+  sanitizes title, rejects empty lists and lists > 2000. `dispatchBatch`
+  re-checks the batch bounds and declares `returns: v.null()`.
+- **Commit:** `fix(mail): sanitize board title subject, bound send blast`

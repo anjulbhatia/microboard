@@ -48,8 +48,15 @@ export const sendBoardLink = action({
   },
   handler: async (ctx, args): Promise<{ sent: number }> => {
     const key = await userKey(ctx, args.ownerId);
+    const publicId = args.boardPublicId.trim().slice(0, 128);
+    // Public ids are uuid-ish slugs — reject control chars/paths outright.
+    if (!/^[A-Za-z0-9_-]{1,128}$/.test(publicId)) throw new Error("Bad board id.");
+    const title = args.boardTitle.replace(/[\r\n]+/g, " ").trim().slice(0, 120);
+    if (!title) throw new Error("Board title is empty.");
     const subs = await ctx.runQuery(api.subscribers.listByOwner, { ownerId: key });
     if (subs.length === 0) throw new Error("Mailing list is empty.");
+    // Bound the blast radius per send (cost + spam ceiling).
+    if (subs.length > 2000) throw new Error("Mailing list too large for one send.");
     if (!process.env.AGENTMAIL_API_KEY) {
       throw new Error("AgentMail not configured — set AGENTMAIL_API_KEY.");
     }
@@ -66,8 +73,8 @@ export const sendBoardLink = action({
     }
     await ctx.runMutation(internal.mailing.dispatchBatch, {
       inboxId,
-      boardPublicId: args.boardPublicId,
-      boardTitle: args.boardTitle,
+      boardPublicId: publicId,
+      boardTitle: title,
       emails: subs.map((s) => s.email),
     });
     return { sent: subs.length };
@@ -82,7 +89,11 @@ export const dispatchBatch = internalMutation({
     boardTitle: v.string(),
     emails: v.array(v.string()),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
+    if (args.emails.length === 0 || args.emails.length > 2000) {
+      throw new Error("Bad recipient batch.");
+    }
     const mail = new AgentMail(components.agentmail);
     const url = `${process.env.SITE_URL ?? ""}/share/${args.boardPublicId}`;
     const tpl = shareBoardTemplate({ url, boardTitle: args.boardTitle });
@@ -94,5 +105,6 @@ export const dispatchBatch = internalMutation({
         html: tpl.html,
       });
     }
+    return null;
   },
 });

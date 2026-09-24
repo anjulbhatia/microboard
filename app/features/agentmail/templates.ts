@@ -54,14 +54,16 @@ export function shareBoardTemplate(args: {
   from?: string;
   stats?: string;
 }): MailTemplate {
+  // Subject rides in mail headers — strip CR/LF (header injection) and cap.
+  const safeTitle = args.boardTitle.replace(/[\r\n]+/g, " ").trim().slice(0, 120) || "Untitled board";
   const from = args.from ? ` shared by <strong>${escapeHtml(args.from)}</strong>` : "";
   const stats = args.stats ? `<p style="font-size:12px;color:#8a8784;">${escapeHtml(args.stats)}</p>` : "";
   const body = `A Microboard dashboard${from} is waiting for you.${stats}${cta(args.url, "Open board")}${linkRow(args.url)}`;
   return {
-    subject: `Microboard: ${args.boardTitle}`,
-    text: `${args.boardTitle}${args.from ? ` (shared by ${args.from})` : ""} is shared with you:\n\n${args.url}${args.stats ? `\n\n${args.stats}` : ""}`,
+    subject: `Microboard: ${safeTitle}`,
+    text: `${safeTitle}${args.from ? ` (shared by ${args.from})` : ""} is shared with you:\n\n${args.url}${args.stats ? `\n\n${args.stats}` : ""}`,
     html: render(SHARE_BOARD_HTML, {
-      title: escapeHtml(args.boardTitle),
+      title: escapeHtml(safeTitle),
       preheader: `A Microboard dashboard was shared with you${args.from ? ` by ${args.from}` : ""}.`,
       body,
     }),
