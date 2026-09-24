@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { handleChatMessage, type AgentBoardApi } from "../app/features/agent/chat-agent";
 import { runWebmcpTool, webmcpManifest } from "../app/features/agent/webmcp";
+import { toolInputSchema } from "../app/features/agent/use-webmcp";
 
 function fakeApi(over: Partial<AgentBoardApi> = {}): AgentBoardApi & { calls: string[] } {
   const calls: string[] = [];
@@ -160,5 +161,18 @@ describe("webmcp", () => {
   test("failures report ok:false", async () => {
     const r = await runWebmcpTool("nope", {}, fakeApi());
     expect(r.ok).toBe(false);
+  });
+
+  test("toolInputSchema maps ParamDefs to JSON Schema", () => {
+    const s = toolInputSchema([
+      { name: "text", type: "string", required: true, description: "The request." },
+      { name: "params", type: "json", description: "Step params." },
+      { name: "kind", type: "string", enum: ["micro", "kpi"], description: "Chart kind." },
+    ]) as { type: string; properties: Record<string, Record<string, unknown>>; required: string[] };
+    expect(s.type).toBe("object");
+    expect(s.required).toEqual(["text"]);
+    expect(s.properties.text).toMatchObject({ type: "string" });
+    expect(s.properties.params).toMatchObject({ type: "object" });
+    expect(s.properties.kind).toMatchObject({ enum: ["micro", "kpi"] });
   });
 });

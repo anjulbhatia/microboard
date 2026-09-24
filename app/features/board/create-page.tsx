@@ -5,7 +5,7 @@ import { ToolboxSidebar } from "@/features/board/components/toolbox";
 import { Stage } from "@/features/board/components/stage";
 import { WidgetCard } from "@/features/board/components/widget-card";
 import { TransformPanel } from "@/features/board/components/panels";
-import { ChatPanel } from "@/features/agent";
+import { ChatPanel, useAgentBoardApi, useWebMCP } from "@/features/agent";
 import { PageStrip } from "@/features/board/components/page-strip";
 import { useBoard } from "@/store/board";
 import { useBoardDerived } from "@/hooks/use-board-derived";
@@ -33,6 +33,10 @@ export function CreatePage() {
   const [backdrop, setBackdrop] = useState<StageBackdrop>("dotted");
   const [dragId, setDragId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // External agents drive the same board through the WebMCP bridge —
+  // registered on page mount, dock stays closed until needed.
+  useWebMCP(useAgentBoardApi());
 
   const { order, widgets, cleanedCols, rawCols, hasData, dims, usedCells, capacity, cleaned } =
     useBoardDerived(board);

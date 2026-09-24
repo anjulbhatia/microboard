@@ -23,6 +23,7 @@ radius without breaking offline/demo flows.
 | W2 | Important | `board.add_step` stored arbitrary type strings (breaks deterministic replay) |
 | W3 | Important | `board.add_chart` accepted unknown kinds + empty columns |
 | W4 | Important | No board read tool — agents write blind (spec promises `get_board_state`) |
+| W5 | Critical | WebMCP never reached the browser — manifest existed, zero tools registered |
 
 ---
 
@@ -199,3 +200,20 @@ radius without breaking offline/demo flows.
   `{title, version, steps, widgets, columns}` via a new
   `AgentBoardApi.state()` (wired in `ChatPanel`, faked in tests).
 - **Commit:** `fix(webmcp): validate tool args, add get_state, run ops direct`
+
+## W5 — WebMCP never reached the browser (Critical integration gap)
+
+- **Where:** new `app/features/agent/use-webmcp.ts` (+
+  `use-agent-api.ts`), mounted in `CreatePage`, status dot in `ChatPanel`.
+- **Gap:** `webmcpManifest()`/`runWebmcpTool()` existed but nothing called
+  `document.modelContext.registerTool` — external agents saw zero tools.
+  The in-app `AgentBoardApi` object was also built inline in `ChatPanel`,
+  unshareable and remade every render.
+- **Fix:** `useAgentBoardApi()` (memoized, store-lazy) shared by chat and
+  bridge. `useWebMCP(api)` initializes the `@mcp-b/global` bridge once per
+  load, registers every manifest tool with a JSON-Schema converted
+  `inputSchema`, `readOnlyHint` on pure reads, and `execute` bound to a
+  ref of the latest api. Mounted on `CreatePage` (works with dock
+  closed); chat header shows `· webmcp` when the bridge is live, nothing
+  when it is not — chat never depends on it.
+- **Commit:** `feat(webmcp): register board tools on document.modelContext`
