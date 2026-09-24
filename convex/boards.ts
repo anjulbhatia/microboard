@@ -259,15 +259,22 @@ export const addComment = mutation({
     username: v.optional(v.string()),
     text: v.string(),
   },
+  returns: v.id("boardComments"),
   handler: async (ctx, args) => {
     const key = await userKey(ctx, args.userKey);
-    const text = args.text.trim().slice(0, 500);
+    // Strip control chars (layout breakage / log smuggling); keep \n\t.
+    // eslint-disable-next-line no-control-regex
+    const text = args.text.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "").trim().slice(0, 500);
     if (!text) throw new Error("Comment is empty.");
+    // Handles are display-only and unverified in demo mode — constrain the
+    // charset so one user cannot post as "@admin\n..." lookalikes.
+    const rawName = (args.username ?? "").trim().replace(/^@+/, "").slice(0, 32);
+    const username = /^[A-Za-z0-9_.-]{1,32}$/.test(rawName) ? rawName : undefined;
     const board = await boardOrThrow(ctx, args.publicId);
     const id = await ctx.db.insert("boardComments", {
       boardId: board._id,
       userKey: key,
-      username: args.username,
+      username,
       text,
       createdAt: now(),
     });

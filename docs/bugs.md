@@ -116,3 +116,19 @@ radius without breaking offline/demo flows.
   ceilings: 20k rows, 200 cols/row, 10k chars/cell, 10MB bytes (file size
   + content-length hint); `fetchApiRecords` requires http(s) URLs.
 - **Commit:** `fix(app): validate snapshots, bound ingest payloads`
+
+## B8 — `addComment`: username impersonation + stored-XSS hardening (Important)
+
+- **Where:** `convex/boards.ts` → `addComment`, rendered in
+  `app/features/showcase/share-detail-page.tsx`.
+- **Exploit:** `username` stored raw (any length, newlines, `@`-prefixes) —
+  attacker posts as `@admin\nverified` lookalikes; `text` kept control
+  chars (layout/log smuggling). Stored-XSS via HTML is already neutralized
+  (React escapes text nodes; template path escapes), so this is a
+  hardening + impersonation fix, not an active XSS.
+- **Fix:** strip control chars from text (keep `\n\t`), constrain handle
+  to `[A-Za-z0-9_.-]{1,32}` else store `undefined` (renders `@anon`);
+  added `returns: v.id("boardComments")`. Residual: handles stay
+  unverified in demo mode by design — OTP (see `docs/convex.md` §3) should
+  bind handles to the auth subject.
+- **Commit:** `fix(convex): sanitize comment handle + text controls`
