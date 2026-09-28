@@ -10,6 +10,7 @@ const app = defineApp({
     AUTH_PRIVATE_KEY: v.string(),
     AUTH_JWKS: v.string(),
     AGENTMAIL_API_KEY: v.optional(v.string()),
+    SITE_URL: v.optional(v.string()),
   },
 });
 

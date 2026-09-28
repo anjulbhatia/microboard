@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import { SessionSync } from "@/features/session";
 import { getConvexUrl } from "@/lib/backend";
 // Static _generated import lives here (not in main) so fresh clones
 // without `npx convex dev` still build. Loaded lazily, only when configured.
@@ -20,6 +21,7 @@ export function ConvexShell({ children }: { children: ReactNode }) {
         api={{ refreshSession: api.auth.refreshSession, signOut: api.auth.signOut }}
       >
         {children}
+        <SessionSync />
       </ConvexAuthProvider>
     </ConvexProvider>
   );

@@ -12,16 +12,40 @@ export interface SessionUser {
   demo: boolean;
 }
 
+interface SessionAck {
+  /** Last server time returned by the Convex heartbeat. */
+  serverTime: number;
+  /** Client time the ack landed. */
+  at: number;
+}
+
 interface SessionStore {
   user: SessionUser | null;
+  /** Last backend acknowledgement. Null until first heartbeat lands. */
+  ack: SessionAck | null;
   signIn: (username?: string) => void;
   /** Link a Convex Auth identity (demo:false, remote namespace). */
   linkRemote: (username: string) => void;
   rename: (username: string) => void;
   signOut: () => void;
+  setAck: (serverTime: number) => void;
 }
 
 const DEMO_KEY = "microboard.demoId";
+const BROWSER_SESSION_KEY = "microboard.sessionId";
+
+/** Stable per-browser session id, acknowledged by Convex heartbeat. */
+export function browserSessionId(): string {
+  try {
+    const saved = localStorage.getItem(BROWSER_SESSION_KEY);
+    if (saved && /^[A-Za-z0-9_-]{1,128}$/.test(saved)) return saved;
+    const id = `sess-${crypto.randomUUID()}`;
+    localStorage.setItem(BROWSER_SESSION_KEY, id);
+    return id;
+  } catch {
+    return `sess-${crypto.randomUUID()}`;
+  }
+}
 
 function demoId(): string {
   try {
@@ -40,6 +64,7 @@ const hasBrowserStorage =
 
 const sessionCreator: StateCreator<SessionStore> = (set) => ({
   user: null,
+  ack: null,
   signIn: (username) =>
     set({
       user: {
@@ -50,7 +75,8 @@ const sessionCreator: StateCreator<SessionStore> = (set) => ({
         demo: true,
       },
     }),
-  signOut: () => set({ user: null }),
+  signOut: () => set({ user: null, ack: null }),
+  setAck: (serverTime) => set({ ack: { serverTime, at: Date.now() } }),
   linkRemote: (username) =>
     set({
       user: {

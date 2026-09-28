@@ -1,4 +1,5 @@
 import { action, internalMutation, query } from "./_generated/server";
+import { env } from "./_generated/server";
 import { api, components, internal } from "./_generated/api";
 import { v } from "convex/values";
 import { AgentMail } from "@agentmail/convex";
@@ -57,7 +58,7 @@ export const sendBoardLink = action({
     if (subs.length === 0) throw new Error("Mailing list is empty.");
     // Bound the blast radius per send (cost + spam ceiling).
     if (subs.length > 2000) throw new Error("Mailing list too large for one send.");
-    if (!process.env.AGENTMAIL_API_KEY) {
+    if (!env.AGENTMAIL_API_KEY) {
       throw new Error("AgentMail not configured — set AGENTMAIL_API_KEY.");
     }
     const cached = await ctx.runQuery(api.mailing.getInbox, { ownerId: key });
@@ -95,7 +96,7 @@ export const dispatchBatch = internalMutation({
       throw new Error("Bad recipient batch.");
     }
     const mail = new AgentMail(components.agentmail);
-    const url = `${process.env.SITE_URL ?? ""}/share/${args.boardPublicId}`;
+    const url = `${env.SITE_URL ?? ""}/share/${args.boardPublicId}`;
     const tpl = shareBoardTemplate({ url, boardTitle: args.boardTitle });
     for (const to of args.emails) {
       await mail.sendMessage(ctx, args.inboxId, {

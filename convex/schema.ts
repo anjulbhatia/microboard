@@ -83,4 +83,18 @@ export default defineSchema({
     inboxId: v.string(),
     createdAt: v.string(),
   }).index("by_owner", ["ownerId"]),
+
+  // Persistent client sessions, acknowledged by heartbeat.
+  // High-churn lastSeen lives here — never on users/boards.
+  // userKey is the auth subject when signed in, demo id otherwise.
+  sessions: defineTable({
+    sessionId: v.string(),
+    userKey: v.string(),
+    username: v.optional(v.string()),
+    boardPublicId: v.optional(v.string()),
+    lastSeen: v.number(),
+    createdAt: v.string(),
+  })
+    .index("by_sessionId", ["sessionId"])
+    .index("by_userKey", ["userKey"]),
 });
