@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { PlusSignIcon, SparklesIcon } from "@hugeicons/core-free-icons";
+import { PlusSignIcon } from "@hugeicons/core-free-icons";
 import { useSession } from "@/store/session";
 import { HOME_SECTIONS, NEW_PATH, profilePath, type HomeSection } from "@/lib/routes";
 import { HomeSidebar, SECTION_ICONS } from "@/features/home/home-sidebar";
@@ -15,9 +15,8 @@ import { Card, SectionHead } from "@/features/home/section";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 
 /**
- * Home — logged-in SPA. Desktop gets the static sidebar; mobile gets
- * one sticky header (brand row + section tabs). No bottom tab bar,
- * no separate scroller block — one chrome block total on phones.
+ * Home v2 — fresh build. Static sidebar on desktop, one sticky
+ * header on mobile. Content breathes inside a centered column.
  */
 export function HomePage() {
   const [section, setSection] = useState<HomeSection>("home");
@@ -26,23 +25,25 @@ export function HomePage() {
     <div className="flex h-full min-h-0 flex-col gap-3 bg-muted/40 p-3 md:flex-row">
       <MobileHeader section={section} onSection={setSection} />
       <HomeSidebar section={section} onSection={setSection} />
-      <div className="min-w-0 flex-1 overflow-y-auto rounded-2xl border bg-card p-4 shadow-sm md:p-6">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={section}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-          >
-            {section === "home" && <LibraryPanel />}
-            {section === "data" && <DataPanel />}
-            {section === "mailing" && <MailingPanel />}
-            {section === "history" && <HistoryPanel />}
-            {section === "analytics" && <AnalyticsPanel />}
-            {section === "profile" && <ProfilePanel />}
-          </motion.div>
-        </AnimatePresence>
+      <div className="min-w-0 flex-1 overflow-y-auto rounded-2xl border bg-background p-4 shadow-sm md:p-8">
+        <div className="mx-auto w-full max-w-4xl">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={section}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
+            >
+              {section === "home" && <LibraryPanel />}
+              {section === "data" && <DataPanel />}
+              {section === "mailing" && <MailingPanel />}
+              {section === "history" && <HistoryPanel />}
+              {section === "analytics" && <AnalyticsPanel />}
+              {section === "profile" && <ProfilePanel />}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );
@@ -51,19 +52,17 @@ export function HomePage() {
 function MobileHeader({ section, onSection }: { section: HomeSection; onSection: (s: HomeSection) => void }) {
   const user = useSession((s) => s.user);
   return (
-    <div className="shrink-0 rounded-2xl border bg-card shadow-sm md:hidden">
+    <div className="shrink-0 overflow-hidden rounded-2xl border bg-card md:hidden">
       <div className="flex items-center gap-2 px-3 py-2">
-        <span className="flex items-center gap-1.5">
-          <HugeiconsIcon icon={SparklesIcon} size={18} strokeWidth={1.5} className="text-primary" />
-          <span className="font-display text-xs tracking-[0.2em]">MICROBOARD</span>
-        </span>
+        <span className="font-display text-xs tracking-[0.2em]">MICROBOARD</span>
         <span className="flex-1" />
         <Link
           to={NEW_PATH}
           aria-label="Create new board"
-          className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground"
+          className="flex h-8 items-center gap-1 rounded-full bg-primary px-3 text-xs font-medium text-primary-foreground"
         >
-          <HugeiconsIcon icon={PlusSignIcon} size={15} strokeWidth={2.5} />
+          <HugeiconsIcon icon={PlusSignIcon} size={14} strokeWidth={2.5} />
+          New
         </Link>
         <ThemeToggle />
         {user && (
@@ -111,6 +110,7 @@ function ProfilePanel() {
   const user = useSession((s) => s.user);
   const rename = useSession((s) => s.rename);
   const signOut = useSession((s) => s.signOut);
+  const ack = useSession((s) => s.ack);
   const [name, setName] = useState(user?.username ?? "");
   const [editing, setEditing] = useState(false);
   if (!user) return null;
@@ -123,7 +123,7 @@ function ProfilePanel() {
   };
 
   return (
-    <div className="flex max-w-2xl flex-col gap-5">
+    <div className="flex flex-col gap-4">
       <SectionHead
         title={user.username}
         blurb={user.demo ? "Demo creator · link a real account anytime." : "Verified account."}
@@ -138,9 +138,18 @@ function ProfilePanel() {
             {user.username.charAt(0).toUpperCase()}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-lg font-bold tracking-tight">{user.username}</p>
-            <p className="truncate font-mono text-[11px] text-muted-foreground">{preview}</p>
+            <p className="truncate text-lg font-semibold tracking-tight">{user.username}</p>
+            <p className="truncate font-mono text-xs text-muted-foreground">{preview}</p>
           </div>
+          <span
+            title={ack ? `Backend acknowledged ${new Date(ack.serverTime).toLocaleString()}` : "Waiting for backend ack"}
+            className={`flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] ${
+              ack ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            <span aria-hidden className={`size-1.5 rounded-full ${ack ? "bg-primary" : "bg-muted-foreground/40"}`} />
+            {ack ? "synced" : "local"}
+          </span>
         </div>
 
         {editing ? (
@@ -169,7 +178,7 @@ function ProfilePanel() {
             </button>
           </div>
         ) : (
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2 border-t pt-4">
             <button
               type="button"
               onClick={() => setEditing(true)}
@@ -189,7 +198,6 @@ function ProfilePanel() {
             </button>
           </div>
         )}
-        <p className="mt-3 font-mono text-[11px] text-muted-foreground">ID · {user.id}</p>
       </Card>
     </div>
   );
