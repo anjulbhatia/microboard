@@ -1,7 +1,7 @@
 import { Routes, Route, useParams, Navigate, Link } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import type { ReactNode } from 'react';
-import { LandingPage, HeaderIsland, LandingFooter } from '@/features/landing';
+import { LandingPage } from '@/features/landing';
 import { CreatePage } from '@/features/board';
 import { RequireAuth } from '@/features/auth';
 import { HomePage } from '@/features/home';
@@ -21,18 +21,30 @@ function LiveFallback() {
 }
 
 /**
- * Shell map. Landing owns its island + footer; the editor owns CreateLayout;
- * home owns its sidebar. No global header/footer — each route picks chrome:
- * - landing chrome (island + footer): /, /showcase, /u/:username
- * - bare: /share/:id (embed-friendly), 404
- * - own shell: /new (CreateLayout), /home (sidebar)
+ * Shell map. Landing is a single self-contained page; showcase/profile
+ * reuse this minimal chrome until their own revamp lands.
  */
 function LandingChrome({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-svh bg-background">
-      <HeaderIsland />
+      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
+        <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-6 px-6">
+          <Link to="/" aria-label="Microboard home" className="font-display text-sm tracking-[0.2em]">
+            MICROBOARD
+          </Link>
+          <span className="flex-1" />
+          <Link
+            to="/new"
+            className="rounded-lg bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Start creating
+          </Link>
+        </div>
+      </header>
       <main>{children}</main>
-      <LandingFooter />
+      <p className="border-t py-4 text-center font-mono text-[11px] text-muted-foreground">
+        clean data · craft microcharts · ship dashboards
+      </p>
     </div>
   );
 }
