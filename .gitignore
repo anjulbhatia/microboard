@@ -18,7 +18,6 @@ dist-ssr
 # Convex
 .convex/
 convex/_generated/
-convex/tsconfig.json
 
 # Agent skills (local tooling, never commit — except the hackathon skill)
 .agents/*
