@@ -4,8 +4,10 @@ import auth from "@convex-dev/auth/core/convex.config.js";
 import passwordProvider from "@convex-dev/auth/providers/password/convex.config.js";
 import username from "@convex-dev/auth/username/convex.config.js";
 import agentmail from "@agentmail/convex/convex.config";
+import staticHosting from "@convex-dev/static-hosting/convex.config";
 
 const app = defineApp({
+  httpPrefix: "/api",
   env: {
     AUTH_PRIVATE_KEY: v.string(),
     AUTH_JWKS: v.string(),
@@ -24,5 +26,6 @@ app.use(auth, {
 app.use(passwordProvider);
 app.use(username);
 app.use(agentmail);
+app.use(staticHosting, { httpPrefix: "/" });
 
 export default app;

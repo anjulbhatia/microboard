@@ -10,7 +10,8 @@
     "test": "bun test tests/",
     "local": "bun scripts/local.ts",
     "agentmail:build": "bun app/features/agentmail/build.ts",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npx @convex-dev/static-hosting deploy"
   },
   "dependencies": {
     "@agentmail/convex": "^0.1.0",
