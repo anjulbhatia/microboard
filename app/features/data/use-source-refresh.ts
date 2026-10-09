@@ -17,7 +17,6 @@ export function useSourceRefresh(): RefreshState {
   const source = useBoard((s) => s.board.data.source);
   const sourceUrl = useBoard((s) => s.board.data.sourceUrl);
   const refreshMinutes = useBoard((s) => s.board.data.refreshMinutes);
-  const refreshData = useBoard((s) => s.refreshData);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const busy = useRef(false);
@@ -37,7 +36,7 @@ export function useSourceRefresh(): RefreshState {
       busy.current = false;
       setRefreshing(false);
     }
-  }, [refreshData]);
+  }, []);
 
   useEffect(() => {
     if (source !== "api" || !sourceUrl || !refreshMinutes || refreshMinutes <= 0) return;

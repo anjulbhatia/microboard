@@ -7,14 +7,18 @@ export function MicroDonut({ parts = [] }: { parts?: { label: string; value: num
   const circ = 2 * Math.PI * r;
   const total = parts.reduce((a, p) => a + p.value, 0) || 1;
   const colors = [C3, C2, C1, MUT];
-  let acc = 0;
+  const offsets = parts.reduce<number[]>(
+    (acc, p) => [...acc, (acc[acc.length - 1] ?? 0) + p.value / total],
+    []
+  );
   return (
     <span className="inline-flex items-center gap-2">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="donut">
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={MUT} strokeWidth="9" opacity="0.15" />
         {parts.map((p, i) => {
           const frac = p.value / total;
-          const el = (
+          const start = (offsets[i] ?? frac) - frac;
+          return (
             <circle
               key={i}
               cx={size / 2}
@@ -24,13 +28,11 @@ export function MicroDonut({ parts = [] }: { parts?: { label: string; value: num
               stroke={colors[i % colors.length]}
               strokeWidth="9"
               strokeDasharray={`${(frac * circ).toFixed(1)} ${circ.toFixed(1)}`}
-              strokeDashoffset={(-acc * circ).toFixed(1)}
+              strokeDashoffset={(-start * circ).toFixed(1)}
               transform={`rotate(-90 ${size / 2} ${size / 2})`}
               strokeLinecap="butt"
             />
           );
-          acc += frac;
-          return el;
         })}
       </svg>
       <span className="space-y-0.5">

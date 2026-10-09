@@ -47,7 +47,10 @@ let registered = false;
 export function useWebMCP(api: AgentBoardApi): { supported: boolean } {
   const [supported, setSupported] = useState(registered);
   const apiRef = useRef(api);
-  apiRef.current = api;
+
+  useEffect(() => {
+    apiRef.current = api;
+  }, [api]);
 
   useEffect(() => {
     if (registered) {

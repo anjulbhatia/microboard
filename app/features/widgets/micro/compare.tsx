@@ -142,12 +142,13 @@ export function Waterfall({ values = [], labels = [] }: { values?: number[]; lab
   const w = 160;
   const h = 72;
   if (values.length === 0) return null;
-  let run = 0;
-  const cum = values.map((v) => {
-    const start = run;
-    run += v;
-    return { start, end: run, v };
-  });
+  const cum = values.reduce<{ start: number; end: number; v: number }[]>(
+    (acc, v) => {
+      const start = acc.length === 0 ? 0 : acc[acc.length - 1].end;
+      return [...acc, { start, end: start + v, v }];
+    },
+    []
+  );
   const [lo, hi] = extent([0, ...cum.flatMap((c) => [c.start, c.end])]);
   const Y = linear(lo, hi, h, 6);
   const bw = w / values.length;
