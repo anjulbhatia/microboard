@@ -10,14 +10,19 @@ import { v } from "convex/values";
 
 export default defineSchema({
   // One row per account. username is the public handle (u/[username]).
+  // authSubject binds the row to the Convex Auth identity (identity.subject)
+  // the first time the owner signs in; optional so pre-auth rows need no
+  // migration. Demo rows (never signed in) leave it unset.
   users: defineTable({
     name: v.optional(v.string()),
     username: v.optional(v.string()),
     image: v.optional(v.string()),
+    authSubject: v.optional(v.string()),
     createdAt: v.optional(v.string()),
   })
     .index("by_name", ["name"])
-    .index("by_username", ["username"]),
+    .index("by_username", ["username"])
+    .index("by_authSubject", ["authSubject"]),
 
   // Board snapshots. ownerId is a userKey (see above).
   // Counters denormalize like/save/comment/view rows for fast reads.

@@ -1,5 +1,6 @@
 import { query } from "./_generated/server";
 import type { QueryCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { userKey } from "./helpers";
 
@@ -24,6 +25,13 @@ export interface FeedItem {
 
 async function authorName(ctx: QueryCtx, ownerId?: string): Promise<string> {
   if (!ownerId) return "anonymous";
+  // Signed-in writers store the users row id as ownerId — resolve it first.
+  try {
+    const byId = await ctx.db.get(ownerId as Id<"users">);
+    if (byId?.username ?? byId?.name) return byId.username ?? byId.name!;
+  } catch {
+    // Not an id-shaped owner — fall through to handle lookups.
+  }
   const byHandle = await ctx.db
     .query("users")
     .withIndex("by_username", (q) => q.eq("username", ownerId))
