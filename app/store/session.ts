@@ -24,8 +24,12 @@ interface SessionStore {
   /** Last backend acknowledgement. Null until first heartbeat lands. */
   ack: SessionAck | null;
   signIn: (username?: string) => void;
-  /** Link a Convex Auth identity (demo:false, remote namespace). */
-  linkRemote: (username: string) => void;
+  /**
+   * Link a Convex Auth identity (demo:false). id should be the auth
+   * subject from `api.users.me`/`ensureMe` so later writes resolve to
+   * the same key the backend enforces — never a display name.
+   */
+  linkRemote: (username: string, id?: string) => void;
   rename: (username: string) => void;
   signOut: () => void;
   setAck: (serverTime: number) => void;
@@ -77,10 +81,10 @@ const sessionCreator: StateCreator<SessionStore> = (set) => ({
     }),
   signOut: () => set({ user: null, ack: null }),
   setAck: (serverTime) => set({ ack: { serverTime, at: Date.now() } }),
-  linkRemote: (username) =>
+  linkRemote: (username, id) =>
     set({
       user: {
-        id: `remote-${normalizeUsername(username)}`,
+        id: id ?? `remote-${normalizeUsername(username)}`,
         username: normalizeUsername(username),
         name: normalizeUsername(username),
         hue: Math.floor(Math.random() * 360),

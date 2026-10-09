@@ -8,8 +8,8 @@
 ## 1. Schema (`convex/schema.ts`)
 
 ```ts
-users:  { name?, username?, image?, createdAt? }
-        indexes: by_name, by_username
+users:  { name?, username?, image?, authSubject?, createdAt? }
+        indexes: by_name, by_username, by_authSubject
 boards: { publicId, ownerId?, title, snapshot, version, showcase?,
           likeCount?, saveCount?, commentCount?, viewCount?,
           createdAt, updatedAt }
@@ -54,8 +54,11 @@ Decisions:
 | `addComment` / `listComments` / `removeComment` | mutation/query/mutation | 500-char cap; own or board-owner delete with counter fix. |
 | `showcase.feed` | query | Public feed newest-first with author + counts + viewer flags. |
 | `showcase.boardDetail` | query | Board + comments + liked/saved flags for `/share/:id`. |
-| `users.setUsername` | mutation | Unique handle claim. |
-| `users.getByUsername` / `users.profileBoards` | query | Public lookup for `u/[username]`. |
+| `users.me` | query | Server-resolved `{ subject, user }`, null when signed out. |
+| `users.ensureMe` | mutation | Find-or-create the subject-bound row. Called on every login. |
+| `users.setUsername` | mutation | Unique handle claim. Signed-in: patches the subject row (one row per account). |
+| `users.getByUsername` / `users.profileBoards` | query | Public lookup for `u/[username]`. `profileBoards` fans out over row-id + handle keys. |
+| `links.create` / `links.resolve` / `links.remove` | mutation/query/mutation | Owner-managed short slugs for boards; resolution is public. |
 | `subscribers.subscribe/unsubscribe/listByOwner` | mutation/mutation/query | Mailing list per owner. |
 | `mailing.sendBoardLink` | action | Mails the board link to every subscriber via the owner's AgentMail inbox. Needs `AGENTMAIL_API_KEY`. |
 
@@ -83,8 +86,12 @@ lands with email OTP.
 - **Demo fallback.** No `VITE_CONVEX_URL` → fully offline; username-only
   modal with stable `demo-<uuid>` id.
 - **Identity convention.** Functions key people by userKey = auth subject
-  when signed in, demo id otherwise (`convex/helpers.ts userKey`). Harden
-  with `ctx.auth` checks once OTP lands.
+  when signed in, demo id otherwise (`convex/helpers.ts userKey`).
+  Signed-in writers store the users row id as `ownerId`; `users.ensureMe`
+  (called by `ConvexLogin` after sign-in) guarantees one subject-bound row
+  per account, and the local session id is the subject — never the display
+  name. `profileBoards`/`authorName` resolve both id-shaped and
+  handle-shaped owner ids.
 - **Next — email OTP via AgentMail.** Same `users` row; no schema change.
 - **Later — Google SSO.** Another provider on the same core.
 

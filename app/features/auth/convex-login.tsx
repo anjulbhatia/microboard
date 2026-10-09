@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from "convex/react";
 import {
   useSignInWithPassword,
   useSignUpWithPassword,
@@ -22,6 +23,7 @@ interface ConvexLoginProps {
 export function ConvexLogin({ next = HOME_PATH, onDone }: ConvexLoginProps) {
   const { signIn, pending: inPending } = useSignInWithPassword(api.auth.signInWithPassword);
   const { signUp, pending: upPending } = useSignUpWithPassword(api.auth.signUpWithPassword);
+  const ensureMe = useMutation(api.users.ensureMe);
   const linkRemote = useSession((s) => s.linkRemote);
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
@@ -30,8 +32,8 @@ export function ConvexLogin({ next = HOME_PATH, onDone }: ConvexLoginProps) {
   const [error, setError] = useState("");
   const busy = inPending || upPending;
 
-  const done = () => {
-    linkRemote(username.trim().toLowerCase());
+  const done = (name: string, id?: string) => {
+    linkRemote(name, id);
     onDone?.();
     navigate(next, { replace: true });
   };
@@ -48,7 +50,14 @@ export function ConvexLogin({ next = HOME_PATH, onDone }: ConvexLoginProps) {
         ? await signIn({ username: clean, password })
         : await signUp({ username: clean, password });
     if (result.status === "complete") {
-      done();
+      // Bind the local session to the server identity (subject), so owned
+      // boards stay writable. Falls back to the name namespace offline.
+      try {
+        const row = await ensureMe({ username: clean });
+        done(row.username ?? clean, row.authSubject ?? undefined);
+      } catch {
+        done(clean);
+      }
       return;
     }
     const code = result.userError.error;
