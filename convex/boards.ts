@@ -1,6 +1,8 @@
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { now, userKey } from "./helpers";
 
 /**
@@ -136,7 +138,27 @@ export const listShowcase = query({
   },
 });
 
-/** Owner delete with engagement cleanup. Returns true when removed. */
+/**
+ * Owner delete with engagement cleanup. Engagement rows delete in bounded
+ * batches; leftovers continue in a fresh transaction via scheduler so a
+ * viral board cannot blow the per-mutation write limit. Returns true when
+ * removed (or cleanup scheduled).
+ */
+const DELETE_BATCH = 100;
+
+async function deleteBatch(
+  ctx: MutationCtx,
+  table: "boardLikes" | "boardSaves" | "boardComments",
+  boardId: Id<"boards">
+): Promise<number> {
+  const rows = await ctx.db
+    .query(table)
+    .withIndex("by_board", (q) => q.eq("boardId", boardId))
+    .take(DELETE_BATCH);
+  for (const r of rows) await ctx.db.delete(r._id);
+  return rows.length;
+}
+
 export const removeBoard = mutation({
   args: { publicId: v.string(), ownerId: v.optional(v.string()) },
   handler: async (ctx, args) => {
@@ -147,21 +169,50 @@ export const removeBoard = mutation({
       const key = await userKey(ctx, args.ownerId);
       if (board.ownerId !== key) throw new Error("Not your board.");
     }
-    const tables = ["boardLikes", "boardSaves", "boardComments"] as const;
-    for (const t of tables) {
-      const rows = await ctx.db
-        .query(t)
-        .withIndex("by_board", (q) => q.eq("boardId", board._id))
-        .collect();
-      for (const r of rows) await ctx.db.delete(r._id);
+    const counts = [
+      await deleteBatch(ctx, "boardLikes", board._id),
+      await deleteBatch(ctx, "boardSaves", board._id),
+      await deleteBatch(ctx, "boardComments", board._id),
+    ];
+    if (counts.some((n) => n >= DELETE_BATCH)) {
+      await ctx.scheduler.runAfter(0, internal.boards.cleanupBoard, {
+        boardId: board._id,
+        publicId: board.publicId,
+      });
+      return true;
     }
     const links = await ctx.db
       .query("links")
       .withIndex("by_slug", (q) => q.eq("slug", board.publicId))
-      .collect();
+      .take(DELETE_BATCH);
     for (const l of links) await ctx.db.delete(l._id);
     await ctx.db.delete(board._id);
     return true;
+  },
+});
+
+/** Scheduler continuation for removeBoard: drains engagement, then board. */
+export const cleanupBoard = internalMutation({
+  args: { boardId: v.id("boards"), publicId: v.string() },
+  handler: async (ctx, args) => {
+    const board = await ctx.db.get(args.boardId);
+    if (!board) return null;
+    const counts = [
+      await deleteBatch(ctx, "boardLikes", args.boardId),
+      await deleteBatch(ctx, "boardSaves", args.boardId),
+      await deleteBatch(ctx, "boardComments", args.boardId),
+    ];
+    if (counts.some((n) => n >= DELETE_BATCH)) {
+      await ctx.scheduler.runAfter(0, internal.boards.cleanupBoard, args);
+      return null;
+    }
+    const links = await ctx.db
+      .query("links")
+      .withIndex("by_slug", (q) => q.eq("slug", args.publicId))
+      .take(DELETE_BATCH);
+    for (const l of links) await ctx.db.delete(l._id);
+    await ctx.db.delete(args.boardId);
+    return null;
   },
 });
 
@@ -184,6 +235,8 @@ export const toggleShowcase = mutation({
 export const recordView = mutation({
   args: { publicId: v.string() },
   handler: async (ctx, args) => {
+    // Reject junk ids before touching the index (spam ceiling).
+    if (!/^[A-Za-z0-9_-]{1,128}$/.test(args.publicId)) throw new Error("Bad board id.");
     const board = await boardOrThrow(ctx, args.publicId);
     await ctx.db.patch(board._id, { viewCount: (board.viewCount ?? 0) + 1 });
   },
@@ -237,7 +290,7 @@ export const toggleSave = mutation({
   },
 });
 
-/** Boards a user saved, newest first. */
+/** Boards a user saved, newest first. Bounded to latest 100. */
 export const savedBoards = query({
   args: { userKey: v.optional(v.string()) },
   handler: async (ctx, args) => {
@@ -245,7 +298,8 @@ export const savedBoards = query({
     const rows = await ctx.db
       .query("boardSaves")
       .withIndex("by_user_board", (q) => q.eq("userKey", key))
-      .collect();
+      .order("desc")
+      .take(100);
     const boards = await Promise.all(rows.map((r) => ctx.db.get(r.boardId)));
     return boards.filter((b) => b !== null);
   },
@@ -294,7 +348,8 @@ export const listComments = query({
     return await ctx.db
       .query("boardComments")
       .withIndex("by_board", (q) => q.eq("boardId", board._id))
-      .collect();
+      .order("desc")
+      .take(200);
   },
 });
 

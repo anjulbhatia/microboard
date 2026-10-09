@@ -14,9 +14,12 @@ import { now, userKey } from "./helpers";
 export const getInbox = query({
   args: { ownerId: v.string() },
   handler: async (ctx, args) => {
+    // Inbox ids are owner-private — only the owner reads their own.
+    const key = await userKey(ctx, args.ownerId);
+    if (args.ownerId !== key) throw new Error("Not your inbox.");
     return await ctx.db
       .query("mailInboxes")
-      .withIndex("by_owner", (q) => q.eq("ownerId", args.ownerId))
+      .withIndex("by_owner", (q) => q.eq("ownerId", key))
       .unique();
   },
 });

@@ -86,7 +86,8 @@ export const profileBoards = query({
     const boards = await ctx.db
       .query("boards")
       .withIndex("by_owner", (q) => q.eq("ownerId", key))
-      .collect();
+      .order("desc")
+      .take(100);
     return {
       user,
       boards: boards

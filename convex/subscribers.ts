@@ -17,16 +17,19 @@ function cleanEmail(raw: string): string {
 export const subscribe = mutation({
   args: { ownerId: v.string(), email: v.string() },
   handler: async (ctx, args) => {
+    // Owner-only write: resolved key wins over raw arg when signed in.
+    const key = await userKey(ctx, args.ownerId);
+    if (args.ownerId !== key) throw new Error("Not your mailing list.");
     const email = cleanEmail(args.email);
     const existing = await ctx.db
       .query("subscribers")
-      .withIndex("by_owner", (q) => q.eq("ownerId", args.ownerId))
+      .withIndex("by_owner", (q) => q.eq("ownerId", key))
       .collect();
     if (existing.some((s) => s.email === email)) return existing.find((s) => s.email === email)?._id;
     // Cap list growth: one bad actor cannot stuff a list into a spam cannon.
     if (existing.length >= MAX_SUBSCRIBERS) throw new Error("Mailing list is full.");
     return await ctx.db.insert("subscribers", {
-      ownerId: args.ownerId,
+      ownerId: key,
       email,
       createdAt: new Date().toISOString(),
     });
@@ -36,10 +39,13 @@ export const subscribe = mutation({
 export const unsubscribe = mutation({
   args: { ownerId: v.string(), email: v.string() },
   handler: async (ctx, args) => {
+    // Owner-only write: same gate as subscribe.
+    const key = await userKey(ctx, args.ownerId);
+    if (args.ownerId !== key) throw new Error("Not your mailing list.");
     const email = cleanEmail(args.email);
     const rows = await ctx.db
       .query("subscribers")
-      .withIndex("by_owner", (q) => q.eq("ownerId", args.ownerId))
+      .withIndex("by_owner", (q) => q.eq("ownerId", key))
       .collect();
     for (const r of rows.filter((s) => s.email === email)) {
       await ctx.db.delete(r._id);

@@ -93,7 +93,8 @@ export const boardDetail = query({
       ctx.db
         .query("boardComments")
         .withIndex("by_board", (q) => q.eq("boardId", board._id))
-        .collect(),
+        .order("desc")
+        .take(200),
       key
         ? ctx.db
             .query("boardLikes")
