@@ -8,6 +8,9 @@ dist
 dist-ssr
 *.local
 
+# Microboard runtime state
+.microboard/
+
 # Env / secrets
 .env
 .env.*
@@ -19,7 +22,7 @@ dist-ssr
 .convex/
 convex/_generated/
 
-# Agent skills (local tooling, never commit — except the hackathon skill)
+# Agent skills (local tooling; never commit except the hackathon skill)
 .agents/*
 !.agents/skills/
 .agents/skills/*

@@ -1,0 +1,168 @@
+{
+  "id": "a7e1fa5a-9398-44bc-a9ab-cc13406d0026",
+  "title": "Signups by channel",
+  "version": 5,
+  "data": {
+    "source": "inline",
+    "raw": [
+      {
+        "month": "Jan",
+        "channel": "organic",
+        "visitors": "1860",
+        "signups": "182"
+      },
+      {
+        "month": "Feb",
+        "channel": "organic",
+        "visitors": "2400",
+        "signups": "210"
+      },
+      {
+        "month": "Mar",
+        "channel": "organic",
+        "visitors": "1980",
+        "signups": "195"
+      },
+      {
+        "month": "Apr",
+        "channel": "organic",
+        "visitors": "2780",
+        "signups": "260"
+      },
+      {
+        "month": "Jan",
+        "channel": "paid",
+        "visitors": "820",
+        "signups": "96"
+      },
+      {
+        "month": "Feb",
+        "channel": "paid",
+        "visitors": "1010",
+        "signups": "120"
+      },
+      {
+        "month": "Mar",
+        "channel": "paid",
+        "visitors": "940",
+        "signups": "110"
+      },
+      {
+        "month": "Apr",
+        "channel": "paid",
+        "visitors": "1240",
+        "signups": "148"
+      },
+      {
+        "month": "Jan",
+        "channel": "social",
+        "visitors": "540",
+        "signups": "48"
+      },
+      {
+        "month": "Feb",
+        "channel": "social",
+        "visitors": "610",
+        "signups": "55"
+      },
+      {
+        "month": "Mar",
+        "channel": "social",
+        "visitors": "720",
+        "signups": "70"
+      },
+      {
+        "month": "Apr",
+        "channel": "social",
+        "visitors": "690",
+        "signups": "62"
+      }
+    ],
+    "cleaned": [
+      {
+        "channel": "organic",
+        "sum_visitors": 9020
+      },
+      {
+        "channel": "paid",
+        "sum_visitors": 4010
+      },
+      {
+        "channel": "social",
+        "sum_visitors": 2560
+      }
+    ],
+    "columns": [
+      {
+        "name": "channel",
+        "type": "string",
+        "nulls": 0
+      },
+      {
+        "name": "sum_visitors",
+        "type": "number",
+        "nulls": 0
+      }
+    ]
+  },
+  "steps": [
+    {
+      "id": "182df6a0-00d2-43d2-b332-de80e335e90a",
+      "type": "groupBy",
+      "params": {
+        "column": "channel",
+        "agg": "sum",
+        "target": "visitors"
+      },
+      "description": "group by channel (sum)"
+    }
+  ],
+  "layout": [
+    {
+      "i": "3132691a-2fe8-49ea-b624-e625b9c1b20e",
+      "x": 0,
+      "y": 0,
+      "w": 4,
+      "h": 3
+    },
+    {
+      "i": "e7ba969a-0317-4494-9c6a-7c05498ec7bb",
+      "x": 4,
+      "y": 0,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "i": "0f8bc771-a908-4ba9-b9bb-7889e6d34d5e",
+      "x": 0,
+      "y": 3,
+      "w": 4,
+      "h": 2
+    }
+  ],
+  "widgets": {
+    "3132691a-2fe8-49ea-b624-e625b9c1b20e": {
+      "type": "bar",
+      "title": "Visitors by channel",
+      "x": "channel",
+      "y": "sum_visitors",
+      "id": "3132691a-2fe8-49ea-b624-e625b9c1b20e"
+    },
+    "e7ba969a-0317-4494-9c6a-7c05498ec7bb": {
+      "type": "kpi",
+      "title": "Total visitors",
+      "y": "sum_visitors",
+      "id": "e7ba969a-0317-4494-9c6a-7c05498ec7bb"
+    },
+    "0f8bc771-a908-4ba9-b9bb-7889e6d34d5e": {
+      "type": "table",
+      "title": "Grouped rows",
+      "id": "0f8bc771-a908-4ba9-b9bb-7889e6d34d5e"
+    }
+  },
+  "locks": [],
+  "meta": {
+    "createdAt": "2026-10-24T18:55:33.712Z",
+    "updatedAt": "2026-10-24T18:55:33.717Z"
+  }
+}

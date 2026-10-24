@@ -1,13 +1,21 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ],
   "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022"],
+    "types": ["node", "bun"],
+    "strict": true,
+    "exactOptionalPropertyTypes": false,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@/*": ["./app/*"]
-    }
-  }
-  
+      "@microboard/core": ["./packages/core/src/index.ts"],
+      "@microboard/core/*": ["./packages/core/src/*"]
+    },
+    "noEmit": true
+  },
+  "include": ["packages/core/src/**/*.ts", "packages/core/tests/**/*.ts", "mcp/src/**/*.ts", "mcp/tests/**/*.ts"]
 }
