@@ -205,7 +205,9 @@ interface Board {
 | `add_widget`          | Write    | Add approved widget to the board |
 | `update_widget`       | Write    | Change an existing widget (if not locked) |
 | `get_board_state`     | Read     | Full board JSON + version |
-| `lock_widget`         | Write    | Human-only freeze against agent edits |
+| `get_board_view`      | App read | Summary, recipe, samples, per-widget SVG for the iframe |
+| `reject_proposal`     | App write| Discard a pending proposal without changing the board |
+| `lock_widget`         | App write| Human-only freeze against agent edits |
 | `export_board`        | Action   | `png` \| `pdf` \| `html` \| `mdx` \| `pptx` \| `json` |
 
 Every write tool returns a receipt and checks the board version it was proposed against. Fail closed on conflict.
@@ -277,9 +279,9 @@ Every transform must be serializable into the `steps[]` array so the entire boar
 - [ ] Document Claude Desktop / Cursor / VS Code install snippets
 
 ### Phase 2 – MCP Apps + Thin Human Surface (2–3 days)
-- [ ] Add MCP Apps (`ui://`) resource that renders the current board
-- [ ] Thin editable surface inside the iframe (inspect, approve, lock)
-- [ ] Version conflict handling polished
+- [x] Add MCP Apps (`ui://`) resource that renders the current board
+- [x] Thin editable surface inside the iframe (inspect, approve, lock)
+- [x] Version conflict handling polished
 - [ ] Test in Claude, ChatGPT (remote), Cursor, VS Code
 
 ### Phase 3 – Public Site + Sharing (2–3 days)

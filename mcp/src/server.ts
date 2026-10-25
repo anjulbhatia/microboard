@@ -1,7 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { registerAppTools } from "./tools/app.js";
 import { registerBoardTools } from "./tools/board.js";
 import { registerDataTools } from "./tools/data.js";
 import { registerExportTools } from "./tools/export.js";
+import { registerBoardUi } from "./ui.js";
 
 export const SERVER_NAME = "microboard";
 export const SERVER_VERSION = "0.1.0";
@@ -14,6 +16,10 @@ Workflow:
 3. propose_transform -> human approves -> apply_transform.
 4. propose_widget -> human approves -> add_widget.
 5. export_board (png | html | json) or render_chart (png | svg).
+
+MCP Apps hosts render the board surface for get_board_state and every propose_* result.
+The human can inspect the recipe, approve or reject proposals, and lock widgets there.
+Do not call get_board_view, reject_proposal, or lock_widget yourself; they belong to the app surface.
 
 Rules:
 - Every write requires the current expectedVersion and fails closed on conflict.
@@ -31,12 +37,15 @@ export function createServer(): McpServer {
       instructions: INSTRUCTIONS,
       capabilities: {
         tools: {},
+        resources: {},
       },
     }
   );
 
   registerDataTools(server);
   registerBoardTools(server);
+  registerAppTools(server);
   registerExportTools(server);
+  registerBoardUi(server);
   return server;
 }

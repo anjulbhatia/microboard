@@ -10,9 +10,12 @@ import {
   type NewWidgetInput,
   type WidgetType,
 } from "@microboard/core";
+import { registerAppTool } from "@modelcontextprotocol/ext-apps/server";
 import { createProposal, consumeProposal, getProposal } from "../proposals.js";
+import { widgetToSvg } from "../render.js";
 import { jsonResult, receipt, runTool } from "../result.js";
 import { loadBoard, saveBoard, withBoardLock } from "../store.js";
+import { BOARD_UI_URI } from "../ui.js";
 
 const STEP_TYPES = [
   "filter",
@@ -68,7 +71,8 @@ function widgetInput(args: {
 }
 
 export function registerBoardTools(server: McpServer): void {
-  server.registerTool(
+  registerAppTool(
+    server,
     "propose_transform",
     {
       title: "Propose transform",
@@ -80,6 +84,7 @@ export function registerBoardTools(server: McpServer): void {
         params: paramsSchema.describe("Step parameters, e.g. { column, cond, value } for filter."),
         description: z.string().optional().describe("Human-readable label."),
       },
+      _meta: { ui: { resourceUri: BOARD_UI_URI } },
     },
     async ({ type, params, description }) =>
       runTool(async () => {
@@ -156,7 +161,8 @@ export function registerBoardTools(server: McpServer): void {
       )
   );
 
-  server.registerTool(
+  registerAppTool(
+    server,
     "propose_widget",
     {
       title: "Propose widget",
@@ -164,6 +170,7 @@ export function registerBoardTools(server: McpServer): void {
         "Validate and describe a chart, KPI, sparkline, or table widget without adding it to the board. Returns a proposalId for add_widget.",
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
       inputSchema: widgetInputs,
+      _meta: { ui: { resourceUri: BOARD_UI_URI } },
     },
     async (args) =>
       runTool(async () => {
@@ -176,7 +183,7 @@ export function registerBoardTools(server: McpServer): void {
           baseVersion: board.version,
           payload: widgetInput(args),
         });
-        return jsonResult({
+        const payload = {
           ok: true,
           proposalId: proposal.id,
           baseVersion: proposal.baseVersion,
@@ -188,7 +195,15 @@ export function registerBoardTools(server: McpServer): void {
             y: created?.y ?? null,
             y2: created?.y2 ?? null,
           },
-        });
+        };
+        const result = jsonResult(payload);
+        result.structuredContent = {
+          ...payload,
+          preview: {
+            svg: created ? await widgetToSvg(next, created, 720, 420) : null,
+          },
+        };
+        return result;
       })
   );
 
@@ -277,18 +292,20 @@ export function registerBoardTools(server: McpServer): void {
       )
   );
 
-  server.registerTool(
+  registerAppTool(
+    server,
     "lock_widget",
     {
       title: "Lock widget",
       description:
-        "Freeze or unfreeze a widget against agent edits. Intended for a human action; hosts should require explicit user confirmation.",
+        "Freeze or unfreeze a widget against agent edits. Intended for the human approval surface; hosts should require explicit user confirmation.",
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
       inputSchema: {
         widgetId: z.string(),
         expectedVersion: z.number().int().nonnegative(),
         locked: z.boolean().default(true).describe("true locks the widget; false unlocks it."),
       },
+      _meta: { ui: { visibility: ["app"] } },
     },
     async ({ widgetId, expectedVersion, locked }) =>
       runTool(async () =>
@@ -302,17 +319,19 @@ export function registerBoardTools(server: McpServer): void {
       )
   );
 
-  server.registerTool(
+  registerAppTool(
+    server,
     "get_board_state",
     {
       title: "Get board state",
       description:
-        "Read the full board recipe (data, steps, widgets, layout, locks) plus a summary. Pass includeRows=false for a sampled view when the dataset is large.",
+        "Read the full board recipe (data, steps, widgets, layout, locks) plus a summary. Pass includeRows=false for a sampled view when the dataset is large. Hosts with MCP Apps render the interactive board surface.",
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
       inputSchema: {
         includeRows: z.boolean().default(true).describe("Include full raw/cleaned rows."),
         sample: z.number().int().min(0).max(100).default(10).describe("Rows per side when includeRows=false."),
       },
+      _meta: { ui: { resourceUri: BOARD_UI_URI } },
     },
     async ({ includeRows, sample }) =>
       runTool(async () => {

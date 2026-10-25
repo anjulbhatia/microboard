@@ -7,6 +7,7 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { createServer } from "../src/server";
 import { clearProposals } from "../src/proposals";
+import { BOARD_UI_URI } from "../src/ui";
 
 let dir = "";
 let client: Client;
@@ -25,6 +26,10 @@ async function call(name: string, args: Record<string, unknown> = {}): Promise<C
 
 function parse(result: CallToolResult): Record<string, any> {
   return JSON.parse(text(result));
+}
+
+function structured(result: CallToolResult): Record<string, any> {
+  return (result.structuredContent ?? {}) as Record<string, any>;
 }
 
 beforeAll(async () => {
@@ -76,10 +81,15 @@ describe("MCP tools", () => {
     expect(applied.ok).toBe(true);
     expect(applied.rows).toBe(3);
 
-    const widget = parse(
-      await call("propose_widget", { type: "bar", x: "channel", y: "sum_visitors", title: "Visitors" })
-    );
+    const widgetResult = await call("propose_widget", {
+      type: "bar",
+      x: "channel",
+      y: "sum_visitors",
+      title: "Visitors",
+    });
+    const widget = parse(widgetResult);
     expect(widget.kind).toBe("widget");
+    expect(structured(widgetResult).preview.svg).toContain("<svg");
 
     const added = parse(
       await call("add_widget", { proposalId: widget.proposalId, expectedVersion: widget.baseVersion })
@@ -138,5 +148,46 @@ describe("MCP tools", () => {
     });
     expect(update.isError).toBe(true);
     expect(text(update)).toContain("locked");
+  });
+
+  test("app surface exposes the board resource and pre-rendered widgets", async () => {
+    const tools = await client.listTools();
+    const propose = tools.tools.find((tool) => tool.name === "propose_widget");
+    const lock = tools.tools.find((tool) => tool.name === "lock_widget");
+    expect((propose?._meta as any)?.ui?.resourceUri).toBe(BOARD_UI_URI);
+    expect((lock?._meta as any)?.ui?.visibility).toEqual(["app"]);
+
+    const resources = await client.listResources();
+    expect(resources.resources.some((resource) => resource.uri === BOARD_UI_URI)).toBe(true);
+
+    const read = await client.readResource({ uri: BOARD_UI_URI });
+    const html = read.contents[0];
+    if (!html || !("text" in html)) throw new Error("Board UI resource is not text.");
+    expect(html.mimeType).toBe("text/html;profile=mcp-app");
+    expect(html.text).toContain("MicroboardApp");
+    expect(html.text).toContain("Pending");
+    expect(html.text.length > 100_000).toBe(true);
+
+    const view = parse(await call("get_board_view"));
+    expect(view.widgets).toHaveLength(1);
+    expect(view.widgets[0].id).toBeTruthy();
+    expect(view.widgets[0].svg).toContain("<svg");
+    expect(view.widgets[0].locked).toBe(true);
+    expect(view.rows).toBe(3);
+  });
+
+  test("rejecting a proposal discards it", async () => {
+    const proposal = parse(
+      await call("propose_transform", { type: "sort", params: { column: "sum_visitors", dir: "desc" } })
+    );
+    const rejected = parse(await call("reject_proposal", { proposalId: proposal.proposalId }));
+    expect(rejected.rejected).toBe(true);
+
+    const apply = await call("apply_transform", {
+      proposalId: proposal.proposalId,
+      expectedVersion: proposal.baseVersion,
+    });
+    expect(apply.isError).toBe(true);
+    expect(text(apply)).toContain("No transform proposal");
   });
 });

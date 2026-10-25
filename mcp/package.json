@@ -7,7 +7,8 @@
     "microboard": "./dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "ui"
   ],
   "scripts": {
     "dev": "bun src/index.ts",
@@ -16,6 +17,7 @@
     "test": "bun test tests"
   },
   "dependencies": {
+    "@modelcontextprotocol/ext-apps": "1.7.5",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "sharp": "^0.35.5",
     "vega": "^6.4.0",

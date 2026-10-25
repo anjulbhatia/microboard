@@ -118,12 +118,24 @@ State lives in `.microboard/board.json` relative to the server's working directo
 | `propose_widget` | Propose | Validate a chart/KPI/table and return a proposal |
 | `add_widget` | Write | Add an approved widget at an expected version |
 | `update_widget` | Write | Edit a widget; refuses locked widgets |
-| `lock_widget` | Write | Freeze/unfreeze a widget against agent edits |
+| `lock_widget` | App write | Freeze/unfreeze a widget against agent edits (human surface only) |
 | `get_board_state` | Read | Full recipe + summary, or a sampled view |
+| `get_board_view` | App read | Summary, recipe, sample rows, and one SVG per widget for the iframe |
+| `reject_proposal` | App write | Discard a pending proposal without changing the board |
 | `export_board` | Action | PNG, self-contained HTML, or board JSON |
 | `render_chart` | Action | Render one widget as PNG or SVG |
 
 Every write returns a receipt and increments `version`. A write proposed against an older version fails with a version-conflict error instead of clobbering newer state.
+
+## MCP Apps surface
+
+Hosts with [MCP Apps](https://github.com/modelcontextprotocol/ext-apps) support (Claude, ChatGPT, VS Code, and others) render `ui://microboard/board.html` when `get_board_state`, `propose_transform`, or `propose_widget` runs. The iframe shows the board, the replayable recipe, and sample rows. From there a human can:
+
+- Approve or reject a proposal.
+- Lock or unlock a widget against agent edits.
+- Refresh after a version conflict.
+
+The view is self-contained: no CDN, no network, no Vega at runtime. Widgets arrive as server-rendered SVG, and the host's theme/style variables are applied when provided. The app-only tools (`get_board_view`, `reject_proposal`, `lock_widget`) are hidden from the model.
 
 ## Transforms
 
